@@ -96,12 +96,9 @@
 					"target": "master"
 				},
 				{
-					"pattern": "Objects/{objectId}",
-					"name": "object",
-					"target": [
-						"master",
-						"object"
-					]
+					"pattern": "detail/{Month}",
+					"name": "detail",
+					"target": ["detail"]
 				}
 			],
 
@@ -111,7 +108,7 @@
 					"viewLevel": 1,
 					"viewId": "master"
 				},
-				"object": {
+				"detail": {
 					"viewName": "Detail",
 					"viewId": "detail",
 					"viewLevel": 1,

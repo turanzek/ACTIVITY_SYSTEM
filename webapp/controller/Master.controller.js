@@ -87,8 +87,9 @@ sap.ui.define([
 		 * @public
 		 */
 		onUpdateFinished : function (oEvent) {
-			// update the master list object counter after new data is loaded
+			// update the master list object counter after new data is loade
 			this._updateListItemCount(oEvent.getParameter("total"));
+
 		},
 
 		/**
@@ -304,8 +305,8 @@ sap.ui.define([
 			var bReplace = !Device.system.phone;
 			// set the layout property of FCL control to show two columns
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
-			this.getRouter().navTo("object", {
-				objectId : oItem.getBindingContext().getProperty("ObjectID")
+			this.getRouter().navTo("detail", {
+				Month : oItem.getBindingContext().getProperty("Month")
 			}, bReplace);
 		},
 
@@ -316,9 +317,12 @@ sap.ui.define([
 		 */
 		_updateListItemCount : function (iTotalItems) {
 			var sTitle;
+			var sYear;
 			// only update the counter if the length is final
 			if (this._oList.getBinding("items").isLengthFinal()) {
-				sTitle = this.getResourceBundle().getText("masterTitleCount", [iTotalItems]);
+				sYear = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject().Year;
+				// sTitle = this.getResourceBundle().getText("masterTitleCount", [iTotalItems]);
+				sTitle = sYear + '  (' + iTotalItems + ')';
 				this.getModel("masterView").setProperty("/title", sTitle);
 			}
 		},

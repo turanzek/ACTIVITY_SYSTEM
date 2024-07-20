@@ -23,7 +23,7 @@
 				items="{
 					path: '/ActivityDaysSet',
 					sorter: {
-						path: 'MonthName',
+						path: 'Month',
 						descending: false
 					},
 					groupHeaderFactory: '.createGroupHeader'
@@ -65,20 +65,12 @@
 						</SearchField>
 						<ToolbarSpacer/>
 						<Button
-							id="sortButton"
-							press=".onOpenViewSettings"
-							icon="sap-icon://sort"
-							type="Transparent"/>
-						<Button
-							id="filterButton"
-							press=".onOpenViewSettings"
-							icon="sap-icon://filter"
-							type="Transparent"/>
-						<Button
-							id="groupButton"
-							press=".onOpenViewSettings"
-							icon="sap-icon://group-2"
-							type="Transparent"/>
+							text="Create Activity"
+							id="createActivityButton"
+							press=".onPressCreateActivityButton"
+							icon="sap-icon://create"
+							type="Emphasized"
+							width="150px"/>
 					</OverflowToolbar>
 				</headerToolbar>
 				<items>

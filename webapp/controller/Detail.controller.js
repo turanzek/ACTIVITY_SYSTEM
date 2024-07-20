@@ -27,7 +27,7 @@ sap.ui.define([
 				lineItemListTitle : this.getResourceBundle().getText("detailLineItemTableHeading")
 			});
 
-			this.getRouter().getRoute("object").attachPatternMatched(this._onObjectMatched, this);
+			this.getRouter().getRoute("detail").attachPatternMatched(this._onObjectMatched, this);
 
 			this.setModel(oViewModel, "detailView");
 
@@ -86,13 +86,16 @@ sap.ui.define([
 		 * @private
 		 */
 		_onObjectMatched : function (oEvent) {
-			var sObjectId =  oEvent.getParameter("arguments").objectId;
+			var sMonth =  oEvent.getParameter("arguments").Month;
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
 			this.getModel().metadataLoaded().then( function() {
-				var sObjectPath = this.getModel().createKey("Objects", {
-					ObjectID :  sObjectId
+				var sDetailPath = this.getModel().createKey("/ActivityDetailsSet", {
+					ActivityMonth :   parseInt(sMonth, 10),
+					Guid: '000001',
+					Pernr: '111111',
+					ProjectCode: '22222'
 				});
-				this._bindView("/" + sObjectPath);
+				this._bindView(sDetailPath);
 			}.bind(this));
 		},
 
@@ -100,10 +103,10 @@ sap.ui.define([
 		 * Binds the view to the object path. Makes sure that detail view displays
 		 * a busy indicator while data for the corresponding element binding is loaded.
 		 * @function
-		 * @param {string} sObjectPath path to the object to be bound to the view.
+		 * @param {string} sDetailPath path to the object to be bound to the view.
 		 * @private
 		 */
-		_bindView : function (sObjectPath) {
+		_bindView : function (sDetailPath) {
 			// Set busy indicator during view binding
 			var oViewModel = this.getModel("detailView");
 
@@ -111,7 +114,7 @@ sap.ui.define([
 			oViewModel.setProperty("/busy", false);
 
 			this.getView().bindElement({
-				path : sObjectPath,
+				path : sDetailPath,
 				events: {
 					change : this._onBindingChange.bind(this),
 					dataRequested : function () {
@@ -139,17 +142,17 @@ sap.ui.define([
 
 			var sPath = oElementBinding.getPath(),
 				oResourceBundle = this.getResourceBundle(),
-				oObject = oView.getModel().getObject(sPath),
-				sObjectId = oObject.ObjectID,
-				sObjectName = oObject.Name,
+				oDetail = oView.getModel().getObject(sPath),
+				sMonth = oDetail.Month,
+				oDetailName = oDetail.MonthName,
 				oViewModel = this.getModel("detailView");
 
 			this.getOwnerComponent().oListSelector.selectAListItem(sPath);
 
 			oViewModel.setProperty("/shareSendEmailSubject",
-				oResourceBundle.getText("shareSendEmailObjectSubject", [sObjectId]));
+				oResourceBundle.getText("shareSendEmailObjectSubject", [sMonth]));
 			oViewModel.setProperty("/shareSendEmailMessage",
-				oResourceBundle.getText("shareSendEmailObjectMessage", [sObjectName, sObjectId, location.href]));
+				oResourceBundle.getText("shareSendEmailObjectMessage", [oDetailName, sMonth, location.href]));
 		},
 
 		_onMetadataLoaded : function () {
