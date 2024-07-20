@@ -1,0 +1,57 @@
+specVersion: '2.6'
+metadata:
+  name: zint-activity-system
+type: application
+framework:
+  name: OpenUI5
+  version: 1.96.2
+  libraries:
+    - name: sap.f
+    - name: sap.m
+    - name: sap.ui.core
+    - name: sap.ui.layout
+    - name: themelib_sap_horizon
+server:
+  customMiddleware:
+    - name: ui5-middleware-simpleproxy
+      mountPath: /sap/opu/odata/sap/ZINT_ACTIVITY_SRV/
+      afterMiddleware: compression
+      configuration:
+        baseUri: http://10.10.98.2:8000/sap/opu/odata/sap/ZINT_ACTIVITY_SRV/
+        useStrictSSL: false
+    - name: ui5-middleware-simpleproxy
+      mountPath: /sap/opu/odata/sap/ZINT_VALUE_HELPER_SRV/
+      afterMiddleware: compression
+      configuration:
+        baseUri: http://10.10.98.2:8000/sap/opu/odata/sap/ZINT_VALUE_HELPER_SRV/
+        useStrictSSL: false
+    - name: ui5-middleware-servestatic
+      afterMiddleware: compression
+      mountPath: /resources
+      configuration:
+        rootPath: "C:/SapWebIde/eclipse/plugins/com.sap.webide.orionplugin_1.53.9/ui5/1.71.53/resources"
+    - name: ui5-middleware-livereload
+      afterMiddleware: compression
+      configuration:
+        debug: true
+        extraExts: "xml,json,properties"
+        port: 35730
+        watchPath: "webapp"
+builder:
+  customTasks:
+    - name: ui5-task-nwabap-deployer
+      afterTask: generateVersionInfo
+      configuration:
+        resources:
+          pattern: "**/*.*"         
+        connection:
+          server: http://10.10.98.2:8000/
+          client: 655
+          useStrictSSL: false
+        ui5:
+          language: EN
+          package: ZACT
+          bspContainer: ZINT_ACTIVITY_SYSTEM
+          bspContainerText: Personal Activity System
+          calculateApplicationIndex: true
+          transportNo: IEDK900123

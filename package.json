@@ -1,0 +1,149 @@
+{
+  "name": "zint-activity-system",
+  "version": "0.1.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "ui5 serve",
+    "start": "npm run serve --port 8081",
+    "deploy": "ui5 build --exclude-task escapeNonAsciiCharacters"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@ui5/cli": "^3.3.2",
+    "ui5-middleware-simpleproxy": "^0.5.1",
+    "ui5-task-nwabap-deployer": "^1.0.15"
+  },
+  "description": "",
+  "devDependencies": {
+    "eslint": "^7.10.0",
+    "ui5-middleware-livereload": "^0.4.3",
+    "ui5-middleware-servestatic": "^0.3.3",
+    "ui5-middleware-simpleproxy": "^0.5.1",
+    "ui5-task-nwabap-deployer": "^1.0.15"
+  },
+  "ui5": {
+    "dependencies": [
+      "ui5-middleware-servestatic",
+      "ui5-middleware-simpleproxy",
+      "ui5-middleware-livereload",
+      "ui5-task-nwabap-deployer"
+    ],
+    "ui5linter": {
+      "severity": {
+        "WrongParametersLinter": "Warning",
+        "WrongOverrideLinter": "Warning",
+        "WrongImportLinter": "Warning",
+        "WrongFilePathLinter": "Warning",
+        "WrongFieldMethodLinter": "Warning",
+        "WrongClassNameLinter": "Warning",
+        "UnusedTranslationsLinter": "Information",
+        "UnusedNamespaceLinter": "Warning",
+        "UnusedMemberLinter": "Information",
+        "TagLinter": "Error",
+        "TagAttributeLinter": "Warning",
+        "PublicMemberLinter": "Information",
+        "InterfaceLinter": "Error",
+        "AbstractClassLinter": "Error",
+        "UnusedClassLinter": "Error",
+        "WrongNamespaceLinter": "Error"
+      },
+      "usage": {
+        "WrongParametersLinter": true,
+        "WrongOverrideLinter": true,
+        "WrongImportLinter": true,
+        "WrongFilePathLinter": true,
+        "WrongFieldMethodLinter": true,
+        "WrongClassNameLinter": true,
+        "UnusedTranslationsLinter": true,
+        "UnusedNamespaceLinter": true,
+        "UnusedMemberLinter": true,
+        "TagLinter": true,
+        "TagAttributeLinter": true,
+        "PublicMemberLinter": true,
+        "InterfaceLinter": true,
+        "AbstractClassLinter": true,
+        "UnusedClassLinter": true,
+        "WrongNamespaceLinter": true
+      },
+      "jsLinterExceptions": [
+        {
+          "className": "sap.ui.core.Element",
+          "memberName": "getDomRef",
+          "applyToChildren": true
+        },
+        {
+          "className": "sap.ui.model.json.JSONModel",
+          "memberName": "iSizeLimit",
+          "applyToChildren": true
+        },
+        {
+          "className": "sap.ui.model.Binding",
+          "memberName": "*"
+        },
+        {
+          "className": "sap.ui.model.Model",
+          "memberName": "*"
+        },
+        {
+          "className": "sap.ui.core.Element",
+          "memberName": "*"
+        },
+        {
+          "className": "sap.ui.base.ManagedObject",
+          "memberName": "*"
+        },
+        {
+          "className": "sap.ui.core.Control",
+          "memberName": "*"
+        },
+        {
+          "className": "sap.ui.xmlfragment",
+          "memberName": "*"
+        },
+        {
+          "className": "*",
+          "memberName": "byId"
+        },
+        {
+          "className": "*",
+          "memberName": "prototype"
+        },
+        {
+          "className": "*",
+          "memberName": "call"
+        },
+        {
+          "className": "*",
+          "memberName": "apply"
+        },
+        {
+          "className": "*",
+          "memberName": "bind"
+        },
+        {
+          "className": "*",
+          "memberName": "constructor"
+        },
+        {
+          "className": "*",
+          "memberName": "init"
+        },
+        {
+          "className": "*",
+          "memberName": "exit"
+        },
+        {
+          "className": "map",
+          "memberName": "*"
+        }
+      ],
+      "jsClassExceptions": [],
+      "xmlClassExceptions": [],
+      "componentsToInclude": [],
+      "componentsToExclude": [],
+      "additionalWorkspacePaths": []
+    }
+  }
+}
