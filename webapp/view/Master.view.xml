@@ -48,7 +48,12 @@
 					</Toolbar>
 				</infoToolbar>
 				<headerToolbar>
-					<OverflowToolbar>
+					<OverflowToolbar height="75px">
+
+						
+						<!-- <VBox class="sapUiSmallMargin"> -->
+						<VBox class="sapUiNoPadding sapUiNoMargin" backgroundDesign="Transparent">
+
 						<SearchField
 							id="searchField"
 							showRefreshButton="true"
@@ -63,15 +68,27 @@
 									priority="NeverOverflow"/>
 							</layoutData>
 						</SearchField>
-						<ToolbarSpacer/>
+					
+						<HBox  alignContent="Center" justifyContent="Center"> 
 						<Button
 							text="Create Activity"
 							id="createActivityButton"
-							press=".onPressCreateActivityButton"
+							press=".onPressEntryActivityButton"
 							icon="sap-icon://create"
 							type="Emphasized"
 							width="150px"/>
+							<ToolbarSpacer/>
+							<Button
+								text="Entry Cost"
+								id="createCostButton"
+								press=".onPressEntryCostButton"
+								icon="sap-icon://create"
+								type="Emphasized"
+								width="150px"/>
+							</HBox>
+							</VBox>
 					</OverflowToolbar>
+
 				</headerToolbar>
 				<items>
 					<ObjectListItem

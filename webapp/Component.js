@@ -31,7 +31,78 @@ sap.ui.define([
 
 			// create the views based on the url/hash
 			this.getRouter().initialize();
+			this._initApplication();
+
 		},
+
+		_initApplication: function () {
+
+			// var oProjectCodeModel = new sap.ui.model.json.JSONModel();
+			// sap.ui.getCore().setModel(oProjectCodeModel , "projectCode");
+			// this.setModel(oProjectCodeModel , "projectCode");
+
+			// var path = "/ProjectSet";
+	
+			// this.getOwnerComponent().getModel().read(path, {
+			//   success: function (oData) {
+			// 	var oProjectModel = this.getView().getModel("projectCode");
+			// 	oProjectModel.setData(oData.results);
+			//   }.bind(this),
+			//   error: function (error) { },
+			// });
+
+
+
+            var odataModel = this.getModel();
+			var oMainModel = new sap.ui.model.json.JSONModel();
+            var oProjectCodeModel= new sap.ui.model.json.JSONModel();
+			var oActivityDaysModel= new sap.ui.model.json.JSONModel();
+			this.setModel(oMainModel, "mainModel");
+			this.setModel(oProjectCodeModel, "projectCodeModel");
+			this.setModel(oActivityDaysModel, "activityDaysModel");
+			
+            
+
+            odataModel.setUseBatch(true);
+			odataModel.setDeferredGroups(["group1"]);
+
+            odataModel.read("/ProjectSet", {
+				groupId: "group1"
+			});
+
+			odataModel.read("/ActivityDaysSet", {
+				groupId: "group1"
+			});
+
+   
+
+            odataModel.submitChanges({
+				groupId: "group1",
+				success: function (oData) {
+
+					var aProjectCode= [];
+					var aActivityDays= [];
+                  
+
+					aProjectCode = oData.__batchResponses[0].data.results;
+					aActivityDays = oData.__batchResponses[1].data.results;
+
+					oProjectCodeModel.setData({
+						list: aProjectCode
+					});
+
+					oActivityDaysModel.setData({
+						list: aActivityDays
+					});
+
+  
+
+				}.bind(this),
+				error: function () { }
+			});
+
+
+         },
 
 		/**
 		 * The component is destroyed by UI5 automatically.

@@ -87,15 +87,61 @@ sap.ui.define([
 		 */
 		_onObjectMatched : function (oEvent) {
 			var sMonth =  oEvent.getParameter("arguments").Month;
+			// var sYear =  this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject().Year;
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
 			this.getModel().metadataLoaded().then( function() {
 				var sDetailPath = this.getModel().createKey("/ActivityDetailsSet", {
 					ActivityMonth :   parseInt(sMonth, 10),
-					Guid: '000001',
-					Pernr: '111111',
-					ProjectCode: '22222'
+					Guid: 'GUID_DEFAULT',
+					Pernr: 'ZTURAN',
+					ProjectCode: 'GM01',
+					ActivityYear: '2024',
 				});
 				this._bindView(sDetailPath);
+
+				// var oModel = this.getModel();
+				// var sMonth =  oEvent.getParameter("arguments").Month;
+				// var sYear  = '2024';//oEvent.getParameter("arguments").Year;
+
+				// oModel.metadataLoaded().then(function () {
+				// 	var oView = this.getView(),
+				// 		sPath = "/" + this.getModel().createKey("ActivityDaysSet", {
+
+							
+				// 			Guid: "GUID_DEFAULT",
+				// 			Year: sYear,
+				// 			Month: sMonth,
+				// 		});
+				// 	oView.bindElement({
+				// 		path: sPath,
+				// 		parameters: {
+				// 			expand: "ActivityDetails"
+				// 		},
+				// 		events: {
+				// 			dataRequested: function () {
+				// 				oView.setBusy(true);
+				// 			},
+				// 			dataReceived: function () {
+				// 				oView.setBusy(false);
+				// 			}
+				// 		}
+				// 	});
+
+
+
+
+					// events: {
+					// 	dataRequested: function () {
+					// 		this.getView().setBusy(true);
+					// 	},
+					// 	dataReceived: function () {
+					// 		this.getView().setBusy(false);
+					// 	}
+				// 	// }
+				// });
+
+
+
 			}.bind(this));
 		},
 
@@ -115,15 +161,15 @@ sap.ui.define([
 
 			this.getView().bindElement({
 				path : sDetailPath,
-				events: {
-					change : this._onBindingChange.bind(this),
-					dataRequested : function () {
-						oViewModel.setProperty("/busy", true);
-					},
-					dataReceived: function () {
-						oViewModel.setProperty("/busy", false);
-					}
-				}
+				// events: {
+				// 	change : this._onBindingChange.bind(this),
+				// 	dataRequested : function () {
+				// 		oViewModel.setProperty("/busy", true);
+				// 	},
+				// 	dataReceived: function () {
+				// 		oViewModel.setProperty("/busy", false);
+				// 	}
+				// }
 			});
 		},
 
@@ -143,8 +189,8 @@ sap.ui.define([
 			var sPath = oElementBinding.getPath(),
 				oResourceBundle = this.getResourceBundle(),
 				oDetail = oView.getModel().getObject(sPath),
-				sMonth = oDetail.Month,
-				oDetailName = oDetail.MonthName,
+				sMonth = oDetail.ActivityMonth,
+				oDetailName = oDetail.ActivityMonthName,
 				oViewModel = this.getModel("detailView");
 
 			this.getOwnerComponent().oListSelector.selectAListItem(sPath);

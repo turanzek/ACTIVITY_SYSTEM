@@ -1,0 +1,87 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+    <Dialog  title="Add Activity" id="entryActivity">
+        <content>
+            <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4"
+                labelSpanS="12" adjustLabelSpan="false" emptySpanXL="4  " emptySpanL="4" emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1"
+                singleContainerFullSize="false">
+                <f:content>
+                    <!-- <Label text="Aracın Modeli"/>
+                    <Input id="inputVehicleModel" fieldGroupIds="Fragment" required="true"  placeholder="Seat Leon"/> -->
+ 
+                    <Label text="Personnel Name"/>
+					<Input id="personnelName" value="{personnelModel>/PersonnelName} {personnelModel>/PersonnelSurname}" fieldGroupIds="Fragment" required="true" editable="false"/>
+					
+                    <Label text="Activity Date" />
+                    <DatePicker id="inputActivityDate" value="{
+                        path: '/date',
+                        type: 'sap.ui.model.type.Date',
+                        formatOptions: {
+					    style: 'short'
+				    }}"
+                    required="true"
+                    />
+
+                    <Label text="Project" required = "true"/>
+                    <List>
+                        <InputListItem >
+                            <Input id="inputProjectCode" type="Text" required="true" placeholder="Please Select Project code" change="handleInputProjectCodeChange" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
+                        </InputListItem>
+                    </List>
+                    
+                    <Label text="Project Name"/>
+                    <List>
+                        <InputListItem >
+                            <Input id="inputProjectName" type="Text" editable = "false"  ></Input>
+                        </InputListItem>
+                    </List>  
+                    
+                    <Label text="Activity Hour" required = "true"/>
+                    <Input id="inputActivityHour" value="{path:'/number', type:'sap.ui.model.type.Float'}" fieldGroupIds="Fragment" required="true" placeholder="8,00"   />
+                    <ObjectNumber number=" { path : 'personnelModel>/PersonnelName' , type: 'sap.ui.model.type.Float' } ₺" id="idObjectNumber" state="Warning"></ObjectNumber>
+               
+                    <Label text="Description" required = "true"/>
+                    <Input id="inputDescription" type="Text" fieldGroupIds="Fragment" required="true" placeholder="Please type description."/>
+
+
+					<!-- <Label text="Project"/>
+                        <Select forceSelection="false" id="selectProjectModel" showSecondaryValues="true" required="true" change="handleVehicleModelChange" enabled="{screen>/entry/key/enabled}" items="{ path: 'selectVehicleModel>/list', sorter: { path: 'Key'} }" width="800px" >
+                            <core:ListItem key="{selectProjectModel>ProjectCode}" text="{selectProjectModel>ProjectName}" />
+                        </Select> -->
+
+                    <!-- <Label text="Aracın Yılı"/>
+                    <Input id="inputVehicleYear" fieldGroupIds="Fragment" required="true"  placeholder="2018" /> -->
+                    <!-- <Label text="Vehicle Year"/>
+                    <DatePicker
+                            id="inputVehicleYear"
+                            required="true"
+                            displayFormat="yyyy"
+                            valueFormat="yyyy"
+                            /> -->
+                   
+                    <!-- <Label text="Vehicle Kilometer"/>
+                    <Input id="inputVehicleKm" type="Number" fieldGroupIds="Fragment" required="true" placeholder="34850"/>
+ 
+                    <Label text="Vehicle Renting Price"/>
+                    <Input id="inputRentingPrice" type="Number" fieldGroupIds="Fragment" required="true" placeholder="1250,75 ₺"/>
+ 
+                    <Label text="Fuel Cost per Kilometer"/>
+                    <Input id="inputFuelPerKm" type="Number" fieldGroupIds="Fragment" required="true" placeholder="3,75 ₺"/> -->
+                    <!-- <Label text="Project"/>
+                    <Select forceSelection="false" id="selectProjectModel"  showSecondaryValues="true"  change="handleInputProjectCodeChange" enabled="{screen>/entry/key/enabled}" items="{ path: 'headerInfo>/ProjectCode', sorter: { path: 'ProjectCode'} }" width="800px" >
+                        <core:ListItem key="{selectProjectModel>ProjectCode}" text="{selectProjectModel>ProjectName}" />
+                    </Select> -->
+
+
+
+                </f:content>
+                
+            </f:SimpleForm>
+        </content>
+        <beginButton>
+            <Button text="Save" press="onSaveActivity"/>
+        </beginButton>
+        <endButton>
+            <Button text="Cancel" press=".onPressCancelActivity" type="Reject"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

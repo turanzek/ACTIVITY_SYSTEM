@@ -7,13 +7,19 @@ sap.ui.define([
 	"sap/m/GroupHeaderListItem",
 	"sap/ui/Device",
 	"sap/ui/core/Fragment",
-	"../model/formatter"
-], function (BaseController, JSONModel, Filter, Sorter, FilterOperator, GroupHeaderListItem, Device, Fragment, formatter) {
+	"../model/formatter",
+	"sap/ui/commons/Message",
+	"sap/m/MessageBox",
+	"sap/m/MessageToast",
+], function (BaseController, JSONModel, Filter, Sorter, FilterOperator, 
+			 GroupHeaderListItem, Device, Fragment, formatter, 
+			 Message,MessageBox,MessageToast) {
 	"use strict";
 
 	return BaseController.extend("zint.activity.system.controller.Master", {
 
 		formatter: formatter,
+		_aProjectLists: [],
 
 		/* =========================================================== */
 		/* lifecycle methods                                           */
@@ -24,6 +30,7 @@ sap.ui.define([
 		 * @public
 		 */
 		onInit : function () {
+	
 			// Control state model
 			var oList = this.byId("masterlist"),
 				oViewModel = this._createViewModel(),
@@ -57,7 +64,13 @@ sap.ui.define([
 				aSearch : []
 			};
 
+			
 			this.setModel(oViewModel, "masterView");
+			
+
+
+
+
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
@@ -89,6 +102,53 @@ sap.ui.define([
 		onUpdateFinished : function (oEvent) {
 			// update the master list object counter after new data is loade
 			this._updateListItemCount(oEvent.getParameter("total"));
+			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject()
+			var oPersonnelModel = new sap.ui.model.json.JSONModel();
+			this.setModel(oPersonnelModel, "personnelModel");
+			
+			oPersonnelModel.setData({
+				Pernr: oMasterData.Pernr,
+				PersonnelName: oMasterData.PersonnelName,
+				PersonnelSurname: oMasterData.PersonnelSurname,
+				Year: oMasterData.Year
+			})
+
+			// var oProjectCodeModel = new sap.ui.model.json.JSONModel();
+			// sap.ui.getCore().setModel(oProjectCodeModel , "projectCode");
+			// this.setModel(oProjectCodeModel , "projectCode");
+
+			// var m = this.getOwnerComponent().getModel();
+
+			// var path = "/ProjectSet";
+	
+			// m.read(path, {
+			//   success: function (oData) {
+			// 	var oProjectModel = this.getView().getModel("projectCode");
+			// 	oProjectModel.setData(oData.results);
+			//   }.bind(this),
+			//   error: function (error) { },
+			// });
+		  
+
+
+
+			// odataModel.read("/EGITIM_MASRAF_YERISET", {
+			// 	groupId: "group1",
+			// 	urlParameters: {
+			// 		"$expand": ["toOnayci"]
+			// 	},
+			// 	filters: [
+			// 		new sap.ui.model.Filter({
+			// 			path: "Usern",
+			// 			operator: sap.ui.model.FilterOperator.EQ,
+			// 			value1: userId
+			// 		}),
+			// 		new sap.ui.model.Filter({
+			// 			path: "Appty",
+			// 			operator: sap.ui.model.FilterOperator.EQ,
+			// 			value1: this._appType
+			// 		})]
+			// });
 
 		},
 
@@ -353,7 +413,210 @@ sap.ui.define([
 			var oViewModel = this.getModel("masterView");
 			oViewModel.setProperty("/isFilterBarVisible", (this._oListFilterState.aFilter.length > 0));
 			oViewModel.setProperty("/filterBarLabel", this.getResourceBundle().getText("masterFilterBarText", [sFilterBarText]));
-		}
+		},
+
+		
+		onPressEntryActivityButton: function () {
+			var oView = this.getView();
+			// var oProjectCode = this.byId("inputProjectCode");
+			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
+ 
+           
+ 
+            if (!this.byId("entryActivity")) {
+              // load asynchronous XML fragment
+              Fragment.load({
+     
+                id: oView.getId(),
+                name: "zint.activity.system.fragment.AddActivity",
+                controller: this
+              }).then(function (oDialog) {
+     
+                // connect dialog to the root view of this component (models, lifecycle)
+                oView.addDependent(oDialog);
+                oDialog.open();
+                this._dialog = oDialog;
+     
+              }.bind(this));
+     
+            } else {
+     
+              this.byId("entryActivity").open();
+     
+            }
+		},
+
+		_onPressEntryCostButton: function (oItem) {
+			var bReplace = !Device.system.phone;
+			// set the layout property of FCL control to show two columns
+			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
+			this.getRouter().navTo("detail", {
+				Month : oItem.getBindingContext().getProperty("Month")
+			}, bReplace);
+		},
+
+	
+          onSaveActivity: function () {
+			
+			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject();
+			var ui5Date = this.getView().byId("inputActivityDate").getValue();
+			var sDate = ui5Date.substring(1, 2);
+			if ( sDate == '.'){
+				var sYear = ui5Date.substring(5, 9);
+				var SDate = 0+ui5Date;
+			} else	{
+				sYear = ui5Date.substring(6, 10)
+				var SDate = ui5Date;
+			};
+			
+
+            var oActivityValues  = {
+
+				Guid 			: "GUID_DEFAULT",
+				Pernr			: oMasterData.Pernr,
+				PersonnelName   : oMasterData.PersonnelName,
+				PersonnelSurname: oMasterData.PersonnelSurname,
+				Year            : sYear,
+				Month			: oMasterData.Month,
+				MonthName       : oMasterData.MonthName,
+				Date            : SDate,
+				Status			: "SAVE",
+				ProjectCode		: this.getView().byId("inputProjectCode").getValue(),
+				ProjectName  	: this.getView().byId("inputProjectName").getValue(),
+				ActivityDuration : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
+				Description      : this.getView().byId("inputDescription").getValue(),
+		
+				
+            };
+
+			if (this.getView().byId("inputActivityDate").getValue() === "") {
+				
+				this.getView().byId("inputActivityDate").setValueState("Error");
+				//  MessageToast.show("Fill the activity date");
+				//  return;
+				MessageBox.error("Fill the activity date.");
+				return false;
+			};
+
+			if (this.getView().byId("inputProjectCode").getValue() === "") {
+				
+				this.getView().byId("inputProjectCode").setValueState("Error");
+				MessageBox.error("Fill the project code.");
+				return false;
+			};
+
+
+
+			if (this.getView().byId("inputActivityHour").getValue() === "") {
+				
+				this.getView().byId("inputActivityHour").setValueState("Error");
+				MessageBox.error("Fill the activity hour.");
+				return false;
+			};
+
+
+			this.BusyDialog = new sap.m.BusyDialog({});
+            this.BusyDialog.open();
+            this.getOwnerComponent()
+              .getModel()
+              .create("/ActivityDaysSet", oActivityValues  , {
+                success: function () {
+                 var Msg = "Activity entry is successfull."
+				 MessageBox.show(Msg);
+				 this.BusyDialog.close();
+				// TO DO clear data ve model yapılacak
+				 this.byId("entryActivity").destroy();
+
+                }.bind(this),
+                error: function (error) {
+                  MessageBox.error(
+                    JSON.parse(error.responseText).error.message.value
+                  );
+                  this.BusyDialog.close();
+                }.bind(this),
+              });
+     
+          },
+
+		  onPressCancelActivity: function () {
+            // this.getView().byId("selectProjectModel").setSelectedKey("");
+           
+     
+     
+            this.byId("entryActivity").destroy();
+          },
+
+		  handleInputProjectCodeValueHelp: function () {
+
+
+			var oProjectModel = this.getOwnerComponent().getModel("projectCodeModel");
+			var aProjectModelData = oProjectModel.getData().list;
+
+			var oProjectValueHelpModel = new sap.ui.model.json.JSONModel();
+			var aValueHelpProjectCode = [];
+			var oValueHelpProjectCode = {};
+		
+			this.getView().setModel(oProjectModel , "projectValueHelp");
+	
+		
+			// this._aProjectLists = this.getView().getModel("projectCode").getData();
+			// for (var i = 0; i < this._aProjectLists.length; i++) {
+			// //   if (this._aProjectLists[i].Girye === "X") {
+			// 	oValueHelpProjectCode = {};
+		
+			// 	oValueHelpProjectCode.ProjectCode = this._aProjectLists[i].ProjectCode;
+			// 	oValueHelpProjectCode.ProjectName = this._aProjectLists[i].ProjectName;
+			// 	aValueHelpProjectCode.push(oValueHelpProjectCode);
+			// //   }
+			// }
+			// oProjectValueHelpModel.setData({
+			//   list: aValueHelpProjectCode,
+			// });
+		
+			if (!this._oDialogProjectCode) {
+			  this._oDialogProjectCode = sap.ui.xmlfragment(
+				"zint.activity.system.fragment.SelectProjectCode",
+				this
+			  );
+			}
+		
+			this.getView().addDependent(this._oDialogProjectCode);
+			jQuery.sap.syncStyleClass(
+			  "sapUiSizeCompact",
+			  this.getView(),
+			  this._oDialogProjectCode
+			);
+			this._oDialogProjectCode.open();
+		  },
+		  handleInputProjectCodeChange: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			// var oProjectCode = this.byId("inputProjectCode");
+			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
+
+
+		  },
+ 
+		  handleCloseSelectProject: function (oEvent) {
+			var aContexts = oEvent.getParameter("selectedContexts");
+		
+			var oProjectCode = this.byId("inputProjectCode");
+			oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
+
+			var oProjectName = this.byId("inputProjectName");
+			oProjectName.setValue(aContexts[0].getObject().ProjectName);
+
+		  },  
+
+		  handleSearchSelectProject: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oFilter = new Filter(
+			  "ProjectCode",
+			  sap.ui.model.FilterOperator.Contains,
+			  sValue
+			);
+			var oBinding = oEvent.getSource().getBinding("items");
+			oBinding.filter([oFilter]);
+		  },
 
 	});
 

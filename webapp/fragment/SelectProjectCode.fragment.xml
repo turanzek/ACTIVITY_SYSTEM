@@ -1,0 +1,26 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" >
+	<TableSelectDialog noDataText="Project Not Found" title="Please Select Project" search="handleSearchSelectProject" confirm="handleCloseSelectProject" cancel="handleCloseSelectProject"
+		multiSelect="false" items="{ path : 'projectValueHelp>/list', sorter : [{ path : 'ProjectCıde'},{ path : 'ProjectName' }] }">
+		<ColumnListItem>
+			<cells>
+				<!--<Text text="{selectMasrafYeri>Kostl}"/>-->
+
+				<ObjectIdentifier text="{projectValueHelp>ProjectCode}"/>
+				<ObjectIdentifier title="{projectValueHelp>ProjectName}" text="{projectValueHelp>ProjectName}" /> 
+			</cells>
+		</ColumnListItem>
+		<columns>
+
+			<Column width="9em">
+				<header>
+					<Text text="Project Code"/>
+				</header>
+			</Column>
+			<Column width="12em">
+				<header>
+					<Text text="Project Name"/>
+				</header>
+			</Column>
+		</columns>
+	</TableSelectDialog>
+</core:FragmentDefinition>

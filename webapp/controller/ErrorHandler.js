@@ -43,22 +43,22 @@ sap.ui.define([
 		 * @private
 		 */
 		_showServiceError : function (sDetails) {
-			if (this._bMessageOpen) {
-				return;
-			}
-			this._bMessageOpen = true;
-			MessageBox.error(
-				this._sErrorText,
-				{
-					id : "serviceErrorMessageBox",
-					details : sDetails,
-					styleClass : this._oComponent.getContentDensityClass(),
-					actions : [MessageBox.Action.CLOSE],
-					onClose : function () {
-						this._bMessageOpen = false;
-					}.bind(this)
-				}
-			);
+			// if (this._bMessageOpen) {
+			// 	return;
+			// }
+			// this._bMessageOpen = true;
+			// MessageBox.error(
+			// 	this._sErrorText,
+			// 	{
+			// 		id : "serviceErrorMessageBox",
+			// 		details : sDetails,
+			// 		styleClass : this._oComponent.getContentDensityClass(),
+			// 		actions : [MessageBox.Action.CLOSE],
+			// 		onClose : function () {
+			// 			this._bMessageOpen = false;
+			// 		}.bind(this)
+			// 	}
+			// );
 		}
 
 	});

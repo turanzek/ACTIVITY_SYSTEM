@@ -10,7 +10,7 @@
 		busyIndicatorDelay="{detailView>/delay}">
 		<semantic:titleHeading>
 			<Title
-				text="{Name}"
+				text="{ActivityMonth}"
 				level="H2"/>
 		</semantic:titleHeading>
 		<semantic:headerContent>
@@ -28,7 +28,15 @@
 			<Table
 				id="lineItemsList"
 				width="auto"
-				items="{LineItems}"
+				items="{
+					path: '/ActivityDetailsSet',
+					sorter: {
+						path: 'ActivityMonth',
+						descending: false
+					},
+					groupHeaderFactory: '.createGroupHeader'
+				}"
+				
 				updateFinished=".onListUpdateFinished"
 				noDataText="{i18n>detailLineItemTableNoDataText}"
 				busyIndicatorDelay="{detailView>/lineItemTableDelay}">
@@ -56,14 +64,9 @@
 					<ColumnListItem>
 						<cells>
 							<ObjectIdentifier
-								title="{Name}"
-								text="{LineItemID}"/>
-							<ObjectNumber
-								number="{
-									path: 'UnitNumber',
-									formatter: '.formatter.currencyValue'
-								}"
-								unit="{UnitOfMeasure}"/>
+								title="{ActivityMonth}"
+								text="{ActivityMonth}"/>
+			
 						</cells>
 					</ColumnListItem>
 				</items>
