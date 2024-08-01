@@ -37,69 +37,120 @@ sap.ui.define([
 
 		_initApplication: function () {
 
-			// var oProjectCodeModel = new sap.ui.model.json.JSONModel();
-			// sap.ui.getCore().setModel(oProjectCodeModel , "projectCode");
-			// this.setModel(oProjectCodeModel , "projectCode");
-
-			// var path = "/ProjectSet";
-	
-			// this.getOwnerComponent().getModel().read(path, {
-			//   success: function (oData) {
-			// 	var oProjectModel = this.getView().getModel("projectCode");
-			// 	oProjectModel.setData(oData.results);
-			//   }.bind(this),
-			//   error: function (error) { },
-			// });
-
-
-
-            var odataModel = this.getModel();
+			var odataModel = this.getModel();
 			var oMainModel = new sap.ui.model.json.JSONModel();
-            var oProjectCodeModel= new sap.ui.model.json.JSONModel();
-			var oActivityDaysModel= new sap.ui.model.json.JSONModel();
+			var oProjectCodeModel = new sap.ui.model.json.JSONModel();
+			var oActivityDaysModel = new sap.ui.model.json.JSONModel();
 			this.setModel(oMainModel, "mainModel");
 			this.setModel(oProjectCodeModel, "projectCodeModel");
 			this.setModel(oActivityDaysModel, "activityDaysModel");
 			
+			odataModel.setUseBatch(true);
+			odataModel.setDeferredGroups(["group1"]);
+			
+			// Yapılacak okuma işlemlerini batch grubuna ekleyin
+			odataModel.read("/ProjectSet", {
+				groupId: "group1",
+				// Hata ayıklama amacıyla loglama
+				success: function(oData) {
+					console.log("ProjectSet read success");
+				},
+				error: function(oError) {
+					console.error("ProjectSet read error", oError);
+				}
+			});
+			
+			odataModel.read("/ActivityDaysSet", {
+				groupId: "group1",
+				// Hata ayıklama amacıyla loglama
+				success: function(oData) {
+					console.log("ActivityDaysSet read success");
+				},
+				error: function(oError) {
+					console.error("ActivityDaysSet read error", oError);
+				}
+			});
+			
+			// Batch işlemini gönder
+			odataModel.submitChanges({
+				groupId: "group1",
+				success: function(oData) {
+					console.log("Batch submitChanges success");
+			
+					var aProjectCode = [];
+					var aActivityDays = [];
+			
+					// OData sonuçlarının işlenmesi
+					if (oData.__batchResponses && oData.__batchResponses.length > 0) {
+						aProjectCode = oData.__batchResponses[0].data.results;
+						if (oData.__batchResponses.length > 1) {
+							aActivityDays = oData.__batchResponses[1].data.results;
+						}
+			
+						oProjectCodeModel.setData({
+							list: aProjectCode
+						});
+			
+						oActivityDaysModel.setData({
+							list: aActivityDays
+						});
+					} else {
+						console.warn("No batch responses found");
+					}
+				},
+				error: function(oError) {
+					console.error("Batch submitChanges error", oError);
+				}
+			});
+
+
+
+            // var odataModel = this.getModel();
+			// var oMainModel = new sap.ui.model.json.JSONModel();
+            // var oProjectCodeModel= new sap.ui.model.json.JSONModel();
+			// var oActivityDaysModel= new sap.ui.model.json.JSONModel();
+			// this.setModel(oMainModel, "mainModel");
+			// this.setModel(oProjectCodeModel, "projectCodeModel");
+			// this.setModel(oActivityDaysModel, "activityDaysModel");
+			
             
 
-            odataModel.setUseBatch(true);
-			odataModel.setDeferredGroups(["group1"]);
+            // odataModel.setUseBatch(true);
+			// odataModel.setDeferredGroups(["group1"]);
 
-            odataModel.read("/ProjectSet", {
-				groupId: "group1"
-			});
+			// odataModel.read("/ProjectSet", {
+			// 	groupId: "group1"
+			// });
 
-			odataModel.read("/ActivityDaysSet", {
-				groupId: "group1"
-			});
+			// odataModel.read("/ActivityDaysSet", {
+			// 	groupId: "group1"
+			// });
 
-   
 
-            odataModel.submitChanges({
-				groupId: "group1",
-				success: function (oData) {
+            // odataModel.submitChanges({
+			// 	groupId: "group1",
+			// 	success: function (oData) {
 
-					var aProjectCode= [];
-					var aActivityDays= [];
+			// 		var aProjectCode= [];
+			// 		var aActivityDays= [];
                   
 
-					aProjectCode = oData.__batchResponses[0].data.results;
-					aActivityDays = oData.__batchResponses[1].data.results;
+			// 		aProjectCode = oData.__batchResponses[0].data.results;
+			// 		aActivityDays = oData.__batchResponses[1].data.results;
 
-					oProjectCodeModel.setData({
-						list: aProjectCode
-					});
+			// 		oProjectCodeModel.setData({
+			// 			list: aProjectCode
+			// 		});
 
-					oActivityDaysModel.setData({
-						list: aActivityDays
-					});
+			// 		oActivityDaysModel.setData({
+			// 			list: aActivityDays
+			// 		});
 
   
 
-				}.bind(this),
-				error: function () { }
-			});
+			// 	}.bind(this),
+			// 	error: function () { }
+			// });
 
 
          },

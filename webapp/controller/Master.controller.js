@@ -30,14 +30,23 @@ sap.ui.define([
 		 * @public
 		 */
 		onInit : function () {
+
+			var oActivityDaysModel = this.getOwnerComponent().getModel("activityDaysModel");
+
+			var aActivityDaysModelData = oActivityDaysModel.getData();
+			this.getView().setModel(oActivityDaysModel , "activityModel");
 	
-			// Control state model
+			
 			var oList = this.byId("masterlist"),
-				oViewModel = this._createViewModel(),
+			oViewModel = this.getOwnerComponent().getModel("activityDaysModel");
+			
+			// Control state model
+			// var oList = this.byId("masterlist"),
+				// oViewModel = this._createViewModel(),
 				// Put down master list's original value for busy indicator delay,
 				// so it can be restored later on. Busy handling on the master list is
 				// taken care of by the master list itself.
-				iOriginalBusyDelay = oList.getBusyIndicatorDelay();
+				// iOriginalBusyDelay = oList.getBusyIndicatorDelay();
 
 			this._oGroupFunctions = {
 				UnitNumber : function(oContext) {
@@ -76,7 +85,7 @@ sap.ui.define([
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
 			oList.attachEventOnce("updateFinished", function(){
 				// Restore original busy indicator delay for the list
-				oViewModel.setProperty("/delay", iOriginalBusyDelay);
+				// oViewModel.setProperty("/delay", iOriginalBusyDelay);
 			});
 
 			this.getView().addEventDelegate({
@@ -101,8 +110,9 @@ sap.ui.define([
 		 */
 		onUpdateFinished : function (oEvent) {
 			// update the master list object counter after new data is loade
-			this._updateListItemCount(oEvent.getParameter("total"));
-			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject()
+
+			// var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject()
+			var oMasterData = this.getView().getModel("activityModel").getData().list[0].Year;
 			var oPersonnelModel = new sap.ui.model.json.JSONModel();
 			this.setModel(oPersonnelModel, "personnelModel");
 			
@@ -113,6 +123,7 @@ sap.ui.define([
 				Year: oMasterData.Year
 			})
 
+			this._updateListItemCount(oEvent.getParameter("total"));
 			// var oProjectCodeModel = new sap.ui.model.json.JSONModel();
 			// sap.ui.getCore().setModel(oProjectCodeModel , "projectCode");
 			// this.setModel(oProjectCodeModel , "projectCode");
@@ -375,15 +386,40 @@ sap.ui.define([
 		 * @param {integer} iTotalItems the total number of items in the list
 		 * @private
 		 */
-		_updateListItemCount : function (iTotalItems) {
+		// _updateListItemCount : function (iTotalItems) {
+		// 	var sTitle;
+		// 	var sYear;
+		// 	// only update the counter if the length is final
+		// 	if (this._oList.getBinding("items").isLengthFinal()) {
+		// 		sYear = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject().Year;
+		// 		// sTitle = this.getResourceBundle().getText("masterTitleCount", [iTotalItems]);
+		// 		sTitle = sYear + '  (' + iTotalItems + ')';
+		// 		this.getModel("masterView").setProperty("/title", sTitle);
+		// 	}
+		// },
+		_updateListItemCount: function (iTotalItems) {
 			var sTitle;
 			var sYear;
-			// only update the counter if the length is final
-			if (this._oList.getBinding("items").isLengthFinal()) {
-				sYear = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject().Year;
-				// sTitle = this.getResourceBundle().getText("masterTitleCount", [iTotalItems]);
-				sTitle = sYear + '  (' + iTotalItems + ')';
-				this.getModel("masterView").setProperty("/title", sTitle);
+			var oListBinding = this._oList.getBinding("items");
+			
+			// Liste verileri tamamen yüklendi mi kontrol et
+			if (oListBinding.isLengthFinal()) {
+				var aContexts = oListBinding.getContexts();
+				
+				// İlk öğenin mevcut olduğundan emin olun
+				if (aContexts.length > 0) {
+					var oFirstItem = aContexts[0].getObject();
+					sYear = oFirstItem.Year || 'Unknown Year'; // Year özelliği mevcut değilse varsayılan değer kullanın
+				} else {
+					sYear = 'Unknown Year'; // Liste boşsa varsayılan değer kullanın
+				}
+				
+				// Başlık metnini oluştur
+				sTitle = sYear + ' (' + iTotalItems + ')';
+				
+				// Başlığı güncelle
+				var oModel = this.getModel("masterView");
+				oModel.setProperty("/title", sTitle);
 			}
 		},
 

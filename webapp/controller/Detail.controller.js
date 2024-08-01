@@ -86,6 +86,18 @@ sap.ui.define([
 		 * @private
 		 */
 		_onObjectMatched : function (oEvent) {
+
+//var app = sap.ui.getCore().byId("splitApp");
+var oMasterList = sap.ui.getCore().byId("idMasterList");
+var oSelItem = oMasterList.getSelectedItem();
+
+var sPath = oSelItem.oBindingContexts.druginfo.sPath; 
+var oItem = sap.ui.getCore().getModel("activityModel").getProperty(sPath);
+var oSelModel = new sap.ui.model.json.JSONModel(oItem) ;
+sap.ui.getCore().setModel(oSelModel, "SelectedItem");
+
+
+
 			var sMonth =  oEvent.getParameter("arguments").Month;
 			// var sYear =  this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject().Year;
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
