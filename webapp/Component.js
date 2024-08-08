@@ -122,15 +122,19 @@ sap.ui.define([
 			// 	groupId: "group1"
 			// });
 
+<<<<<<< HEAD
 			// odataModel.read("/ActivityDaysSet", {
 			// 	groupId: "group1"
 			// });
+=======
+>>>>>>> 6c91c6e62d6f9ecaa1d61fabbb7702452761b8a0
 
 
             // odataModel.submitChanges({
 			// 	groupId: "group1",
 			// 	success: function (oData) {
 
+<<<<<<< HEAD
 			// 		var aProjectCode= [];
 			// 		var aActivityDays= [];
                   
@@ -147,6 +151,16 @@ sap.ui.define([
 			// 		});
 
   
+=======
+					var aProjectCode= [];
+                  
+
+					aProjectCode = oData.__batchResponses[0].data.results;
+
+					oProjectCodeModel.setData({
+						list: aProjectCode
+					});  
+>>>>>>> 6c91c6e62d6f9ecaa1d61fabbb7702452761b8a0
 
 			// 	}.bind(this),
 			// 	error: function () { }

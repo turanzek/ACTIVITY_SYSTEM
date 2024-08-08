@@ -373,11 +373,39 @@ sap.ui.define([
 		 * @private
 		 */
 		_showDetail : function (oItem) {
+
+			var oContext = oItem.getBindingContext();
+			var sMonth = oContext.getProperty("Month");
+			var sGuid = oContext.getProperty("Guid");
+			var sPernr = oContext.getProperty("Pernr");
+			// var sProjectCode = oContext.getProperty("ProjectCode");
+			var sActivityYear = oContext.getProperty("Year");
+
+
+			var oActivityDaysModel = this.getOwnerComponent().getModel("activityDaysModel");
+
+			var oActivityDay = {
+				Month: sMonth,
+				Guid: sGuid,
+				Pernr: sPernr,
+				ActivityYear: sActivityYear
+			}
+
+			
+			oActivityDaysModel.setData({
+				selectedItem: oActivityDay
+			});  
+
 			var bReplace = !Device.system.phone;
 			// set the layout property of FCL control to show two columns
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
 			this.getRouter().navTo("detail", {
-				Month : oItem.getBindingContext().getProperty("Month")
+				// Month : oItem.getBindingContext().getProperty("Month")
+				Month: sMonth,
+				// Guid: sGuid,
+				// Pernr: sPernr,
+				// ProjectCode: sProjectCode,
+				// ActivityYear: sActivityYear
 			}, bReplace);
 		},
 
@@ -582,48 +610,6 @@ sap.ui.define([
             this.byId("entryActivity").destroy();
           },
 
-		  handleInputProjectCodeValueHelp: function () {
-
-
-			var oProjectModel = this.getOwnerComponent().getModel("projectCodeModel");
-			var aProjectModelData = oProjectModel.getData().list;
-
-			var oProjectValueHelpModel = new sap.ui.model.json.JSONModel();
-			var aValueHelpProjectCode = [];
-			var oValueHelpProjectCode = {};
-		
-			this.getView().setModel(oProjectModel , "projectValueHelp");
-	
-		
-			// this._aProjectLists = this.getView().getModel("projectCode").getData();
-			// for (var i = 0; i < this._aProjectLists.length; i++) {
-			// //   if (this._aProjectLists[i].Girye === "X") {
-			// 	oValueHelpProjectCode = {};
-		
-			// 	oValueHelpProjectCode.ProjectCode = this._aProjectLists[i].ProjectCode;
-			// 	oValueHelpProjectCode.ProjectName = this._aProjectLists[i].ProjectName;
-			// 	aValueHelpProjectCode.push(oValueHelpProjectCode);
-			// //   }
-			// }
-			// oProjectValueHelpModel.setData({
-			//   list: aValueHelpProjectCode,
-			// });
-		
-			if (!this._oDialogProjectCode) {
-			  this._oDialogProjectCode = sap.ui.xmlfragment(
-				"zint.activity.system.fragment.SelectProjectCode",
-				this
-			  );
-			}
-		
-			this.getView().addDependent(this._oDialogProjectCode);
-			jQuery.sap.syncStyleClass(
-			  "sapUiSizeCompact",
-			  this.getView(),
-			  this._oDialogProjectCode
-			);
-			this._oDialogProjectCode.open();
-		  },
 		  handleInputProjectCodeChange: function (oEvent) {
 			var sValue = oEvent.getParameter("value");
 			// var oProjectCode = this.byId("inputProjectCode");
@@ -632,27 +618,27 @@ sap.ui.define([
 
 		  },
  
-		  handleCloseSelectProject: function (oEvent) {
-			var aContexts = oEvent.getParameter("selectedContexts");
+		//   handleCloseSelectProject: function (oEvent) {
+		// 	var aContexts = oEvent.getParameter("selectedContexts");
 		
-			var oProjectCode = this.byId("inputProjectCode");
-			oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
+		// 	var oProjectCode = this.byId("inputProjectCode");
+		// 	oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
 
-			var oProjectName = this.byId("inputProjectName");
-			oProjectName.setValue(aContexts[0].getObject().ProjectName);
+		// 	var oProjectName = this.byId("inputProjectName");
+		// 	oProjectName.setValue(aContexts[0].getObject().ProjectName);
 
-		  },  
+		//   },  
 
-		  handleSearchSelectProject: function (oEvent) {
-			var sValue = oEvent.getParameter("value");
-			var oFilter = new Filter(
-			  "ProjectCode",
-			  sap.ui.model.FilterOperator.Contains,
-			  sValue
-			);
-			var oBinding = oEvent.getSource().getBinding("items");
-			oBinding.filter([oFilter]);
-		  },
+		//   handleSearchSelectProject: function (oEvent) {
+		// 	var sValue = oEvent.getParameter("value");
+		// 	var oFilter = new Filter(
+		// 	  "ProjectCode",
+		// 	  sap.ui.model.FilterOperator.Contains,
+		// 	  sValue
+		// 	);
+		// 	var oBinding = oEvent.getSource().getBinding("items");
+		// 	oBinding.filter([oFilter]);
+		//   },
 
 	});
 
