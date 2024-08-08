@@ -1,0 +1,4 @@
+.table-scrollable {
+    overflow-x: auto;
+    max-height: 400px; /* İstediğiniz maksimum yüksekliği belirleyin */
+}
