@@ -47,8 +47,11 @@
 				demandPopin="true" class="sapUiResponsiveContentPadding" enableAutoColumnWidth="true"   app:useSmartToggle="true">
 				<VBox class="sapUiNoPadding sapUiNoMargin" backgroundDesign="Transparent">
 				<ScrollContainer horizontal="true" vertical="true" height="600px">
-				<Table items="{detailModel>/}" id="idDetailModel">
+				<Table items="{detailModel>/}" id="idDetailModel"  >
 					<columns>
+						<Column width="40px">
+							<Text text=""/>
+						</Column>
 						<Column>
 							<Text text="{i18n>PersonnelName}"/>
 						</Column>
@@ -69,8 +72,10 @@
 						</Column>
 					</columns>
 					<items>
-						<ColumnListItem>
+						<ColumnListItem
+						class="{= ${detailModel>Weekend} ? 'myCustomBackground' : '' }">
 							<cells>
+								<CheckBox selected="false" select="onSelectBox"/>
 								<Text text="{detailModel>PersonnelName} {detailModel>PersonnelSurname}"/>
 								<!-- <Text text="{detailModel>ActivityDate}"/> -->
 								<DatePicker id="inputActivityDate" editable="{detailModel>/editMode}" value="{
@@ -82,9 +87,9 @@
 								
 								/>
 								<Input id="inputProjectCode" value="{detailModel>ProjectCode}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
-								<Input id="inputProjectName" value="{detailModel>ProjectName}"/>
-								<Input value="{detailModel>ActivityDuration}"/>
-								<Input value="{detailModel>Description}"/>
+								<Input id="inputProjectName" value="{detailModel>ProjectName}" editable="false"/>
+								<Input value="{detailModel>ActivityDuration}" editable="{detailModel>/editMode}"/>
+								<Input value="{detailModel>Description}" editable="{=!${detailModel>Weekend}}"/>
 							</cells>
 						</ColumnListItem>
 					</items>
@@ -92,7 +97,7 @@
 
 		</ScrollContainer>
 		<ScrollContainer horizontal="true" vertical="true" height="600px">
-				<Table items="{detailMasrafModel>/}" id="idDetailMasrafModel" >
+				<Table items="{detailCostModel>/}" id="idDetailCostModel" >
 					<columns>
 						<Column>
 							<Text text="{i18n>PersonnelName}"/>
@@ -117,19 +122,19 @@
 						<ColumnListItem>
 							<cells>
 								<DatePicker id="inputActivityDate2" editable="{detailModel>/editMode}" value="{
-									path: 'detailMasrafModel>ActivityDate',
+									path: 'detailCostModel>ActivityDate',
 									type: 'sap.ui.model.type.Date',
 									formatOptions: {
 									style: 'short'
 								}}"
 								
 								/>
-								<Text text="{detailMasrafModel>ProjectCode}"/>
-								<Text text="{detailMasrafModel>ProjectName}"/>
+								<Text text="{detailCostModel>ProjectCode}"/>
+								<Text text="{detailCostModel>ProjectName}"/>
 								<!-- <Text text="{detailModel>ActivityDate}"/> -->
-								<Input id="inputCostType" value="{detailMasrafModel>CostType}" editable="{detailMasrafModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
-								<Input value="{detailMasrafModel>ActivityDuration}"/>
-								<Input value="{detailMasrafModel>Description}"/>
+								<Input id="inputCostType" value="{detailCostModel>CostType}" editable="{detailCostModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
+								<!-- <Input value="{detailCostModel>ActivityDuration}"/> -->
+								<Input value="{detailCostModel>Description}"/>
 							</cells>
 						</ColumnListItem>
 					</items>

@@ -2,8 +2,9 @@ sap.ui.define([
 	"./BaseController",
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
-	"sap/m/library"
-], function (BaseController, JSONModel, formatter, mobileLibrary) {
+	"sap/m/library",
+	"sap/ui/export/Spreadsheet"
+], function (BaseController, JSONModel, formatter, mobileLibrary, Spreadsheet) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
@@ -194,6 +195,13 @@ sap.ui.define([
 						filters: aFilters,
 						success: function (oData) {
 							// Set the data to a JSON model
+
+							for (var i=0; i<oData.results.length; i++){
+								var bIsWeekend = this._isWeekend(oData.results[i].ActivityDate);
+
+								oData.results[i].Weekend = bIsWeekend;
+							}
+
 							var oDetailModel = new sap.ui.model.json.JSONModel();
 							oDetailModel.setData(oData.results);
 
@@ -210,6 +218,32 @@ sap.ui.define([
 			}
 		},
 		
+		_isWeekend: function(date) {
+			var day = date.getDay();
+			// Cumartesi (6) veya Pazar (0) olup olmadığını kontrol eder
+			return (day === 0 || day === 6);
+		},
+
+		onSelectBox: function(oEvent){
+            var oCheckbox = oEvent.getSource();
+            var bSelected = oCheckbox.getSelected();
+			var iSelectedIndex = oCheckbox.getBindingContext("detailModel").getPath().substring(1, 3);
+			var oDetailModel = this.getView().getModel("detailModel");
+			var aDetailData = oDetailModel.getData();
+
+			var oCostData = {
+				Pernr: aDetailData[iSelectedIndex].Pernr,
+				ProjectCode: aDetailData[iSelectedIndex].ProjectCode,
+				ActivityDate:aDetailData[iSelectedIndex].ActivityDate,
+				CostType:aDetailData[iSelectedIndex].CostType
+			}
+
+			var oDetailMasrafModel= new sap.ui.model.json.JSONModel();
+			this.getView().setModel(oDetailMasrafModel, "detailCostModel");
+
+            oDetailModel.refresh(true);
+
+		},
 		_bindView: function (sDetailPath) {
 			var oView = this.getView();
 			oView.bindElement({
