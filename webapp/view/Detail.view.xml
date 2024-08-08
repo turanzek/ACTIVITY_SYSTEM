@@ -1,8 +1,14 @@
 <mvc:View
 	controllerName="zint.activity.system.controller.Detail"
 	xmlns="sap.m"
+	xmlns:core="sap.ui.core"
+	xmlns:smartFilterBar="sap.ui.comp.smartfilterbar"
+	xmlns:smartTable="sap.ui.comp.smarttable"
+	xmlns:html="http://www.w3.org/1999/xhtml"
+	xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1"
 	xmlns:semantic="sap.f.semantic"
-	xmlns:mvc="sap.ui.core.mvc">
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:table="sap.ui.table">
 
 	<semantic:SemanticPage
 		id="detailPage"
@@ -14,64 +20,125 @@
 				level="H2"/>
 		</semantic:titleHeading>
 		<semantic:headerContent>
-			<ObjectAttribute title="{i18n>priceTitle}"/>
-			<ObjectNumber
-				id="objectHeaderNumber"
-				number="{
-					path: 'UnitNumber',
-					formatter: '.formatter.currencyValue'
-				}"
-				unit="{UnitOfMeasure}"
-			/>
+			<Button id="editButton" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
 		</semantic:headerContent>
-		<semantic:content>
-			<Table
-				id="lineItemsList"
-				width="auto"
-				items="{
-					path: '/ActivityDetailsSet',
-					sorter: {
-						path: 'ActivityMonth',
-						descending: false
-					},
-					groupHeaderFactory: '.createGroupHeader'
-				}"
+		 <semantic:content></semantic:content>
+			<smartFilterBar:SmartFilterBar id="smartFilterBar" entitySet="LineItemsSet" persistencyKey="SmartFilter_Explored">
+				<smartFilterBar:controlConfiguration>
+					<smartFilterBar:ControlConfiguration key="Bukrs">
+						<smartFilterBar:defaultFilterValues>
+							<smartFilterBar:SelectOption low="0001">
+							</smartFilterBar:SelectOption>
+						</smartFilterBar:defaultFilterValues>
+					</smartFilterBar:ControlConfiguration>
+					<smartFilterBar:ControlConfiguration key="Gjahr">
+						<smartFilterBar:defaultFilterValues>
+							<smartFilterBar:SelectOption low="2014">
+							</smartFilterBar:SelectOption>
+						</smartFilterBar:defaultFilterValues>
+					</smartFilterBar:ControlConfiguration>
+				</smartFilterBar:controlConfiguration>
+			</smartFilterBar:SmartFilterBar>
+
+			<smartTable:SmartTable id="smartTable" entitySet="detailModel" smartFilterId="smartFilterBar"
+				tableType="ResponsiveTable" useExportToExcel="true" beforeExport="onBeforeExport"
+				useVariantManagement="true" useTablePersonalisation="true" header="Line Items" 
+				showRowCount="true" persistencyKey="SmartTableAnalytical_Explored" enableAutoBinding="true"
+				demandPopin="true" class="sapUiResponsiveContentPadding" enableAutoColumnWidth="true"   app:useSmartToggle="true">
+				<VBox class="sapUiNoPadding sapUiNoMargin" backgroundDesign="Transparent">
+				<ScrollContainer horizontal="true" vertical="true" height="600px">
+				<Table items="{detailModel>/}" id="idDetailModel">
+					<columns>
+						<Column>
+							<Text text="{i18n>PersonnelName}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>ActivityDate}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>ProjectCode}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>ProjectName}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>ActivityHour}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>Description}"/>
+						</Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<Text text="{detailModel>PersonnelName} {detailModel>PersonnelSurname}"/>
+								<!-- <Text text="{detailModel>ActivityDate}"/> -->
+								<DatePicker id="inputActivityDate" editable="{detailModel>/editMode}" value="{
+									path: 'detailModel>ActivityDate',
+									type: 'sap.ui.model.type.Date',
+									formatOptions: {
+									style: 'short'
+								}}"
+								
+								/>
+								<Input id="inputProjectCode" value="{detailModel>ProjectCode}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
+								<Input id="inputProjectName" value="{detailModel>ProjectName}"/>
+								<Input value="{detailModel>ActivityDuration}"/>
+								<Input value="{detailModel>Description}"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+
+		</ScrollContainer>
+		<ScrollContainer horizontal="true" vertical="true" height="600px">
+				<Table items="{detailMasrafModel>/}" id="idDetailMasrafModel" >
+					<columns>
+						<Column>
+							<Text text="{i18n>PersonnelName}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>ActivityDate}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>ProjectName}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>CostType}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>CostValue}"/>
+						</Column>
+						<Column>
+							<Text text="{i18n>Description}"/>
+						</Column>
+					</columns>
+					<items>
+						<ColumnListItem>
+							<cells>
+								<DatePicker id="inputActivityDate2" editable="{detailModel>/editMode}" value="{
+									path: 'detailMasrafModel>ActivityDate',
+									type: 'sap.ui.model.type.Date',
+									formatOptions: {
+									style: 'short'
+								}}"
+								
+								/>
+								<Text text="{detailMasrafModel>ProjectCode}"/>
+								<Text text="{detailMasrafModel>ProjectName}"/>
+								<!-- <Text text="{detailModel>ActivityDate}"/> -->
+								<Input id="inputCostType" value="{detailMasrafModel>CostType}" editable="{detailMasrafModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
+								<Input value="{detailMasrafModel>ActivityDuration}"/>
+								<Input value="{detailMasrafModel>Description}"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</ScrollContainer>
+		</VBox>
+			</smartTable:SmartTable>		
 				
-				updateFinished=".onListUpdateFinished"
-				noDataText="{i18n>detailLineItemTableNoDataText}"
-				busyIndicatorDelay="{detailView>/lineItemTableDelay}">
-				<headerToolbar>
-					<Toolbar>
-						<Title
-							id="lineItemsTitle"
-							text="{detailView>/lineItemListTitle}"
-							titleStyle="H3"
-							level="H3"/>
-					</Toolbar>
-				</headerToolbar>
-				<columns>
-					<Column>
-						<Text text="{i18n>detailLineItemTableIDColumn}"/>
-					</Column>
-					<Column
-						minScreenWidth="Tablet"
-						demandPopin="true"
-						hAlign="End">
-						<Text text="{i18n>detailLineItemTableUnitNumberColumn}"/>
-					</Column>
-				</columns>
-				<items>
-					<ColumnListItem>
-						<cells>
-							<ObjectIdentifier
-								title="{ActivityMonth}"
-								text="{ActivityMonth}"/>
-			
-						</cells>
-					</ColumnListItem>
-				</items>
-			</Table>
-		</semantic:content>
+
 		<!--Semantic ShareMenu Buttons-->
 		<semantic:sendEmailAction>
 			<semantic:SendEmailAction

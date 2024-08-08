@@ -70,9 +70,6 @@ sap.ui.define([
 				groupId: "group1"
 			});
 
-			odataModel.read("/ActivityDaysSet", {
-				groupId: "group1"
-			});
 
    
 
@@ -81,21 +78,13 @@ sap.ui.define([
 				success: function (oData) {
 
 					var aProjectCode= [];
-					var aActivityDays= [];
                   
 
 					aProjectCode = oData.__batchResponses[0].data.results;
-					aActivityDays = oData.__batchResponses[1].data.results;
 
 					oProjectCodeModel.setData({
 						list: aProjectCode
-					});
-
-					oActivityDaysModel.setData({
-						list: aActivityDays
-					});
-
-  
+					});  
 
 				}.bind(this),
 				error: function () { }

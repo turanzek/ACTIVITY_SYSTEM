@@ -21,6 +21,8 @@ sap.ui.define([
 			// Model used to manipulate control states. The chosen values make sure,
 			// detail page is busy indication immediately so there is no break in
 			// between the busy indication for loading the view's meta data
+
+			this.getView().setModel(oViewModel, "viewModel");
 			var oViewModel = new JSONModel({
 				busy : false,
 				delay : 0,
@@ -32,8 +34,59 @@ sap.ui.define([
 			this.setModel(oViewModel, "detailView");
 
 			this.getOwnerComponent().getModel().metadataLoaded().then(this._onMetadataLoaded.bind(this));
+
+
+			 // Edit mode için bir model ayarla
+			 var oViewModel = new sap.ui.model.json.JSONModel({
+				editMode: false
+			});
+
+			
+		},
+		onEdit: function (oEvent) {
+			var bEditable = this.getView().getModel("detailModel").getProperty("/editMode");
+			this.getView().getModel("detailModel").setProperty("/editMode", !bEditable);
+
+			// var oButton = this.byId("editButton");
+			// if (bEditable) {
+			// 	// oButton.setIcon("sap-icon://edit");
+			// 	// oButton.setText("Edit")
+			// } else {
+			// 	// oButton.setIcon("sap-icon://display");
+			// 	// oButton.setText("Display")
+			// }
 		},
 
+		// handleCloseSelectProject: function (oEvent) {
+
+
+			
+		// 	var aContexts = oEvent.getParameter("selectedContexts");
+
+		// 	var oDetailModel = this.getView().getModel("detailModel");
+		// 	var aDetails = oDetailModel.getData();
+
+		// 	aDetails[this.iSelectedIndex].ProjectCode = aContexts[0].getObject().ProjectCode;
+		// 	aDetails[this.iSelectedIndex].ProjectName = aContexts[0].getObject().ProjectName;
+
+		// 	oDetailModel.setData(aDetails);
+
+
+
+		//   },  
+
+		
+
+		  handleInputProjectCodeChange: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			// var oProjectCode = this.byId("inputProjectCode");
+			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
+
+
+		  },
+ 
+
+		
 		/* =========================================================== */
 		/* event handlers                                              */
 		/* =========================================================== */
@@ -85,65 +138,96 @@ sap.ui.define([
 		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
 		 * @private
 		 */
-		_onObjectMatched : function (oEvent) {
-			var sMonth =  oEvent.getParameter("arguments").Month;
-			// var sYear =  this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject().Year;
-			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
-			this.getModel().metadataLoaded().then( function() {
-				var sDetailPath = this.getModel().createKey("/ActivityDetailsSet", {
-					ActivityMonth :   parseInt(sMonth, 10),
-					Guid: 'GUID_DEFAULT',
-					Pernr: 'ZTURAN',
-					ProjectCode: 'GM01',
-					ActivityYear: '2024',
-				});
-				this._bindView(sDetailPath);
+		// _onObjectMatched : function (oEvent) {
+		// 	// var sMonth =  oEvent.getParameter("arguments").Month;
 
-				// var oModel = this.getModel();
-				// var sMonth =  oEvent.getParameter("arguments").Month;
-				// var sYear  = '2024';//oEvent.getParameter("arguments").Year;
+		// 	if(this.getOwnerComponent().getModel("activityDaysModel")){
+		// 		var oSelectedItem = this.getOwnerComponent().getModel("activityDaysModel").getData().selectedItem;
+				
 
-				// oModel.metadataLoaded().then(function () {
-				// 	var oView = this.getView(),
-				// 		sPath = "/" + this.getModel().createKey("ActivityDaysSet", {
+		// 	// var sYear =  this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject().Year;
+		// 	this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
+		// 	this.getModel().metadataLoaded().then( function() {
+		// 		var sDetailPath = this.getModel().createKey("/ActivityDetailsSet", {
+		// 			ActivityMonth :   parseInt(oSelectedItem.Month, 10),
+		// 			Guid: 'GUID_DEFAULT',
+		// 			Pernr: oSelectedItem.Pernr,
+		// 			ProjectCode: 'ALL',
+		// 			ActivityYear: oSelectedItem.ActivityYear,
+		// 		});
+		// 		this._bindView(sDetailPath);
+		// 		     // OData read request
+		// 			 this.getModel().read(sDetailPath, {
+		// 				success: function (oData) {
+		// 					// Set the data to a JSON model
+		// 					var oJsonModel = new sap.ui.model.json.JSONModel();
+		// 					oJsonModel.setData(oData);
+		// 					this.getView().setModel(oJsonModel, "detailModel");
+		// 				}.bind(this),
+		// 				error: function (oError) {
+		// 					// Handle error
+		// 					console.error("Error reading data", oError);
+		// 				}
+		// 			});
 
-							
-				// 			Guid: "GUID_DEFAULT",
-				// 			Year: sYear,
-				// 			Month: sMonth,
-				// 		});
-				// 	oView.bindElement({
-				// 		path: sPath,
-				// 		parameters: {
-				// 			expand: "ActivityDetails"
-				// 		},
-				// 		events: {
-				// 			dataRequested: function () {
-				// 				oView.setBusy(true);
-				// 			},
-				// 			dataReceived: function () {
-				// 				oView.setBusy(false);
-				// 			}
-				// 		}
-				// 	});
+		// 	}.bind(this));
+		// }
+		// },
 
+		_onObjectMatched: function (oEvent) {
+			if (this.getOwnerComponent().getModel("activityDaysModel")) {
+				var oSelectedItem = this.getOwnerComponent().getModel("activityDaysModel").getData().selectedItem;
+		
+				this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
+		
+				this.getModel().metadataLoaded().then(function () {
+					var aFilters = [
+						new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, parseInt(oSelectedItem.Month, 10)),
+						new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, 'GUID_DEFAULT'),
+						new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, oSelectedItem.Pernr),
+						new sap.ui.model.Filter("ProjectCode", sap.ui.model.FilterOperator.EQ, 'ALL'),
+						new sap.ui.model.Filter("ActivityYear", sap.ui.model.FilterOperator.EQ, oSelectedItem.ActivityYear)
+					];
+		
+					// OData read request
+					this.getModel().read("/ActivityDetailsSet", {
+						filters: aFilters,
+						success: function (oData) {
+							// Set the data to a JSON model
+							var oDetailModel = new sap.ui.model.json.JSONModel();
+							oDetailModel.setData(oData.results);
 
+							oDetailModel.setProperty("/editMode", false)
+							this.getView().setModel(oDetailModel, "detailModel");
 
-
-					// events: {
-					// 	dataRequested: function () {
-					// 		this.getView().setBusy(true);
-					// 	},
-					// 	dataReceived: function () {
-					// 		this.getView().setBusy(false);
-					// 	}
-				// 	// }
-				// });
-
-
-
-			}.bind(this));
+						}.bind(this),
+						error: function (oError) {
+							// Handle error
+							console.error("Error reading data", oError);
+						}
+					});
+				}.bind(this));
+			}
 		},
+		
+		_bindView: function (sDetailPath) {
+			var oView = this.getView();
+			oView.bindElement({
+				path: sDetailPath,
+				parameters: {
+					expand: "ActivityDetails"
+				},
+				events: {
+					dataRequested: function () {
+						oView.setBusy(true);
+					},
+					dataReceived: function () {
+						oView.setBusy(false);
+					}
+				}
+			});
+		},
+		
 
 		/**
 		 * Binds the view to the object path. Makes sure that detail view displays
@@ -152,26 +236,26 @@ sap.ui.define([
 		 * @param {string} sDetailPath path to the object to be bound to the view.
 		 * @private
 		 */
-		_bindView : function (sDetailPath) {
-			// Set busy indicator during view binding
-			var oViewModel = this.getModel("detailView");
+		// _bindView : function (sDetailPath) {
+		// 	// Set busy indicator during view binding
+		// 	var oViewModel = this.getModel("detailView");
 
-			// If the view was not bound yet its not busy, only if the binding requests data it is set to busy again
-			oViewModel.setProperty("/busy", false);
+		// 	// If the view was not bound yet its not busy, only if the binding requests data it is set to busy again
+		// 	oViewModel.setProperty("/busy", false);
 
-			this.getView().bindElement({
-				path : sDetailPath,
-				// events: {
-				// 	change : this._onBindingChange.bind(this),
-				// 	dataRequested : function () {
-				// 		oViewModel.setProperty("/busy", true);
-				// 	},
-				// 	dataReceived: function () {
-				// 		oViewModel.setProperty("/busy", false);
-				// 	}
-				// }
-			});
-		},
+		// 	this.getView().bindElement({
+		// 		path : sDetailPath,
+		// 		events: {
+		// 			// change : this._onBindingChange.bind(this),
+		// 			// dataRequested : function () {
+		// 			// 	oViewModel.setProperty("/busy", true);
+		// 			// },
+		// 			// dataReceived: function () {
+		// 			// 	oViewModel.setProperty("/busy", false);
+		// 			// }
+		// 		}
+		// 	});
+		// },
 
 		_onBindingChange : function () {
 			var oView = this.getView(),
