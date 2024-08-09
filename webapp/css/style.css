@@ -1,4 +1,3 @@
-.table-scrollable {
-    overflow-x: auto;
-    max-height: 400px; /* İstediğiniz maksimum yüksekliği belirleyin */
+.myCustomBackground {
+    background-color: #d3e0f0; /* ;Kight Blue Color */
 }

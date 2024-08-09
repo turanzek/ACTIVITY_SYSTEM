@@ -45,32 +45,37 @@
 				useVariantManagement="true" useTablePersonalisation="true" header="Line Items" 
 				showRowCount="true" persistencyKey="SmartTableAnalytical_Explored" enableAutoBinding="true"
 				demandPopin="true" class="sapUiResponsiveContentPadding" enableAutoColumnWidth="true"   app:useSmartToggle="true">
-				<VBox class="sapUiNoPadding sapUiNoMargin" backgroundDesign="Transparent">
+				<VBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent">
 				<ScrollContainer horizontal="true" vertical="true" height="600px">
-				<Table items="{detailModel>/}" id="idDetailModel">
+				<Table items="{detailModel>/}" id="idDetailModel"  >
 					<columns>
-						<Column>
+						<Column width="5%">
+							<Text text=""/>
+						</Column>
+						<Column demandPopin="true" minScreenWidth="Tablet" width="10%">
 							<Text text="{i18n>PersonnelName}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet" width="8%">
 							<Text text="{i18n>ActivityDate}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet" width="7%">
 							<Text text="{i18n>ProjectCode}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet" width="15%">
 							<Text text="{i18n>ProjectName}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet" width="5%">
 							<Text text="{i18n>ActivityHour}"/>
-						</Column>
-						<Column>
+						</Column >
+						<Column demandPopin="true" minScreenWidth="Tablet" width="50%">
 							<Text text="{i18n>Description}"/>
 						</Column>
 					</columns>
 					<items>
-						<ColumnListItem>
+						<ColumnListItem
+						class="{= ${detailModel>Weekend} ? 'myCustomBackground' : '' }">
 							<cells>
+								<CheckBox selected="false" select="onSelectBox"/>
 								<Text text="{detailModel>PersonnelName} {detailModel>PersonnelSurname}"/>
 								<!-- <Text text="{detailModel>ActivityDate}"/> -->
 								<DatePicker id="inputActivityDate" editable="{detailModel>/editMode}" value="{
@@ -82,54 +87,71 @@
 								
 								/>
 								<Input id="inputProjectCode" value="{detailModel>ProjectCode}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
-								<Input id="inputProjectName" value="{detailModel>ProjectName}"/>
-								<Input value="{detailModel>ActivityDuration}"/>
-								<Input value="{detailModel>Description}"/>
+								<Input id="inputProjectName" value="{detailModel>ProjectName}" editable="false"/>
+								<Input value="{
+									path: 'detailModel>ActivityDuration',
+									type: 'sap.ui.model.type.Float',
+									formatOptions: {
+										minFractionDigits: 2,  
+										maxFractionDigits: 2 
+									}
+								}" editable="{detailModel>/editMode}" 
+								liveChange="onLiveChangeRestrictToNumbers" />
+								<Input value="{detailModel>Description}" editable="{=!${detailModel>Weekend}}"/>
 							</cells>
 						</ColumnListItem>
 					</items>
 				</Table>
 
 		</ScrollContainer>
+		<VBox height="20px" />
 		<ScrollContainer horizontal="true" vertical="true" height="600px">
-				<Table items="{detailMasrafModel>/}" id="idDetailMasrafModel" >
+				<Table items="{detailCostModel>/}" id="idDetailCostModel" >
 					<columns>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet">
 							<Text text="{i18n>PersonnelName}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet">
 							<Text text="{i18n>ActivityDate}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet">
 							<Text text="{i18n>ProjectName}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet"> 
 							<Text text="{i18n>CostType}"/>
 						</Column>
-						<Column>
-							<Text text="{i18n>CostValue}"/>
+						<Column demandPopin="true" minScreenWidth="Tablet">
+							<Text text="{i18n>CostName}"/>
 						</Column>
-						<Column>
+						<Column demandPopin="true" minScreenWidth="Tablet">
+							<Text text="{i18n>CostAmount}"/>
+						</Column>
+						<Column demandPopin="true" minScreenWidth="Tablet">
+							<Text text="{i18n>CostCurrency}"/>
+						</Column>
+						<Column demandPopin="true" minScreenWidth="Tablet">
 							<Text text="{i18n>Description}"/>
 						</Column>
 					</columns>
 					<items>
 						<ColumnListItem>
 							<cells>
+
+								<Text text="{detailCostModel>/PersonnelName} {detailCostModel>/PersonnelSurname}"/>
 								<DatePicker id="inputActivityDate2" editable="{detailModel>/editMode}" value="{
-									path: 'detailMasrafModel>ActivityDate',
+									path: 'detailCostModel>ActivityDate',
 									type: 'sap.ui.model.type.Date',
 									formatOptions: {
 									style: 'short'
 								}}"
 								
 								/>
-								<Text text="{detailMasrafModel>ProjectCode}"/>
-								<Text text="{detailMasrafModel>ProjectName}"/>
-								<!-- <Text text="{detailModel>ActivityDate}"/> -->
-								<Input id="inputCostType" value="{detailMasrafModel>CostType}" editable="{detailMasrafModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
-								<Input value="{detailMasrafModel>ActivityDuration}"/>
-								<Input value="{detailMasrafModel>Description}"/>
+								<Text text="{detailCostModel>/ProjectName}"/>
+								<Input id="inputCostType" value="{detailCostModel>CostType}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
+								<Text text="{detailCostModel>CostName}"/>
+								<Input id="inputCostAmount" value="{detailCostModel>CostAmount}" editable="{detailModel>/editMode}" />
+								<Input id="inputCostCurrency" value="{detailCostModel>CostCurrency}" editable="{detailModel>/editMode}"  />
+								<Input value="{detailCostModel>Description}" editable="{detailModel>/editMode}" />
 							</cells>
 						</ColumnListItem>
 					</items>
