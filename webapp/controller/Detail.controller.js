@@ -192,6 +192,9 @@ sap.ui.define([
 		
 					// OData read request
 					this.getModel().read("/ActivityDetailsSet", {
+						urlParameters: {
+						"$expand": "CostsSet"
+						},
 						filters: aFilters,
 						success: function (oData) {
 							// Set the data to a JSON model
@@ -229,20 +232,29 @@ sap.ui.define([
             var bSelected = oCheckbox.getSelected();
 			var iSelectedIndex = oCheckbox.getBindingContext("detailModel").getPath().substring(1, 3);
 			var oDetailModel = this.getView().getModel("detailModel");
-			var aDetailData = oDetailModel.getData();
+			var aCostData = oDetailModel.getData()[iSelectedIndex].CostsSet.results;
 
-			var oCostData = {
-				Pernr: aDetailData[iSelectedIndex].Pernr,
-				ProjectCode: aDetailData[iSelectedIndex].ProjectCode,
-				ActivityDate:aDetailData[iSelectedIndex].ActivityDate,
-				CostType:aDetailData[iSelectedIndex].CostType
-			}
+			aCostData.PersonnelName    = oDetailModel.getData()[iSelectedIndex].PersonnelName;
+			aCostData.PersonnelSurname = oDetailModel.getData()[iSelectedIndex].PersonnelSurname;
+			aCostData.ProjectName      = oDetailModel.getData()[iSelectedIndex].ProjectName;
 
 			var oDetailMasrafModel= new sap.ui.model.json.JSONModel();
+			oDetailMasrafModel.setData(aCostData);
 			this.getView().setModel(oDetailMasrafModel, "detailCostModel");
 
             oDetailModel.refresh(true);
 
+		},
+
+		onLiveChangeRestrictToNumbers: function(oEvent) {
+			var oInput = oEvent.getSource();
+			var sValue = oInput.getValue();
+			
+			// Allow only numbers and a decimal point
+			if (!/^\d*\.?\d*$/.test(sValue)) {
+				// If not valid, revert to the previous value
+				oInput.setValue(sValue.slice(0, -1));
+			}
 		},
 		_bindView: function (sDetailPath) {
 			var oView = this.getView();
