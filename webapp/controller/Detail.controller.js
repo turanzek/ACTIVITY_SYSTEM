@@ -3,8 +3,9 @@ sap.ui.define([
 	"sap/ui/model/json/JSONModel",
 	"../model/formatter",
 	"sap/m/library",
-	"sap/ui/export/Spreadsheet"
-], function (BaseController, JSONModel, formatter, mobileLibrary, Spreadsheet) {
+	"sap/ui/export/Spreadsheet",
+	"sap/m/MessageBox"
+], function (BaseController, JSONModel, formatter, mobileLibrary, Spreadsheet,MessageBox) {
 	"use strict";
 
 	// shortcut for sap.m.URLHelper
@@ -200,6 +201,7 @@ sap.ui.define([
 							// Set the data to a JSON model
 
 							for (var i=0; i<oData.results.length; i++){
+								oData.results[i].selected = false;
 								var bIsWeekend = this._isWeekend(oData.results[i].ActivityDate);
 
 								oData.results[i].Weekend = bIsWeekend;
@@ -219,6 +221,11 @@ sap.ui.define([
 					});
 				}.bind(this));
 			}
+			var oDetailCostModel = this.getView().getModel("detailCostModel");
+			if ( oDetailCostModel ){
+				oDetailCostModel.setData({});
+			}
+
 		},
 		
 		_isWeekend: function(date) {
@@ -232,17 +239,29 @@ sap.ui.define([
             var bSelected = oCheckbox.getSelected();
 			var iSelectedIndex = oCheckbox.getBindingContext("detailModel").getPath().substring(1, 3);
 			var oDetailModel = this.getView().getModel("detailModel");
-			var aCostData = oDetailModel.getData()[iSelectedIndex].CostsSet.results;
+			var oDetailModelData = oDetailModel.getData();
+			var aCostData = oDetailModelData[iSelectedIndex].CostsSet.results;
+
+			oDetailModelData[iSelectedIndex].selected = bSelected;
+			oDetailModel.setData(oDetailModelData);
 
 			aCostData.PersonnelName    = oDetailModel.getData()[iSelectedIndex].PersonnelName;
 			aCostData.PersonnelSurname = oDetailModel.getData()[iSelectedIndex].PersonnelSurname;
 			aCostData.ProjectName      = oDetailModel.getData()[iSelectedIndex].ProjectName;
 
 			var oDetailMasrafModel= new sap.ui.model.json.JSONModel();
+			if (!bSelected){
+				aCostData = [];
+			}
 			oDetailMasrafModel.setData(aCostData);
 			this.getView().setModel(oDetailMasrafModel, "detailCostModel");
 
             oDetailModel.refresh(true);
+
+			if (this._isWeekend(oDetailModelData[iSelectedIndex].ActivityDate) && bSelected){
+				MessageBox.warning("Attention! You are writing an cost for the weekend!");
+			}
+			
 
 		},
 

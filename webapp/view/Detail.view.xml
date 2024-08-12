@@ -19,11 +19,11 @@
 				text="{ActivityMonth}"
 				level="H2"/>
 		</semantic:titleHeading>
-		<semantic:headerContent>
+		<!-- <semantic:headerContent>
 			<Button id="editButton" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
-		</semantic:headerContent>
+		</semantic:headerContent> -->
 		 <semantic:content></semantic:content>
-			<smartFilterBar:SmartFilterBar id="smartFilterBar" entitySet="LineItemsSet" persistencyKey="SmartFilter_Explored">
+			<!-- <smartFilterBar:SmartFilterBar id="smartFilterBar" entitySet="LineItemsSet" persistencyKey="SmartFilter_Explored">
 				<smartFilterBar:controlConfiguration>
 					<smartFilterBar:ControlConfiguration key="Bukrs">
 						<smartFilterBar:defaultFilterValues>
@@ -38,15 +38,27 @@
 						</smartFilterBar:defaultFilterValues>
 					</smartFilterBar:ControlConfiguration>
 				</smartFilterBar:controlConfiguration>
-			</smartFilterBar:SmartFilterBar>
+			</smartFilterBar:SmartFilterBar> -->
 
-			<smartTable:SmartTable id="smartTable" entitySet="detailModel" smartFilterId="smartFilterBar"
+			<!-- <smartTable:SmartTable id="smartTable" entitySet="detailModel" smartFilterId="smartFilterBar"
 				tableType="ResponsiveTable" useExportToExcel="true" beforeExport="onBeforeExport"
 				useVariantManagement="true" useTablePersonalisation="true" header="Line Items" 
 				showRowCount="true" persistencyKey="SmartTableAnalytical_Explored" enableAutoBinding="true"
-				demandPopin="true" class="sapUiResponsiveContentPadding" enableAutoColumnWidth="true"   app:useSmartToggle="true">
+				demandPopin="true" class="sapUiResponsiveContentPadding" enableAutoColumnWidth="true"   app:useSmartToggle="true"> -->
 				<VBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent">
-				<ScrollContainer horizontal="true" vertical="true" height="600px">
+				
+					<Panel
+					headerText="{ActivityMonth} {i18n>ActivityDetails}"
+					width="100%"
+					expandable="false">
+					<headerToolbar>
+						<Toolbar>
+							<Title text="{ActivityMonth} {i18n>ActivityDetails}"/>
+							<ToolbarSpacer/>
+							<Button id="editButton2" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
+						</Toolbar>
+					</headerToolbar>
+				<ScrollContainer horizontal="true" vertical="true" height="550px">
 				<Table items="{detailModel>/}" id="idDetailModel"  >
 					<columns>
 						<Column width="5%">
@@ -55,7 +67,7 @@
 						<Column demandPopin="true" minScreenWidth="Tablet" width="10%">
 							<Text text="{i18n>PersonnelName}"/>
 						</Column>
-						<Column demandPopin="true" minScreenWidth="Tablet" width="8%">
+						<Column demandPopin="true" minScreenWidth="Tablet" width="12%">
 							<Text text="{i18n>ActivityDate}"/>
 						</Column>
 						<Column demandPopin="true" minScreenWidth="Tablet" width="7%">
@@ -67,7 +79,7 @@
 						<Column demandPopin="true" minScreenWidth="Tablet" width="5%">
 							<Text text="{i18n>ActivityHour}"/>
 						</Column >
-						<Column demandPopin="true" minScreenWidth="Tablet" width="50%">
+						<Column demandPopin="true" minScreenWidth="Tablet" width="46%">
 							<Text text="{i18n>Description}"/>
 						</Column>
 					</columns>
@@ -75,10 +87,10 @@
 						<ColumnListItem
 						class="{= ${detailModel>Weekend} ? 'myCustomBackground' : '' }">
 							<cells>
-								<CheckBox selected="false" select="onSelectBox"/>
+								<CheckBox id="detailCheckBox" selected="{detailModel>selected}" select="onSelectBox"/>
 								<Text text="{detailModel>PersonnelName} {detailModel>PersonnelSurname}"/>
 								<!-- <Text text="{detailModel>ActivityDate}"/> -->
-								<DatePicker id="inputActivityDate" editable="{detailModel>/editMode}" value="{
+								<DatePicker id="inputActivityDate" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" editable="{detailModel>/editMode}" value="{
 									path: 'detailModel>ActivityDate',
 									type: 'sap.ui.model.type.Date',
 									formatOptions: {
@@ -86,8 +98,8 @@
 								}}"
 								
 								/>
-								<Input id="inputProjectCode" value="{detailModel>ProjectCode}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
-								<Input id="inputProjectName" value="{detailModel>ProjectName}" editable="false"/>
+								<Input id="inputProjectCode" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" value="{detailModel>ProjectCode}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
+								<Input id="inputProjectName" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" value="{detailModel>ProjectName}" editable="false"/>
 								<Input value="{
 									path: 'detailModel>ActivityDuration',
 									type: 'sap.ui.model.type.Float',
@@ -96,16 +108,21 @@
 										maxFractionDigits: 2 
 									}
 								}" editable="{detailModel>/editMode}" 
-								liveChange="onLiveChangeRestrictToNumbers" />
-								<Input value="{detailModel>Description}" editable="{=!${detailModel>Weekend}}"/>
+								liveChange="onLiveChangeRestrictToNumbers" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" />
+								<Input value="{detailModel>Description}" valueStateText="{i18n>WeekendWarning}"  valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" editable="{detailModel>/editMode}"/>
 							</cells>
 						</ColumnListItem>
 					</items>
 				</Table>
 
 		</ScrollContainer>
-		<VBox height="20px" />
-		<ScrollContainer horizontal="true" vertical="true" height="600px">
+		</Panel>
+		<VBox height="30px" class="customBox" />
+		<Panel
+		headerText="{i18n>CostDetails}"
+		width="100%"
+		expandable="false">
+		<ScrollContainer horizontal="true" vertical="true" height="160px">
 				<Table items="{detailCostModel>/}" id="idDetailCostModel" >
 					<columns>
 						<Column demandPopin="true" minScreenWidth="Tablet">
@@ -157,8 +174,9 @@
 					</items>
 				</Table>
 			</ScrollContainer>
+			</Panel>
 		</VBox>
-			</smartTable:SmartTable>		
+			<!-- </smartTable:SmartTable>		 -->
 				
 
 		<!--Semantic ShareMenu Buttons-->
