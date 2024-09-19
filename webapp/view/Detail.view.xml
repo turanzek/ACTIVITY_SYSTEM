@@ -52,14 +52,16 @@
 					width="100%"
 					expandable="false">
 					<headerToolbar>
+
 						<Toolbar>
 							<Title text="{ActivityMonth} {i18n>ActivityDetails}"/>
 							<ToolbarSpacer/>
 							<Button id="editButton2" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
+							<Button id="exportButton" text="Export to Excel" press="onExportToExcel" icon="sap-icon://excel-attachment"/>
 						</Toolbar>
 					</headerToolbar>
 				<ScrollContainer horizontal="true" vertical="true" height="550px">
-				<Table items="{detailModel>/}" id="idDetailModel"  >
+				<Table items="{detailModel>/}" id="lineItemsList"  >
 					<columns>
 						<Column width="5%">
 							<Text text=""/>
@@ -141,7 +143,7 @@
 							<Text text="{i18n>CostName}"/>
 						</Column>
 						<Column demandPopin="true" minScreenWidth="Tablet">
-							<Text text="{i18n>CostAmount}"/>
+							<Text text="{i18n>CostAmount}" />
 						</Column>
 						<Column demandPopin="true" minScreenWidth="Tablet">
 							<Text text="{i18n>CostCurrency}"/>
@@ -166,7 +168,7 @@
 								<Text text="{detailCostModel>/ProjectName}"/>
 								<Input id="inputCostType" value="{detailCostModel>CostType}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
 								<Text text="{detailCostModel>CostName}"/>
-								<Input id="inputCostAmount" value="{detailCostModel>CostAmount}" editable="{detailModel>/editMode}" />
+								<Input id="inputCostAmount" type= "Number" value="{detailCostModel>CostAmount}" editable="{detailModel>/editMode}" />
 								<Input id="inputCostCurrency" value="{detailCostModel>CostCurrency}" editable="{detailModel>/editMode}"  />
 								<Input value="{detailCostModel>Description}" editable="{detailModel>/editMode}" />
 							</cells>

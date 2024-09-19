@@ -394,7 +394,7 @@ sap.ui.define([
 				// Guid: sGuid,
 				// Pernr: sPernr,
 				// ProjectCode: sProjectCode,
-				// ActivityYear: sActivityYear
+				ActivityYear: sActivityYear
 			}, bReplace);
 		},
 

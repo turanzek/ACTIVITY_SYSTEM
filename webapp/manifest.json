@@ -104,9 +104,9 @@
 					"target": "master"
 				},
 				{
-					"pattern": "detail/{Month}",
+					"pattern": "detail/{Month},{ActivityYear}",
 					"name": "detail",
-					"target": ["detail"]
+					"target": ["master","detail"]
 				}
 			],
 
