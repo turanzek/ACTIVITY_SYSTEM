@@ -6,6 +6,7 @@ sap.ui.define(
 		"sap/m/library",
 		"sap/ui/export/Spreadsheet",
 		"sap/m/MessageBox",
+		"sap/m/MessageToast",
 	],
 	function (
 		BaseController,
@@ -13,7 +14,8 @@ sap.ui.define(
 		formatter,
 		mobileLibrary,
 		Spreadsheet,
-		MessageBox
+		MessageBox,
+		MessageToast
 	) {
 		"use strict";
 
@@ -56,6 +58,15 @@ sap.ui.define(
 				var oViewModel = new sap.ui.model.json.JSONModel({
 					editMode: false,
 				});
+
+    document.addEventListener("focus", this._setRowFromClipboard.bind(this), { once: true });
+    document.activeElement.focus();
+
+				window.addEventListener("paste", function (oEvent) {
+					// this._onImportFromClipboard();
+					this._setRowFromClipboard(oEvent);
+
+				  }.bind(this), false);
 			},
 			onEdit: function (oEvent) {
 				var bEditable = this.getView()
@@ -511,6 +522,255 @@ sap.ui.define(
 				this.getOwnerComponent().oListSelector.clearMasterListSelection();
 				this.getRouter().navTo("master");
 			},
+
+			onAddActivityLine: function (oEvent) {
+			
+				var oDetailModel = this.getView().getModel("detailModel");
+				var oDetailModelData = oDetailModel.getData();
+
+				var selectedIndex = oDetailModelData.findIndex(function(item) {
+					return item.selected === true;
+				});
+
+				var selectedItems = oDetailModelData.filter(function(item) {
+					return item.selected === true;
+				});
+
+				if (selectedItems.length === 0) {
+					
+				} else if (selectedItems.length > 1) {
+					MessageToast.show("Birden fazla satır seçili. Lütfen sadece bir tane seçin.");
+
+				} else {
+					// var selectedIndex = data.indexOf(selectedItems[0]);
+					// console.log("Selected property'si true olan index:", selectedIndex);
+					// // Burada seçili index ile devam edebilirsiniz
+				}
+
+			},
+
+
+
+			_setRowFromClipboard2: function (oEvent) {
+				// Check if the document is focused
+				if (document.activeElement !== document.body) {
+				  // Focus the document
+				  document.body.focus();
+				  // Wait for a short period before attempting to read from the clipboard
+				  setTimeout(function () {
+					this._setRowFromClipboard(oEvent);
+				  }.bind(this), 100);
+				  return;
+				}
+			  
+				// Read the clipboard data
+				navigator.clipboard.readText().then(function (sText) {
+				  // Process the clipboard data
+				  var aRows = sText.split("\n");
+				  var aData = aRows.map(function (sRow) {
+					var aColumns = sRow.split("\t");
+					return {
+					  // Map the clipboard data to the model properties
+					  // Example:
+					  // PersonnelName: aColumns[0],
+					  // ActivityDate: aColumns[1],
+					  // ProjectCode: aColumns[2],
+					  // ...
+					};
+				  });
+			  
+				  // Update the model with the clipboard data
+				  var oDetailModel = this.getView().getModel("detailModel");
+				  var aDetailData = oDetailModel.getData();
+				  aData.forEach(function (oRow) {
+					aDetailData.push(oRow);
+				  });
+				  oDetailModel.setData(aDetailData);
+				}.bind(this));
+			  },
+			  _removeWord: function (string, searchWord) {
+				var str = string;
+				var n = str.search(searchWord);
+				while (str.search(searchWord) > -1) {
+				  n = str.search(searchWord);
+				  str = str.substring(0, n) + str.substring(n + searchWord.length, str.length);
+				}
+				return str;
+			  },
+			_setRowFromClipboard: function (oEvent) {
+				try {
+					var inputId = this._removeWord(oEvent.target.id, '-inner');
+					var arr1 = inputId.split("-");
+					var cursorFname = arr1[0];
+					var oInput = sap.ui.getCore().byId(inputId);
+					var rowData = oInput.getBindingContext().getObject();
+					var clipboardData = oEvent.clipboardData;
+					var tobePasted = clipboardData.getData("text/plain");
+					tobePasted = tobePasted.replace("\n", "");
+					var clipCol = tobePasted.split("\t");
+		  
+					var oTable = this.getView().getModel();
+					var rows = oTable.getRows();
+					var oTableModel = oTable.getModel();
+					var aColumnData = oTableModel.getData().columns;
+					this._aTableData = oTableModel.getData().rows;
+					// var talepNedeni = oTableModel.getData().Kalme;
+		  
+					var cursorIndex = aColumnData.findIndex(function (element) {
+					  return (element.columnId === cursorFname)
+					})
+		  
+					switch (rowData.ItemType) {
+		  
+					  case 'Birim Fiyat':
+						rowIndex = 0
+						break;
+					  case 'Miktar':
+						rowIndex = 1
+						break;
+					  case 'Hesaplanan Tutar:':
+						rowIndex = 2
+						break;
+		  
+					  default:
+						break;
+					}
+		  
+		  
+					var oFormatOptions = {};
+		  
+					var oLocale = new sap.ui.core.Locale("tr-TR");
+					// oFormatOptions.maxFractionDigits = 4;
+					// oFormatOptions.minFractionDigits = 4;
+					// oFormatOptions.groupingEnabled = true;
+					// oFormatOptions.groupingSeparator = ".";
+					// oFormatOptions.decimalSeparator = ",";
+		  
+					oFormatOptions.maxFractionDigits = 4,
+					  oFormatOptions.minFractionDigits = 1,
+					  oFormatOptions.groupingEnabled = true,
+					  oFormatOptions.groupingSeparator = ".",
+					  oFormatOptions.decimalSeparator = ","
+		  
+		  
+					var oFloatFormat = sap.ui.core.format.NumberFormat.getFloatInstance(oFormatOptions, oLocale);
+		  
+					var t = cursorIndex;
+		  
+					// var tableLength = ( this._aTableData.length - 1 )
+		  
+					for (let index = 0; index < this._aTableData.length; index++) {
+					  if (this._aTableData[index].ItemType === rowData.ItemType) {
+						// if ( index !== rowIndex ) {
+						//   this.onTablePaste();
+						// }else{
+		  
+						for (let k = 0; k < clipCol.length; k++) {
+		  
+						  if (typeof oTable.getRows()[0].getCells()[t] === "undefined") {
+							continue
+						  };
+						  if (!oTable.getRows()[0].getCells()[t].getId().includes("key")) {
+							break
+						  };
+		  
+						  var deger = oFloatFormat.parse(clipCol[k]);
+		  
+						  rows[index].getCells()[t].setValue(deger);
+		  
+						  var fname = aColumnData[t].columnId;
+						  this._aTableData[index][fname] = deger;
+		  
+						  // rows[index].getCells()[t].fireChange();
+						  this.onTablePaste();
+		  
+						  t += 1;
+						}
+					  }
+					  // }
+					}
+		  
+		  
+					oTableModel.setData({
+					  rows: this._aTableData,
+					  Skdef: oTableModel.getData().Skdef,
+					  Kalme: talepNedeni,
+					  columns: aColumnData
+					});
+		  
+					MessageToast.show(rowData.ItemType + " için veri yapıştırıldı");
+					oEvent.preventDefault();
+		  
+				  } catch (error) {
+					console.log(error);
+				  }
+			},
+			_onImportFromClipboard: function () {
+				document.addEventListener("focus", this._setRowFromClipboard.bind(this), { once: true });
+				document.activeElement.focus();
+			},
+			// onTablePaste
+			// onFileUploadChange: function (oEvent) {
+			// 	var oFileUploader = oEvent.getSource();
+			// 	var oFile = oFileUploader.getFiles()[0];
+		
+			// 	if (oFile) {
+			// 		var oFileReader = new FileReader();
+			// 		oFileReader.onload = function (oEvent) {
+			// 			var oData = oEvent.target.result;
+			// 			var oWorkbook = XLSX.read(oData, { type: "array" });
+			// 			var oFirstSheet = oWorkbook.Sheets[0];
+			// 			var aData = XLSX.utils.sheet_to_json(oFirstSheet);
+		
+			// 			// Assuming the clipboard data is in the same order as the columns
+			// 			var aDetailData = aData.map(function (oRow) {
+			// 				return {
+			// 					PersonnelName: oRow["Personnel Name"],
+			// 					PersonnelSurname: oRow["Personnel Surname"],
+			// 					ActivityDate: new Date(oRow["Activity Date"]),
+			// 					ProjectCode: oRow["Project Code"],
+			// 					ProjectName: oRow["Project Name"],
+			// 					ActivityDuration: parseFloat(oRow["Activity Duration"]),
+			// 					Description: oRow["Description"],
+			// 					selected: false,
+			// 					Weekend: false
+			// 				};
+			// 			});
+		
+			// 			// Get the detailModel from the view
+			// 			var oDetailModel = this.getView().getModel("detailModel");
+		
+			// 			// Set the clipboard data to the detailModel
+			// 			oDetailModel.setData(aDetailData);
+			// 		};
+		
+			// 		oFileReader.readAsArrayBuffer(oFile);
+			// 	}
+			// },
+			// onImportFromExcel: function () {
+			// 	var oFileUploader = this.byId("fileUploader");
+			// 	var oFile = oFileUploader.oFileUpload.files[0];
+			// 	if (oFile) {
+			// 		var oFileReader = new FileReader();
+			// 		oFileReader.onload = function (e) {
+			// 			var oData = e.target.result;
+			// 			var oWorkbook = XLSX.read(oData, { type: "array" });
+			// 			var oFirstSheetName = oWorkbook.SheetNames[0];
+			// 			var oSheetData = oWorkbook.Sheets[oFirstSheetName];
+			// 			var aRows = XLSX.utils.sheet_to_json(oSheetData);
+			// 			var aDetailModelData = this.getView().getModel("detailModel").getData();
+			// 			aRows.forEach(function (oRow) {
+			// 				aDetailModelData.push(oRow);
+			// 			});
+			// 			this.getView().getModel("detailModel").setData(aDetailModelData);
+			// 		}.bind(this);
+			// 		oFileReader.readAsArrayBuffer(oFile);
+			// 	}
+			// },
+		
+			// onFileUploadChange: function () {
+			// 	this.byId("importButton").setEnabled(true);
+			// },
 
 			/**
 			 * Toggle between full and non full screen mode.
