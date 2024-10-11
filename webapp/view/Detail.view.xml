@@ -57,12 +57,13 @@
 						<Toolbar>
 							<Title text="{ActivityMonth} {i18n>ActivityDetails}"/>
 							<ToolbarSpacer/>
+							<Button id="saveActButton" text="{i18n>SaveActivities}" visible= "{= ${detailModel>/editMode} }" press="onSaveActivities" icon="sap-icon://save" type="Emphasized"/>
 							<Button id="addActButton" text="{i18n>AddActLines}" visible= "{= ${detailModel>/editMode} }" press="onAddActivityLine" icon="sap-icon://add"/>
 							<Button id="deleteActButton" text="{i18n>DeleteActLines}"  visible= "{= ${detailModel>/editMode} }" press="onDeleteActivityLine" icon="sap-icon://delete"/>
 							<Button id="editButton2" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
 							<Button id="exportButton" text="{i18n>ExportExcel}" press="onExportToExcel" icon="sap-icon://excel-attachment"/>
 							<!-- <Button id="importButton" text="Import from Excel" press="onImportFromExcel" icon="sap-icon://upload"/> -->
-							<Button id="buttonPaste" type="Default" text="{i18n>Paste}" icon="sap-icon://paste" press="onTablePaste" visible="true"></Button>
+							<!-- <Button id="buttonPaste" type="Default" text="{i18n>Paste}" icon="sap-icon://paste" press="onTablePaste" visible="true"></Button> -->
 						</Toolbar>
 					</headerToolbar>
 					<!-- <FlexBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent" direction="Column">

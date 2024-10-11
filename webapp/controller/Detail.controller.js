@@ -481,6 +481,8 @@ sap.ui.define(
 						location.href,
 					])
 				);
+				//  // Store the current detail data in the local storage zek
+  				// localStorage.setItem("detailData", JSON.stringify(oDetail));
 			},
 
 			_onMetadataLoaded: function () {
@@ -508,6 +510,14 @@ sap.ui.define(
 				oViewModel.setProperty("/busy", true);
 				// Restore original busy indicator delay for the detail view
 				oViewModel.setProperty("/delay", iOriginalViewBusyDelay);
+
+				  // Retrieve the stored detail data from the local storage zek
+//   var sDetailData = localStorage.getItem("detailData");
+//   if (sDetailData) {
+//     var oDetailData = JSON.parse(sDetailData);
+//     // Update the model with the stored detail data
+//     this.getView().getModel("detailModel").setData(oDetailData);
+//   }
 			},
 
 			/**
@@ -523,6 +533,28 @@ sap.ui.define(
 				this.getRouter().navTo("master");
 			},
 
+			onDeleteActivityLine: function (oEvent) {
+				var oDetailModel = this.getView().getModel("detailModel");
+				var oDetailModelData = oDetailModel.getData();
+			
+				// Filter the selected items
+				var selectedItems = oDetailModelData.filter(function (item) {
+					return item.selected === true;
+				});
+			
+				if (selectedItems.length === 0) {
+					MessageToast.show("Please select a row to delete.");
+				} else {
+					// Remove the selected items from the model data
+					oDetailModelData = oDetailModelData.filter(function (item) {
+						return item.selected !== true;
+					});
+			
+					// Update the model with the modified data
+					oDetailModel.setData(oDetailModelData);
+				}
+			},
+
 			onAddActivityLine: function (oEvent) {
 			
 				var oDetailModel = this.getView().getModel("detailModel");
@@ -536,19 +568,111 @@ sap.ui.define(
 					return item.selected === true;
 				});
 
-				if (selectedItems.length === 0) {
-					
-				} else if (selectedItems.length > 1) {
+				if (selectedItems.length > 1) {
 					MessageToast.show("Birden fazla satır seçili. Lütfen sadece bir tane seçin.");
 
-				} else {
-					// var selectedIndex = data.indexOf(selectedItems[0]);
-					// console.log("Selected property'si true olan index:", selectedIndex);
-					// // Burada seçili index ile devam edebilirsiniz
+				}
+				else if (selectedItems.length === 0) {
+				var currentIndex = oDetailModelData.findIndex(function(item) {
+					return item.ActivityDate === new Date();
+				});
+
+				if (currentIndex === -1) {
+					currentIndex = oDetailModelData.length - 1;
+				}
+				
+					var oNewLine = {
+						selected: false,
+						PersonnelName: oDetailModelData[0].PersonnelName,
+						PersonnelSurname: oDetailModelData[0].PersonnelSurname,
+						ActivityDate: oDetailModelData[currentIndex].ActivityDate,
+						ProjectCode: "",
+						ProjectName:"",
+						ActivityDuration: "",
+						Description: "",
+						Weekend: this._isWeekend(oDetailModelData[currentIndex].ActivityDate),
+					  };		
+
+					oDetailModelData.splice(currentIndex+ 1, 0, oNewLine);
+				  
+					// Update the model
+					oDetailModel.setData(oDetailModelData);
+				
+
+				}  else {
+
+				// Create a new line object with default values
+				var oNewLine = {
+					selected: false,
+					PersonnelName: oDetailModelData[selectedIndex].PersonnelName,
+					PersonnelSurname: oDetailModelData[selectedIndex].PersonnelSurname,
+					ActivityDate: oDetailModelData[selectedIndex].ActivityDate,
+					ProjectCode: "",
+					ProjectName: "",
+					ActivityDuration: oDetailModelData[selectedIndex].ActivityDuration,
+					Description: "",
+					Weekend: this._isWeekend(oDetailModelData[selectedIndex].ActivityDate),
+				  };		
+				// Insert the new line at the selected index
+				oDetailModelData.splice(selectedIndex+ 1, 0, oNewLine);
+			  
+				// Update the model
+				oDetailModel.setData(oDetailModelData);
+
 				}
 
 			},
 
+			onSaveActivities: function(oEvent){
+				var oDetailModel = this.getView().getModel("detailModel")
+				var oDetailModelData = oDetailModel.getData();
+
+				// var oObject = this.getView().getBindingContext().getObject();
+				
+				// var oModel = this.getView().getModel();
+				// RootInfo.SellAmount = RootInfo.FlexibleBudget;
+				var oActivityDays = {
+					Month: oDetailModelData[0].ActivityMonth,
+					Pernr: oDetailModelData[0].Pernr,
+					PersonnelName: oDetailModelData[0].PersonnelName,
+					PersonnelSurname: oDetailModelData[0].PersonnelSurname,
+					MonthName       : oDetailModelData[0].MonthName,
+					Year: oDetailModelData[0].ActivityYear,
+					Guid: "GUID_DEFAULT",
+					Status: "Status",
+					ActivityDetailsSet: oDetailModelData.map(function(item) {
+						return {
+							Guid: "GUID_DEFAULT",
+							PersonnelName: item.PersonnelName,
+							PersonnelSurname: item.PersonnelSurname,
+							ActivityDate: item.ActivityDate,
+							ProjectCode: item.ProjectCode,
+							ProjectName     : item.ProjectName,
+							ActivityMonth   : item.ActivityMonth,
+							ActivityMonthName : item.ActivityMonthName,
+							ActivityYear    : item.ActivityYear,
+							ActivityDuration: item.ActivityDuration,
+							Description     : item.Description,
+							CostsSet: item.CostsSet
+						};
+					}),
+				};
+		
+				  var oModel = this.getOwnerComponent().getModel();
+				  oModel.create("/ActivityDaysSet", oActivityDays, {
+					success: function (data) {
+					  this.getOwnerComponent().refreshApplication();
+					  MessageToast.show("İşlem Başarılı");
+					}.bind(this),
+		
+					error: function (error) {
+					  MessageBox.error(
+						JSON.parse(error.responseText).error.message.value
+					  );
+					}.bind(this),
+				  });
+
+			},
 
 
 			_setRowFromClipboard2: function (oEvent) {
