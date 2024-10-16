@@ -487,37 +487,70 @@ sap.ui.define([
           onSaveActivity: function () {
 			
 			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject();
-			var ui5Date = this.getView().byId("inputActivityDate").getDateValue();
+			var ui5Date = this.getView().byId("inputActivityMasterDate").getDateValue();
+			ui5Date.setHours(3, 0, 0);
 
-			var sDate = this.getView().byId("inputActivityDate").getValue();
+			var sDate = this.getView().byId("inputActivityMasterDate").getValue();
 			if ( sDate.substring(1, 2) == '.'){
 				var sMonth = sDate.substring(2, 4);
 			} else	{
-				sMonth = sDate .substring(3, 5);
+				sMonth = sDate.substring(3, 5);
 			};
 		
 
-            var oActivityValues  = {
+            // var oActivityValues  = {
+
+			// 	Guid 			: "GUID_DEFAULT",
+			// 	Pernr			: oMasterData.Pernr,
+			// 	PersonnelName   : oMasterData.PersonnelName,
+			// 	PersonnelSurname: oMasterData.PersonnelSurname,
+			// 	ActivityYear            : oMasterData.Year,
+			// 	ActivityMonth			: sMonth,
+			// 	ActivityMonthName       : "",
+			// 	ActivityDate            :  ui5Date,
+			// 	ProjectCode		: this.getView().byId("inputProjectCode").getValue(),
+			// 	ProjectName  	: this.getView().byId("inputProjectName").getValue(),
+			// 	ActivityDuration : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
+			// 	Description      : this.getView().byId("inputDescription").getValue(),
+		
+				
+            // };
+			
+
+			var oActivityDays = {
 
 				Guid 			: "GUID_DEFAULT",
 				Pernr			: oMasterData.Pernr,
 				PersonnelName   : oMasterData.PersonnelName,
 				PersonnelSurname: oMasterData.PersonnelSurname,
-				ActivityYear            : oMasterData.Year,
-				ActivityMonth			: sMonth,
-				ActivityMonthName       : "",
-				ActivityDate            :  ui5Date,
-				ProjectCode		: this.getView().byId("inputProjectCode").getValue(),
-				ProjectName  	: this.getView().byId("inputProjectName").getValue(),
-				ActivityDuration : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
-				Description      : this.getView().byId("inputDescription").getValue(),
-		
+				Month           : sMonth,
+				MonthName       : "",
+				Year            : oMasterData.Year,
+				Status			: "MASTER",
+				ActivityDetailsSet: [
+					{
+						 Guid 			  : "GUID_DEFAULT",
+						Pernr			  : oMasterData.Pernr,
+						PersonnelName     : oMasterData.PersonnelName,
+						PersonnelSurname  : oMasterData.PersonnelSurname,
+						ActivityDate      :  ui5Date,
+						ProjectCode		  : this.getView().byId("inputProjectCode").getValue(),
+						ProjectName  	  : this.getView().byId("inputProjectName").getValue(),
+						ActivityMonth     : sMonth,
+						ActivityMonthName : "",
+						ActivityYear      : oMasterData.Year,
+						ActivityDuration  : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
+						Description       : this.getView().byId("inputDescription").getValue(),
+						CostsSet          : [],
+					}
+				]
 				
-            };
+			};
 
-			if (this.getView().byId("inputActivityDate").getValue() === "") {
+
+			if (this.getView().byId("inputActivityMasterDate").getValue() === "") {
 				
-				this.getView().byId("inputActivityDate").setValueState("Error");
+				this.getView().byId("inputActivityMasterDate").setValueState("Error");
 				//  MessageToast.show("Fill the activity date");
 				//  return;
 				MessageBox.error("Fill the activity date.");
@@ -545,7 +578,7 @@ sap.ui.define([
             this.BusyDialog.open();
             this.getOwnerComponent()
               .getModel()
-              .create("/ActivityDetailsSet", oActivityValues  , {
+              .create("/ActivityDaysSet", oActivityDays  , {
                 success: function () {
                  var Msg = "Activity entry is successfull."
 				//  this.getOwnerComponent().refreshApplication();

@@ -626,11 +626,6 @@ sap.ui.define(
 			onSaveActivities: function(oEvent){
 				var oDetailModel = this.getView().getModel("detailModel")
 				var oDetailModelData = oDetailModel.getData();
-
-				// var oObject = this.getView().getBindingContext().getObject();
-				
-				// var oModel = this.getView().getModel();
-				// RootInfo.SellAmount = RootInfo.FlexibleBudget;
 				var sPernr = this.getView().getModel("activityDaysModel").getData().selectedItem.Pernr;
 				var oActivityDays = {
 					Month: oDetailModelData[0].ActivityMonth,
@@ -640,7 +635,7 @@ sap.ui.define(
 					MonthName       : oDetailModelData[0].MonthName,
 					Year: oDetailModelData[0].ActivityYear,
 					Guid: "GUID_DEFAULT",
-					Status: "Status",
+					Status: "DETAIL",
 					ActivityDetailsSet: oDetailModelData.map(function(item) {
 						return {
 							Guid: "GUID_DEFAULT",
@@ -653,7 +648,7 @@ sap.ui.define(
 							ActivityMonth   : item.ActivityMonth,
 							ActivityMonthName : item.ActivityMonthName,
 							ActivityYear    : item.ActivityYear,
-							ActivityDuration: item.ActivityDuration,
+							ActivityDuration: parseFloat(item.ActivityDuration).toFixed(2),
 							Description     : item.Description,
 							CostsSet: item.CostsSet
 						};

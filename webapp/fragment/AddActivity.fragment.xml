@@ -12,11 +12,12 @@
 					<Input id="personnelName" value="{personnelModel>/PersonnelName} {personnelModel>/PersonnelSurname}" fieldGroupIds="Fragment" required="true" editable="false"/>
 					
                     <Label text="Activity Date" />
-                    <DatePicker id="inputActivityDate" value="{
+                    <DatePicker id="inputActivityMasterDate" value="{
                         path: '/date',
                         type: 'sap.ui.model.type.Date',
                         formatOptions: {
 					    style: 'short'
+                        
 				    }}"
                     required="true"
                     />

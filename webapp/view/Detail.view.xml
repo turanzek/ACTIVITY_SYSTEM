@@ -174,7 +174,7 @@
 							<cells>
 
 								<Text text="{detailCostModel>/PersonnelName} {detailCostModel>/PersonnelSurname}"/>
-								<DatePicker id="inputActivityDate2" editable="{detailModel>/editMode}" value="{
+								<DatePicker id="inputActivityCostDate" editable="{detailModel>/editMode}" value="{
 									path: 'detailCostModel>ActivityDate',
 									type: 'sap.ui.model.type.Date',
 									formatOptions: {
