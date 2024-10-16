@@ -631,9 +631,10 @@ sap.ui.define(
 				
 				// var oModel = this.getView().getModel();
 				// RootInfo.SellAmount = RootInfo.FlexibleBudget;
+				var sPernr = this.getView().getModel("activityDaysModel").getData().selectedItem.Pernr;
 				var oActivityDays = {
 					Month: oDetailModelData[0].ActivityMonth,
-					Pernr: oDetailModelData[0].Pernr,
+					Pernr: sPernr,
 					PersonnelName: oDetailModelData[0].PersonnelName,
 					PersonnelSurname: oDetailModelData[0].PersonnelSurname,
 					MonthName       : oDetailModelData[0].MonthName,
@@ -643,6 +644,7 @@ sap.ui.define(
 					ActivityDetailsSet: oDetailModelData.map(function(item) {
 						return {
 							Guid: "GUID_DEFAULT",
+							Pernr: sPernr,
 							PersonnelName: item.PersonnelName,
 							PersonnelSurname: item.PersonnelSurname,
 							ActivityDate: item.ActivityDate,
@@ -661,8 +663,8 @@ sap.ui.define(
 				  var oModel = this.getOwnerComponent().getModel();
 				  oModel.create("/ActivityDaysSet", oActivityDays, {
 					success: function (data) {
-					  this.getOwnerComponent().refreshApplication();
-					  MessageToast.show("İşlem Başarılı");
+					 
+					  MessageToast.show("Activity entry is successfull.");
 					}.bind(this),
 		
 					error: function (error) {

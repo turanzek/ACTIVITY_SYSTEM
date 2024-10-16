@@ -487,16 +487,15 @@ sap.ui.define([
           onSaveActivity: function () {
 			
 			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject();
-			var ui5Date = this.getView().byId("inputActivityDate").getValue();
-			var sDate = ui5Date.substring(1, 2);
-			if ( sDate == '.'){
-				var sYear = ui5Date.substring(5, 9);
-				var SDate = 0+ui5Date;
+			var ui5Date = this.getView().byId("inputActivityDate").getDateValue();
+
+			var sDate = this.getView().byId("inputActivityDate").getValue();
+			if ( sDate.substring(1, 2) == '.'){
+				var sMonth = sDate.substring(2, 4);
 			} else	{
-				sYear = ui5Date.substring(6, 10)
-				var SDate = ui5Date;
+				sMonth = sDate .substring(3, 5);
 			};
-			
+		
 
             var oActivityValues  = {
 
@@ -504,11 +503,10 @@ sap.ui.define([
 				Pernr			: oMasterData.Pernr,
 				PersonnelName   : oMasterData.PersonnelName,
 				PersonnelSurname: oMasterData.PersonnelSurname,
-				Year            : sYear,
-				Month			: oMasterData.Month,
-				MonthName       : oMasterData.MonthName,
-				Date            : SDate,
-				Status			: "SAVE",
+				ActivityYear            : oMasterData.Year,
+				ActivityMonth			: sMonth,
+				ActivityMonthName       : "",
+				ActivityDate            :  ui5Date,
 				ProjectCode		: this.getView().byId("inputProjectCode").getValue(),
 				ProjectName  	: this.getView().byId("inputProjectName").getValue(),
 				ActivityDuration : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
@@ -547,9 +545,11 @@ sap.ui.define([
             this.BusyDialog.open();
             this.getOwnerComponent()
               .getModel()
-              .create("/ActivityDaysSet", oActivityValues  , {
+              .create("/ActivityDetailsSet", oActivityValues  , {
                 success: function () {
                  var Msg = "Activity entry is successfull."
+				//  this.getOwnerComponent().refreshApplication();
+				this.getView().getModel().refresh(true);
 				 MessageBox.show(Msg);
 				 this.BusyDialog.close();
 				// TO DO clear data ve model yapılacak
@@ -557,9 +557,9 @@ sap.ui.define([
 
                 }.bind(this),
                 error: function (error) {
-                  MessageBox.error(
-                    JSON.parse(error.responseText).error.message.value
-                  );
+						MessageBox.error(
+						  JSON.parse(error.responseText).error.message.value
+						);
                   this.BusyDialog.close();
                 }.bind(this),
               });
