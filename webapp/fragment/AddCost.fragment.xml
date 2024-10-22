@@ -20,12 +20,13 @@
                         
 				    }}"
                     required="true"
+                    change="onCostDateChange"
                     />
 
                     <Label text="Project" required = "true"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectCode" type="Text" required="true" placeholder="Please Select Project code" change="handleInputProjectCodeChange" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
+                            <Input id="inputProjectCode" editable="false" type="Text" required="true" placeholder="Please Select Project code" change="handleInputProjectCodeChange" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
                         </InputListItem>
                     </List>
                     

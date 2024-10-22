@@ -58,10 +58,12 @@ sap.ui.define([
             var oProjectCodeModel= new sap.ui.model.json.JSONModel();
 			var oCostTypeModel= new sap.ui.model.json.JSONModel();
 			var oActivityDaysModel= new sap.ui.model.json.JSONModel();
+			var oProjectsValueHelpModel= new sap.ui.model.json.JSONModel();
 			this.setModel(oMainModel, "mainModel");
 			this.setModel(oProjectCodeModel, "projectCodeModel");
 			this.setModel(oCostTypeModel, "costTypeModel");
 			this.setModel(oActivityDaysModel, "activityDaysModel");
+			this.setModel(oProjectsValueHelpModel, "projectValueHelp");
 			
             
 

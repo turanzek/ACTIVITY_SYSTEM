@@ -1,6 +1,6 @@
 sap.ui.define(
-	["sap/ui/core/mvc/Controller", "sap/ui/core/routing/History"],
-	function (Controller, History) {
+	["sap/ui/core/mvc/Controller", "sap/ui/core/routing/History", "sap/m/MessageToast",],
+	function (Controller, History, MessageToast,) {
 		"use strict";
 
 		return Controller.extend("zint.activity.system.controller.BaseController", {
@@ -61,16 +61,48 @@ sap.ui.define(
 				}
 			},
 
+			onCostDateChange: function (oEvent) {
+				var oDatePicker = oEvent.getSource();
+				var sSelectedDate = oDatePicker.getDateValue();
+				sSelectedDate.setHours(3, 0, 0);
+
+				var oModel = this.getView().getModel();
+
+				return new Promise(function (resolve) {
+				oModel.callFunction("/FilterProjects", { 
+					method: "GET", 
+					urlParameters: {
+						DATE: sSelectedDate 
+					},
+					success: function(oData, response) {
+						this.byId("inputProjectCode").setEditable(true);
+						this.getOwnerComponent().getModel("projectValueHelp").setProperty("/list", oData.results);
+						resolve("");
+					}.bind(this),
+					error: function(oError) {
+						sap.m.MessageBox.error(this.parseErrorMessage(oError), {
+							title: "Error",
+							onClose: function () {
+								resolve();
+							}
+						});
+					}.bind(this)
+				});
+			}.bind(this));
+			},
+
 			handleInputProjectCodeValueHelp: function (oEvent) {
-				var oProjectModel =
-					this.getOwnerComponent().getModel("projectCodeModel");
+				// var oProjectModel =
+				// 	this.getOwnerComponent().getModel("projectCodeModel");
 				// var aProjectModelData = oProjectModel.getData().list;
 
 				// var oProjectValueHelpModel = new sap.ui.model.json.JSONModel();
 				// var aValueHelpProjectCode = [];
 				// var oValueHelpProjectCode = {};
 
-				this.getView().setModel(oProjectModel, "projectValueHelp");
+				// var oSelectProjectModel = this.getOwnerComponent().getModel("projectValueHelp");
+
+				// this.getView().setModel(oProjectModel, "projectValueHelp");
 
 				var oBindingContext = oEvent
 					.getSource()
@@ -219,8 +251,18 @@ sap.ui.define(
 				var oBinding = oEvent.getSource().getBinding("items");
 				oBinding.filter([oFilter]);
 			},
+			parseErrorMessage: function (oError) {
 
-
+				var oResourceBundle = this.getResourceBundle();
+				try {
+					var sErrorMessage = JSON.parse(oError.responseText).error.innererror.errordetails[0].message;
+				} catch (error) {
+					sErrorMessage = oResourceBundle.getText("TechnicalErrorHappenedMessage");
+				}
+	
+				return sErrorMessage;
+	
+			},
 
 
 		});

@@ -476,6 +476,7 @@ sap.ui.define([
 
 		onPressEntryCostButton: function () {
 			var oView = this.getView();
+
 			// var oProjectCode = this.byId("inputProjectCode");
 			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
  
@@ -519,7 +520,10 @@ sap.ui.define([
 			
 			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject();
 			var ui5Date = this.getView().byId("inputActivityMasterDate").getDateValue();
-			ui5Date.setHours(3, 0, 0);
+			if (ui5Date){
+				ui5Date.setHours(3, 0, 0);
+			}
+
 
 			var sDate = this.getView().byId("inputActivityMasterDate").getValue();
 			if ( sDate.substring(1, 2) == '.'){
@@ -622,12 +626,17 @@ sap.ui.define([
 
 
 		  onSaveCostType: function () {
-			
+
+			var sActivityDate = this.getView().byId("inputActivityMasterDateCost").getValue();
+		
 			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject();
 			var ui5Date = this.getView().byId("inputActivityMasterDateCost").getDateValue();
-			ui5Date.setHours(3, 0, 0);
+			if (ui5Date){
+				ui5Date.setHours(3, 0, 0);
+			}
+			
 
-			var sDate = this.getView().byId("inputActivityMasterDateCost").getValue();
+			var sDate = sActivityDate;
 			if ( sDate.substring(1, 2) == '.'){
 				var sMonth = sDate.substring(2, 4);
 			} else	{
@@ -697,6 +706,26 @@ sap.ui.define([
 				return false;
 			};
 
+			if (this.getView().byId("inputCostType").getValue() === "") {
+				
+				this.getView().byId("inputCostType").setValueState("Error");
+				MessageBox.error("Select the cost type.");
+				return false;
+			};
+
+			if (this.getView().byId("inputCostAmountCost").getValue() === "") {
+				
+				this.getView().byId("inputCostAmountCost").setValueState("Error");
+				MessageBox.error("Fill the cost amount.");
+				return false;
+			};
+
+			if (this.getView().byId("inputDescriptionCost").getValue() === "") {
+				
+				this.getView().byId("inputDescriptionCost").setValueState("Error");
+				MessageBox.error("Fill the description.");
+				return false;
+			};
 
 
 			// if (this.getView().byId("inputActivityHour").getValue() === "") {
