@@ -64,11 +64,11 @@ sap.ui.define(
 			handleInputProjectCodeValueHelp: function (oEvent) {
 				var oProjectModel =
 					this.getOwnerComponent().getModel("projectCodeModel");
-				var aProjectModelData = oProjectModel.getData().list;
+				// var aProjectModelData = oProjectModel.getData().list;
 
-				var oProjectValueHelpModel = new sap.ui.model.json.JSONModel();
-				var aValueHelpProjectCode = [];
-				var oValueHelpProjectCode = {};
+				// var oProjectValueHelpModel = new sap.ui.model.json.JSONModel();
+				// var aValueHelpProjectCode = [];
+				// var oValueHelpProjectCode = {};
 
 				this.getView().setModel(oProjectModel, "projectValueHelp");
 
@@ -141,6 +141,88 @@ sap.ui.define(
 				var oBinding = oEvent.getSource().getBinding("items");
 				oBinding.filter([oFilter]);
 			},
+
+
+			handleInputCostTypeValueHelp: function (oEvent) {
+				var oCostTypeModel =
+					this.getOwnerComponent().getModel("costTypeModel");
+				// var aCostTypeModelData = oCostTypeModel.getData().list;
+
+				// var oCostTypeHelpModel = new sap.ui.model.json.JSONModel();
+				// var aValueHelpCostType = [];
+				// var oValueHelpCostType = {};
+
+				this.getView().setModel(oCostTypeModel, "costTypeValueHelp");
+
+				var oBindingContext = oEvent
+					.getSource()
+					.getBindingContext("detailModel");
+				if (oBindingContext) {
+					// this.iSelectedIndex = oBindingContext.getPath().substring(1);
+
+					this.iSelectedIndex = oEvent
+						.getSource()
+						.getBindingContext("detailModel")
+						.getPath()
+						.substring(1, 3);
+				} else {
+					this.iSelectedIndex = null;
+				}
+
+				if (!this._oDialogCostType) {
+					this._oDialogCostType = sap.ui.xmlfragment(
+						"zint.activity.system.fragment.SelectCostType",
+						this
+					);
+				}
+
+				this.getView().addDependent(this._oDialogCostType);
+				jQuery.sap.syncStyleClass(
+					"sapUiSizeCompact",
+					this.getView(),
+					this._oDialogCostType
+				);
+				this._oDialogCostType.open();
+			},
+
+			handleCloseSelectCostType: function (oEvent) {
+				var aSelectedItems = oEvent.getParameter("selectedContexts");
+				if (aSelectedItems && aSelectedItems.length > 0) {
+					// Bind the selected value to the specific row if the index is set
+					if (this.iSelectedIndex !== null) {
+						var oDetailModel = this.getView().getModel("detailModel");
+						var aDetails = oDetailModel.getData();
+
+						aDetails[this.iSelectedIndex].Cos =
+							aSelectedItems[0].getObject().CostType;
+						aDetails[this.iSelectedIndex].CostType=
+							aSelectedItems[0].getObject().CostName;
+
+						oDetailModel.setData(aDetails);
+					}
+				}
+
+				var oCostType = this.byId("inputCostType");
+				oCostType.setValue(aSelectedItems[0].getObject().CostType);
+
+				var oCostName = this.byId("inputCostName");
+				oCostName.setValue(aSelectedItems[0].getObject().CostName);
+
+			},
+			handleSearchSelectCostType: function (oEvent) {
+				var sValue = oEvent.getParameter("value");
+				var oFilter = new Filter(
+					"CostType",
+					sap.ui.model.FilterOperator.Contains,
+					sValue
+				);
+				var oBinding = oEvent.getSource().getBinding("items");
+				oBinding.filter([oFilter]);
+			},
+
+
+
+
 		});
 	}
 );

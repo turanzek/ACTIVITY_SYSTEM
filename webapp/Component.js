@@ -56,9 +56,11 @@ sap.ui.define([
             var odataModel = this.getModel();
 			var oMainModel = new sap.ui.model.json.JSONModel();
             var oProjectCodeModel= new sap.ui.model.json.JSONModel();
+			var oCostTypeModel= new sap.ui.model.json.JSONModel();
 			var oActivityDaysModel= new sap.ui.model.json.JSONModel();
 			this.setModel(oMainModel, "mainModel");
 			this.setModel(oProjectCodeModel, "projectCodeModel");
+			this.setModel(oCostTypeModel, "costTypeModel");
 			this.setModel(oActivityDaysModel, "activityDaysModel");
 			
             
@@ -90,6 +92,33 @@ sap.ui.define([
 				error: function () { }
 			});
 
+
+			odataModel.setUseBatch(true);
+			odataModel.setDeferredGroups(["group1"]);
+
+            odataModel.read("/CostTypesSet", {
+				groupId: "group1"
+			});
+
+
+   
+
+            odataModel.submitChanges({
+				groupId: "group1",
+				success: function (oData) {
+
+					var aCostTypes= [];
+                  
+
+					aCostTypes = oData.__batchResponses[0].data.results;
+
+					oCostTypeModel.setData({
+						list: aCostTypes
+					});  
+
+				}.bind(this),
+				error: function () { }
+			});
 
          },
 

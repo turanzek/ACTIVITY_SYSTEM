@@ -474,7 +474,38 @@ sap.ui.define([
             }
 		},
 
-		_onPressEntryCostButton: function (oItem) {
+		onPressEntryCostButton: function () {
+			var oView = this.getView();
+			// var oProjectCode = this.byId("inputProjectCode");
+			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
+ 
+           
+ 
+            if (!this.byId("entryCost")) {
+              // load asynchronous XML fragment
+              Fragment.load({
+     
+                id: oView.getId(),
+                name: "zint.activity.system.fragment.AddCost",
+                controller: this
+              }).then(function (oDialog) {
+     
+                // connect dialog to the root view of this component (models, lifecycle)
+                oView.addDependent(oDialog);
+                oDialog.open();
+                this._dialog = oDialog;
+     
+              }.bind(this));
+     
+            } else {
+     
+              this.byId("entryCost").open();
+     
+            }
+		},
+
+
+		_onPressEntryCostButton2: function (oItem) {
 			var bReplace = !Device.system.phone;
 			// set the layout property of FCL control to show two columns
 			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
@@ -496,25 +527,7 @@ sap.ui.define([
 			} else	{
 				sMonth = sDate.substring(3, 5);
 			};
-		
-
-            // var oActivityValues  = {
-
-			// 	Guid 			: "GUID_DEFAULT",
-			// 	Pernr			: oMasterData.Pernr,
-			// 	PersonnelName   : oMasterData.PersonnelName,
-			// 	PersonnelSurname: oMasterData.PersonnelSurname,
-			// 	ActivityYear            : oMasterData.Year,
-			// 	ActivityMonth			: sMonth,
-			// 	ActivityMonthName       : "",
-			// 	ActivityDate            :  ui5Date,
-			// 	ProjectCode		: this.getView().byId("inputProjectCode").getValue(),
-			// 	ProjectName  	: this.getView().byId("inputProjectName").getValue(),
-			// 	ActivityDuration : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
-			// 	Description      : this.getView().byId("inputDescription").getValue(),
-		
-				
-            // };
+	
 			
 
 			var oActivityDays = {
@@ -607,8 +620,133 @@ sap.ui.define([
             this.byId("entryActivity").destroy();
           },
 
+
+		  onSaveCostType: function () {
+			
+			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject();
+			var ui5Date = this.getView().byId("inputActivityMasterDateCost").getDateValue();
+			ui5Date.setHours(3, 0, 0);
+
+			var sDate = this.getView().byId("inputActivityMasterDateCost").getValue();
+			if ( sDate.substring(1, 2) == '.'){
+				var sMonth = sDate.substring(2, 4);
+			} else	{
+				sMonth = sDate.substring(3, 5);
+			};
+	
+			
+
+			var oActivityDays = {
+
+				Guid 			: "GUID_DEFAULT",
+				Pernr			: oMasterData.Pernr,
+				PersonnelName   : oMasterData.PersonnelName,
+				PersonnelSurname: oMasterData.PersonnelSurname,
+				Month           : sMonth,
+				MonthName       : "",
+				Year            : oMasterData.Year,
+				Status			: "COST",
+				ActivityDetailsSet: [
+					{
+					    Guid 			  : "GUID_DEFAULT",
+						Pernr			  : oMasterData.Pernr,
+						PersonnelName     : oMasterData.PersonnelName,
+						PersonnelSurname  : oMasterData.PersonnelSurname,
+						ActivityDate      :  ui5Date,
+						ProjectCode		  : this.getView().byId("inputProjectCode").getValue(),
+						ProjectName  	  : this.getView().byId("inputProjectName").getValue(),
+						ActivityMonth     : sMonth,
+						ActivityMonthName : "",
+						ActivityYear      : oMasterData.Year,
+						// ActivityDuration  : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
+						// Description       : this.getView().byId("inputDescription").getValue(),
+						CostsSet          : [ 
+						{
+							ActivityMonth : sMonth,
+							CostName      : this.getView().byId("inputCostName").getValue(), 
+							CostType      : this.getView().byId("inputCostType").getValue(),
+							Guid 	      : "GUID_DEFAULT",
+							Pernr	      : oMasterData.Pernr,
+							ActivityYear  : oMasterData.Year,
+							CostAmount    : this.getView().byId("inputCostAmountCost").getValue(),
+							ProjectCode   : this.getView().byId("inputProjectCode").getValue(),
+							ActivityDate  : ui5Date,
+							CostCurrency  : this.getView().byId("inputCostCurrencyCost").getValue(),
+							Description   : this.getView().byId("inputDescriptionCost").getValue(),
+						}
+						]
+					}
+				]
+				
+			};
+
+
+			if (this.getView().byId("inputActivityMasterDateCost").getValue() === "") {
+				
+				this.getView().byId("inputActivityMasterDateCost").setValueState("Error");
+				//  MessageToast.show("Fill the activity date");
+				//  return;
+				MessageBox.error("Fill the activity date.");
+				return false;
+			};
+
+			if (this.getView().byId("inputProjectCode").getValue() === "") {
+				
+				this.getView().byId("inputProjectCode").setValueState("Error");
+				MessageBox.error("Fill the project code.");
+				return false;
+			};
+
+
+
+			// if (this.getView().byId("inputActivityHour").getValue() === "") {
+				
+			// 	this.getView().byId("inputActivityHour").setValueState("Error");
+			// 	MessageBox.error("Fill the activity hour.");
+			// 	return false;
+			// };
+
+
+			this.BusyDialog = new sap.m.BusyDialog({});
+            this.BusyDialog.open();
+            this.getOwnerComponent()
+              .getModel()
+              .create("/ActivityDaysSet", oActivityDays  , {
+                success: function () {
+                 var Msg = "Cost entry is successfull."
+				//  this.getOwnerComponent().refreshApplication();
+				this.getView().getModel().refresh(true);
+				 MessageBox.show(Msg);
+				 this.BusyDialog.close();
+				// TO DO clear data ve model yapılacak
+				 this.byId("entryCost").destroy();
+
+                }.bind(this),
+                error: function (error) {
+						MessageBox.error(
+						  JSON.parse(error.responseText).error.message.value
+						);
+                  this.BusyDialog.close();
+                }.bind(this),
+              });
+     
+          },
+
+		  onPressCancelCostType: function () {
+            // this.getView().byId("selectProjectModel").setSelectedKey("");
+            this.byId("entryCost").destroy();
+          },
+
 		  handleInputProjectCodeChange: function (oEvent) {
 			var sValue = oEvent.getParameter("value");
+			// var oProjectCode = this.byId("inputProjectCode");
+			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
+
+
+		  },
+
+		  handleInputCostChange: function (oEvent) {
+			var sValueCost = oEvent.getParameter("value");
 			// var oProjectCode = this.byId("inputProjectCode");
 			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
 
