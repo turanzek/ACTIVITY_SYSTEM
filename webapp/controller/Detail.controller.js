@@ -533,29 +533,50 @@ sap.ui.define(
 				this.getRouter().navTo("master");
 			},
 
-			onDeleteActivityLine: function (oEvent) {
+			onDeleteLine: function (oEvent) {
 				var oDetailModel = this.getView().getModel("detailModel");
 				var oDetailModelData = oDetailModel.getData();
-			
-				// Filter the selected items
+				var oSelection = oEvent.getSource().getId();
 				var selectedItems = oDetailModelData.filter(function (item) {
 					return item.selected === true;
 				});
-			
+
+			if (oSelection.includes("delete")) {
+
 				if (selectedItems.length === 0) {
 					MessageToast.show("Please select a row to delete.");
 				} else {
+
 					// Remove the selected items from the model data
-					oDetailModelData = oDetailModelData.filter(function (item) {
+					if (oSelection.includes("Act")){
+						oDetailModelData = oDetailModelData.filter(function (item) {
 						return item.selected !== true;
 					});
-			
+					} else if (oSelection.includes("Cost")){
+						oDetailModelData.CostsSet = oDetailModelData.CostsSet.filter(function (item) {
+					   return item.selected !== true;
+						});
+					}
 					// Update the model with the modified data
 					oDetailModel.setData(oDetailModelData);
+
 				}
+
+			}
+			else if (oSelection.includes("add")) {
+	
+			}
+
+			
+
+
+				// Filter the selected items
+
+			
+	
 			},
 
-			onAddActivityLine: function (oEvent) {
+			onAddLine: function (oEvent) {
 			
 				var oDetailModel = this.getView().getModel("detailModel");
 				var oDetailModelData = oDetailModel.getData();

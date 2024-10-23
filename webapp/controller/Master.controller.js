@@ -462,6 +462,7 @@ sap.ui.define([
      
                 // connect dialog to the root view of this component (models, lifecycle)
                 oView.addDependent(oDialog);
+				oDialog.data("sourceFragment", "AddActivity"); 
                 oDialog.open();
                 this._dialog = oDialog;
      
@@ -493,6 +494,7 @@ sap.ui.define([
      
                 // connect dialog to the root view of this component (models, lifecycle)
                 oView.addDependent(oDialog);
+				oDialog.data("sourceFragment", "AddCost"); 
                 oDialog.open();
                 this._dialog = oDialog;
      
@@ -531,7 +533,7 @@ sap.ui.define([
 			} else	{
 				sMonth = sDate.substring(3, 5);
 			};
-	
+
 			
 
 			var oActivityDays = {
@@ -598,6 +600,8 @@ sap.ui.define([
               .create("/ActivityDaysSet", oActivityDays  , {
                 success: function () {
                  var Msg = "Activity entry is successfull."
+				//  this.updateModel(oActivityDays,"details");
+				
 				//  this.getOwnerComponent().refreshApplication();
 				this.getView().getModel().refresh(true);
 				 MessageBox.show(Msg);

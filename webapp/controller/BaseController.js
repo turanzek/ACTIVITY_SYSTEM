@@ -75,7 +75,7 @@ sap.ui.define(
 						DATE: sSelectedDate 
 					},
 					success: function(oData, response) {
-						this.byId("inputProjectCode").setEditable(true);
+						this.byId("inputProjectCode").setEditable(true);;
 						this.getOwnerComponent().getModel("projectValueHelp").setProperty("/list", oData.results);
 						resolve("");
 					}.bind(this),
@@ -92,8 +92,7 @@ sap.ui.define(
 			},
 
 			handleInputProjectCodeValueHelp: function (oEvent) {
-				// var oProjectModel =
-				// 	this.getOwnerComponent().getModel("projectCodeModel");
+
 				// var aProjectModelData = oProjectModel.getData().list;
 
 				// var oProjectValueHelpModel = new sap.ui.model.json.JSONModel();
@@ -101,9 +100,17 @@ sap.ui.define(
 				// var oValueHelpProjectCode = {};
 
 				// var oSelectProjectModel = this.getOwnerComponent().getModel("projectValueHelp");
-
-				// this.getView().setModel(oProjectModel, "projectValueHelp");
-
+		
+				if (this.byId("entryActivity")){
+					var oProjectCodeModel = this.getOwnerComponent().getModel("projectCodeModel");
+					this.getView().setModel(oProjectCodeModel, "projectValueHelp");
+				}else{
+					var oProjectValueHelp = this.getOwnerComponent().getModel("projectValueHelp"); 
+					this.getView().setModel(oProjectValueHelp, "projectValueHelp");
+				}
+				
+				
+				
 				var oBindingContext = oEvent
 					.getSource()
 					.getBindingContext("detailModel");
@@ -262,6 +269,18 @@ sap.ui.define(
 	
 				return sErrorMessage;
 	
+			},
+
+			updateModel: function (oNewEntry,sSource) {
+
+				if (sSource === "details") {
+					var oDetailModel = this.getView().getModel("detailModel");
+					var oDetailModelData = oDetailModel.getData();
+	
+					
+				} else {
+					
+				}
 			},
 
 

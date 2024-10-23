@@ -20,36 +20,11 @@
 				text="{ActivityMonth}"
 				level="H2"/>
 		</semantic:titleHeading>
-		<!-- <semantic:headerContent>
-			<Button id="editButton" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
-		</semantic:headerContent> -->
 		 <semantic:content></semantic:content>
-			<!-- <smartFilterBar:SmartFilterBar id="smartFilterBar" entitySet="LineItemsSet" persistencyKey="SmartFilter_Explored">
-				<smartFilterBar:controlConfiguration>
-					<smartFilterBar:ControlConfiguration key="Bukrs">
-						<smartFilterBar:defaultFilterValues>
-							<smartFilterBar:SelectOption low="0001">
-							</smartFilterBar:SelectOption>
-						</smartFilterBar:defaultFilterValues>
-					</smartFilterBar:ControlConfiguration>
-					<smartFilterBar:ControlConfiguration key="Gjahr">
-						<smartFilterBar:defaultFilterValues>
-							<smartFilterBar:SelectOption low="2014">
-							</smartFilterBar:SelectOption>
-						</smartFilterBar:defaultFilterValues>
-					</smartFilterBar:ControlConfiguration>
-				</smartFilterBar:controlConfiguration>
-			</smartFilterBar:SmartFilterBar> -->
-
-			<!-- <smartTable:SmartTable id="smartTable" entitySet="detailModel" smartFilterId="smartFilterBar"
-				tableType="ResponsiveTable" useExportToExcel="true" beforeExport="onBeforeExport"
-				useVariantManagement="true" useTablePersonalisation="true" header="Line Items" 
-				showRowCount="true" persistencyKey="SmartTableAnalytical_Explored" enableAutoBinding="true"
-				demandPopin="true" class="sapUiResponsiveContentPadding" enableAutoColumnWidth="true"   app:useSmartToggle="true"> -->
 				<VBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent">
 				
 					<Panel
-					headerText="{ActivityMonth} {i18n>ActivityDetails}"
+					headerText="{ActivityMonth} {i18n>ActivityDetails} "
 					width="100%"
 					expandable="false">
 					<headerToolbar>
@@ -58,8 +33,8 @@
 							<Title text="{ActivityMonth} {i18n>ActivityDetails}"/>
 							<ToolbarSpacer/>
 							<Button id="saveActButton" text="{i18n>SaveActivities}" visible= "{= ${detailModel>/editMode} }" press="onSaveActivities" icon="sap-icon://save" type="Emphasized"/>
-							<Button id="addActButton" text="{i18n>AddActLines}" visible= "{= ${detailModel>/editMode} }" press="onAddActivityLine" icon="sap-icon://add"/>
-							<Button id="deleteActButton" text="{i18n>DeleteActLines}"  visible= "{= ${detailModel>/editMode} }" press="onDeleteActivityLine" icon="sap-icon://delete"/>
+							<Button id="addActButton" text="{i18n>AddActLines}" visible= "{= ${detailModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
+							<Button id="deleteActButton" text="{i18n>DeleteActLines}"  visible= "{= ${detailModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
 							<Button id="editButton2" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
 							<Button id="exportButton" text="{i18n>ExportExcel}" press="onExportToExcel" icon="sap-icon://excel-attachment"/>
 							<!-- <Button id="importButton" text="Import from Excel" press="onImportFromExcel" icon="sap-icon://upload"/> -->
@@ -141,7 +116,20 @@
 		headerText="{i18n>CostDetails}"
 		width="100%"
 		expandable="false">
+		<headerToolbar>
+
+			<Toolbar>
+				<Title text="{ActivityMonth} {i18n>CostDetails}"/>
+				<ToolbarSpacer/>
+				
+				<Button id="addCostButton" text="{i18n>AddActLines}" visible= "{= ${detailModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
+				<Button id="deleteCostButton" text="{i18n>DeleteActLines}"  visible= "{= ${detailModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
+				
+
+			</Toolbar>
+		</headerToolbar>
 		<ScrollContainer horizontal="true" vertical="true" height="160px">
+			
 				<Table items="{detailCostModel>/}" id="idDetailCostModel" >
 					<columns>
 						<Column demandPopin="true" minScreenWidth="Tablet">
