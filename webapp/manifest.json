@@ -104,7 +104,7 @@
 					"target": "master"
 				},
 				{
-					"pattern": "detail/{Month},{ActivityYear}",
+					"pattern": "detail/{Guid},{Pernr},{Month},{ActivityYear}",
 					"name": "detail",
 					"target": ["master","detail"]
 				}

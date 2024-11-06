@@ -25,7 +25,7 @@
                     <Label text="Project" required = "true"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectCode" type="Text" required="true" placeholder="Please Select Project code" change="handleInputProjectCodeChange" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
+                            <Input id="inputProjectCode" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
                         </InputListItem>
                     </List>
                     
@@ -42,36 +42,6 @@
                
                     <Label text="Description" required = "true"/>
                     <Input id="inputDescription" type="Text" fieldGroupIds="Fragment" required="true" placeholder="Please type description."/>
-
-
-					<!-- <Label text="Project"/>
-                        <Select forceSelection="false" id="selectProjectModel" showSecondaryValues="true" required="true" change="handleVehicleModelChange" enabled="{screen>/entry/key/enabled}" items="{ path: 'selectVehicleModel>/list', sorter: { path: 'Key'} }" width="800px" >
-                            <core:ListItem key="{selectProjectModel>ProjectCode}" text="{selectProjectModel>ProjectName}" />
-                        </Select> -->
-
-                    <!-- <Label text="Aracın Yılı"/>
-                    <Input id="inputVehicleYear" fieldGroupIds="Fragment" required="true"  placeholder="2018" /> -->
-                    <!-- <Label text="Vehicle Year"/>
-                    <DatePicker
-                            id="inputVehicleYear"
-                            required="true"
-                            displayFormat="yyyy"
-                            valueFormat="yyyy"
-                            /> -->
-                   
-                    <!-- <Label text="Vehicle Kilometer"/>
-                    <Input id="inputVehicleKm" type="Number" fieldGroupIds="Fragment" required="true" placeholder="34850"/>
- 
-                    <Label text="Vehicle Renting Price"/>
-                    <Input id="inputRentingPrice" type="Number" fieldGroupIds="Fragment" required="true" placeholder="1250,75 ₺"/>
- 
-                    <Label text="Fuel Cost per Kilometer"/>
-                    <Input id="inputFuelPerKm" type="Number" fieldGroupIds="Fragment" required="true" placeholder="3,75 ₺"/> -->
-                    <!-- <Label text="Project"/>
-                    <Select forceSelection="false" id="selectProjectModel"  showSecondaryValues="true"  change="handleInputProjectCodeChange" enabled="{screen>/entry/key/enabled}" items="{ path: 'headerInfo>/ProjectCode', sorter: { path: 'ProjectCode'} }" width="800px" >
-                        <core:ListItem key="{selectProjectModel>ProjectCode}" text="{selectProjectModel>ProjectName}" />
-                    </Select> -->
-
 
 
                 </f:content>

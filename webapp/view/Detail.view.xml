@@ -32,10 +32,10 @@
 						<Toolbar>
 							<Title text="{ActivityMonth} {i18n>ActivityDetails}"/>
 							<ToolbarSpacer/>
-							<Button id="saveActButton" text="{i18n>SaveActivities}" visible= "{= ${detailModel>/editMode} }" press="onSaveActivities" icon="sap-icon://save" type="Emphasized"/>
-							<Button id="addActButton" text="{i18n>AddActLines}" visible= "{= ${detailModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
-							<Button id="deleteActButton" text="{i18n>DeleteActLines}"  visible= "{= ${detailModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
-							<Button id="editButton2" text= "{= ${detailModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${detailModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
+							<Button id="saveActButton" text="{i18n>SaveActivities}" visible= "{= ${editModel>/editMode} }" press="onSaveActivities" icon="sap-icon://save" type="Emphasized"/>
+							<Button id="addActButton" text="{i18n>AddActLines}" visible= "{= ${editModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
+							<Button id="deleteActButton" text="{i18n>DeleteActLines}"  visible= "{= ${editModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
+							<Button id="editButton2" text= "{= ${editModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${editModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
 							<Button id="exportButton" text="{i18n>ExportExcel}" press="onExportToExcel" icon="sap-icon://excel-attachment"/>
 							<!-- <Button id="importButton" text="Import from Excel" press="onImportFromExcel" icon="sap-icon://upload"/> -->
 							<!-- <Button id="buttonPaste" type="Default" text="{i18n>Paste}" icon="sap-icon://paste" press="onTablePaste" visible="true"></Button> -->
@@ -53,7 +53,15 @@
 								<Button id="buttonPaste" type="Default" text="Yapıştır" icon="sap-icon://paste" press="onTablePaste" visible="true"></Button>
 							</table:extension>
 						</table:Table> -->
-					<Table items="{detailModel>/}" id="lineItemsList"  >
+					<Table 	items="{
+						path: 'ActivityDetails',
+						sorter: {
+							path: 'ActivityDate',
+							descending: false
+						},
+						groupHeaderFactory: '.createGroupHeader'
+					}"
+					id="lineItemsList"  > 
 					<columns>
 						<Column width="5%">
 							<Text text=""/>
@@ -79,31 +87,31 @@
 					</columns>
 					<items>
 						<ColumnListItem
-						class="{= ${detailModel>Weekend} ? 'myCustomBackground' : '' }">
+						class="{= ${Weekend} ? 'myCustomBackground' : '' }">
 							<cells>
-								<CheckBox id="detailCheckBox" selected="{detailModel>selected}" select="onSelectBox"/>
-								<Text text="{detailModel>PersonnelName} {detailModel>PersonnelSurname}"/>
-								<!-- <Text text="{detailModel>ActivityDate}"/> -->
-								<DatePicker id="inputActivityDate" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" editable="{detailModel>/editMode}" value="{
-									path: 'detailModel>ActivityDate',
+
+								<CheckBox id="detailCheckBox" selected="{Box}" select="onSelectBox" enabled="{editModel>/editMode}"/>
+								<Text text="{PersonnelName} {PersonnelSurname}"/>
+								<DatePicker id="inputActivityDate" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === X ? 'Warning' : 'None' }" editable="{editModel>/editMode}" value="{
+									path: 'ActivityDate',
 									type: 'sap.ui.model.type.Date',
 									formatOptions: {
 									style: 'short'
 								}}"
 								
 								/>
-								<Input id="inputProjectCode" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" value="{detailModel>ProjectCode}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
-								<Input id="inputProjectName" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" value="{detailModel>ProjectName}" editable="false"/>
+								<Input id="inputProjectCode" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === true ? 'Warning' : 'None' }" value="{ProjectCode}" editable="{editModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
+								<Input id="inputProjectName" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === true ? 'Warning' : 'None' }" value="{ProjectName}" editable="false"/>
 								<Input value="{
-									path: 'detailModel>ActivityDuration',
+									path: 'ActivityDuration',
 									type: 'sap.ui.model.type.Float',
 									formatOptions: {
 										minFractionDigits: 2,  
 										maxFractionDigits: 2 
 									}
-								}" editable="{detailModel>/editMode}" 
-								liveChange="onLiveChangeRestrictToNumbers" valueStateText="{i18n>WeekendWarning}" valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" />
-								<Input value="{detailModel>Description}" valueStateText="{i18n>WeekendWarning}"  valueState="{=${detailModel>Weekend} === true ? 'Warning' : 'None' }" editable="{detailModel>/editMode}"/>
+								}" editable="{editModel>/editMode}" 
+								liveChange="onLiveChangeRestrictToNumbers" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === true ? 'Warning' : 'None' }" />
+								<Input value="{Description}" valueStateText="{i18n>WeekendWarning}"  valueState="{=${Weekend} === true ? 'Warning' : 'None' }" editable="{editModel>/editMode}"/>
 							</cells>
 						</ColumnListItem>
 					</items>
@@ -122,15 +130,29 @@
 				<Title text="{ActivityMonth} {i18n>CostDetails}"/>
 				<ToolbarSpacer/>
 				
-				<Button id="addCostButton" text="{i18n>AddActLines}" visible= "{= ${detailModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
-				<Button id="deleteCostButton" text="{i18n>DeleteActLines}"  visible= "{= ${detailModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
+				<Button id="addCostButton" text="{i18n>AddActLines}" visible= "{= ${editModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
+				<Button id="deleteCostButton" text="{i18n>DeleteActLines}"  visible= "{= ${editModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
 				
 
 			</Toolbar>
 		</headerToolbar>
 		<ScrollContainer horizontal="true" vertical="true" height="160px">
 			
-				<Table items="{detailCostModel>/}" id="idDetailCostModel" >
+				<!-- <Table items="{detailCostModel>/}" id="idDetailCostModel" > -->
+					<Table 				items="{
+						path: 'ActivityDetails',
+					    parameters: {
+           				    expand: 'CostsSet'
+        			    },
+						sorter: {
+							path: 'ActivityDate',
+							descending: false
+						},
+						groupHeaderFactory: '.createGroupHeader'
+					}"
+					id="idDetailCostModel"  > 
+
+
 					<columns>
 						<Column demandPopin="true" minScreenWidth="Tablet">
 							<Text text="{i18n>PersonnelName}"/>
@@ -161,8 +183,8 @@
 						<ColumnListItem>
 							<cells>
 
-								<Text text="{detailCostModel>/PersonnelName} {detailCostModel>/PersonnelSurname}"/>
-								<DatePicker id="inputActivityCostDate" editable="{detailModel>/editMode}" value="{
+								<Text text="{CostSet>PersonnelName} {CostSet>PersonnelSurname}"/>
+								<DatePicker id="inputActivityCostDate" editable="{ditModel>/editMode}" value="{
 									path: 'detailCostModel>ActivityDate',
 									type: 'sap.ui.model.type.Date',
 									formatOptions: {
@@ -170,12 +192,12 @@
 								}}"
 								
 								/>
-								<Text text="{detailCostModel>/ProjectName}"/>
-								<Input id="inputCostType" value="{detailCostModel>CostType}" editable="{detailModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
-								<Text text="{detailCostModel>CostName}"/>
-								<Input id="inputCostAmount" type= "Number" value="{detailCostModel>CostAmount}" editable="{detailModel>/editMode}" />
-								<Input id="inputCostCurrency" value="{detailCostModel>CostCurrency}" editable="{detailModel>/editMode}"  />
-								<Input value="{detailCostModel>Description}" editable="{detailModel>/editMode}" />
+								<Text text="{CostSet>ProjectName}"/>
+								<Input id="inputCostType" value="{CostSet>CostType}" editable="{editModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
+								<Text text="{CostSet>CostName}"/>
+								<Input id="inputCostAmount" type= "Number" value="{CostSet>CostAmount}" editable="{editModel>/editMode}" />
+								<Input id="inputCostCurrency" value="{CostSet>CostCurrency}" editable="{editModel>/editMode}"  />
+								<Input value="{CostSet>Description}" editable="{editModel>/editMode}" />
 							</cells>
 						</ColumnListItem>
 					</items>
@@ -214,4 +236,4 @@
 
 	</semantic:SemanticPage>
 
-</mvc:View>
+</mvc:View>	

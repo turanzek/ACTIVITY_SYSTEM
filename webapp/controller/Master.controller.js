@@ -39,23 +39,6 @@ sap.ui.define([
 				// taken care of by the master list itself.
 				iOriginalBusyDelay = oList.getBusyIndicatorDelay();
 
-			this._oGroupFunctions = {
-				UnitNumber : function(oContext) {
-					var iNumber = oContext.getProperty('UnitNumber'),
-						key, text;
-					if (iNumber <= 20) {
-						key = "LE20";
-						text = this.getResourceBundle().getText("masterGroup1Header1");
-					} else {
-						key = "GT20";
-						text = this.getResourceBundle().getText("masterGroup1Header2");
-					}
-					return {
-						key: key,
-						text: text
-					};
-				}.bind(this)
-			};
 
 			this._oList = oList;
 			// keeps the filter and search state
@@ -67,10 +50,6 @@ sap.ui.define([
 			
 			this.setModel(oViewModel, "masterView");
 			
-
-
-
-
 			// Make sure, busy indication is showing immediately so there is no
 			// break after the busy indication for loading the view's meta data is
 			// ended (see promise 'oWhenMetadataIsLoaded' in AppController)
@@ -92,7 +71,7 @@ sap.ui.define([
 		/* =========================================================== */
 		/* event handlers                                              */
 		/* =========================================================== */
-
+		
 		/**
 		 * After list data is available, this handler method updates the
 		 * master list counter
@@ -113,42 +92,6 @@ sap.ui.define([
 				Year: oMasterData.Year
 			})
 
-			// var oProjectCodeModel = new sap.ui.model.json.JSONModel();
-			// sap.ui.getCore().setModel(oProjectCodeModel , "projectCode");
-			// this.setModel(oProjectCodeModel , "projectCode");
-
-			// var m = this.getOwnerComponent().getModel();
-
-			// var path = "/ProjectSet";
-	
-			// m.read(path, {
-			//   success: function (oData) {
-			// 	var oProjectModel = this.getView().getModel("projectCode");
-			// 	oProjectModel.setData(oData.results);
-			//   }.bind(this),
-			//   error: function (error) { },
-			// });
-		  
-
-
-
-			// odataModel.read("/EGITIM_MASRAF_YERISET", {
-			// 	groupId: "group1",
-			// 	urlParameters: {
-			// 		"$expand": ["toOnayci"]
-			// 	},
-			// 	filters: [
-			// 		new sap.ui.model.Filter({
-			// 			path: "Usern",
-			// 			operator: sap.ui.model.FilterOperator.EQ,
-			// 			value1: userId
-			// 		}),
-			// 		new sap.ui.model.Filter({
-			// 			path: "Appty",
-			// 			operator: sap.ui.model.FilterOperator.EQ,
-			// 			value1: this._appType
-			// 		})]
-			// });
 
 		},
 
@@ -224,65 +167,7 @@ sap.ui.define([
 			}
 		},
 
-		/**
-		 * Event handler called when ViewSettingsDialog has been confirmed, i.e.
-		 * has been closed with 'OK'. In the case, the currently chosen filters, sorters or groupers
-		 * are applied to the master list, which can also mean that they
-		 * are removed from the master list, in case they are
-		 * removed in the ViewSettingsDialog.
-		 * @param {sap.ui.base.Event} oEvent the confirm event
-		 * @public
-		 */
-		onConfirmViewSettingsDialog : function (oEvent) {
-			var aFilterItems = oEvent.getParameters().filterItems,
-				aFilters = [],
-				aCaptions = [];
 
-			// update filter state:
-			// combine the filter array and the filter string
-			aFilterItems.forEach(function (oItem) {
-				switch (oItem.getKey()) {
-					case "Filter1" :
-						aFilters.push(new Filter("UnitNumber", FilterOperator.LE, 100));
-						break;
-					case "Filter2" :
-						aFilters.push(new Filter("UnitNumber", FilterOperator.GT, 100));
-						break;
-					default :
-						break;
-				}
-				aCaptions.push(oItem.getText());
-			});
-
-			this._oListFilterState.aFilter = aFilters;
-			this._updateFilterBar(aCaptions.join(", "));
-			this._applyFilterSearch();
-			this._applySortGroup(oEvent);
-		},
-
-		/**
-		 * Apply the chosen sorter and grouper to the master list
-		 * @param {sap.ui.base.Event} oEvent the confirm event
-		 * @private
-		 */
-		_applySortGroup: function (oEvent) {
-			var mParams = oEvent.getParameters(),
-				sPath,
-				bDescending,
-				aSorters = [];
-			// apply sorter to binding
-			// (grouping comes before sorting)
-			if (mParams.groupItem) {
-				sPath = mParams.groupItem.getKey();
-				bDescending = mParams.groupDescending;
-				var vGroup = this._oGroupFunctions[sPath];
-				aSorters.push(new Sorter(sPath, bDescending, vGroup));
-			}
-			sPath = mParams.sortItem.getKey();
-			bDescending = mParams.sortDescending;
-			aSorters.push(new Sorter(sPath, bDescending));
-			this._oList.getBinding("items").sort(aSorters);
-		},
 
 		/**
 		 * Event handler for the list selection event
@@ -292,6 +177,13 @@ sap.ui.define([
 		onSelectionChange : function (oEvent) {
 			var oList = oEvent.getSource(),
 				bSelected = oEvent.getParameter("selected");
+
+				    // Get the selected item from the master list
+					var oMasterList = this.byId("masterlist");
+					var oSelectedItem = oMasterList.getSelectedItem();
+			
+				// Call the _showDetail function with the selected item
+						// this._showDetail2(oSelectedItem);
 
 			// skip navigation when deselecting an item in multi selection mode
 			if (!(oList.getMode() === "MultiSelect" && !bSelected)) {
@@ -353,7 +245,51 @@ sap.ui.define([
 		_onMasterMatched :  function() {
 			//Set the layout property of the FCL control to 'OneColumn'
 			this.getModel("appView").setProperty("/layout", "OneColumn");
+
+
+			
 		},
+
+		// _showDetail2 : function (oItem) {
+		// 	var oContext = oItem.getBindingContext();
+		// 	var sMonth = oContext.getProperty("Month");
+		// 	var sGuid = oContext.getProperty("Guid");
+		// 	var sPernr = oContext.getProperty("Pernr");
+		// 	var sActivityYear = oContext.getProperty("Year");
+		
+		// 	var oFilters = [
+		// 		new Filter("Month", FilterOperator.EQ, sMonth),
+		// 		new Filter("Guid", FilterOperator.EQ, sGuid),
+		// 		new Filter("Pernr", FilterOperator.EQ, sPernr),
+		// 		new Filter("ActivityYear", FilterOperator.EQ, sActivityYear)
+		// 	];
+		
+		// 	var oDetailModel = this.getView().getModel("detailModel");
+		// 	if (oDetailModel) {
+		// 		oDetailModel.setProperty("/busy", true);
+		// 		oDetailModel.setProperty("/editMode", false);
+		
+		// 		var sPath = "/ActivityDetails";
+		// 		// var oBinding = oDetailModel.bindList(sPath, null, oFilters);
+		// 		var oBinding = oDetailModel.bindList(sPath);
+		// 		oBinding.filter(oFilters); // Filtreleri burada ekleyin
+		// 		oBinding.attachDataReceived(function () {
+		// 			oDetailModel.setProperty("/busy", false);
+		// 		});
+		// 		oBinding.attachDataFailed(function () {
+		// 			oDetailModel.setProperty("/busy", false);
+		// 		});
+		// 	}	
+		
+		// 	var bReplace = !Device.system.phone;
+		// 	this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
+		// 	this.getRouter().navTo("detail", {
+		// 		Month: sMonth,
+		// 		Guid: sGuid,
+		// 		Pernr: sPernr,
+		// 		ActivityYear: sActivityYear
+		// 	}, bReplace);
+		// },
 
 		/**
 		 * Shows the selected item on the detail page
@@ -367,7 +303,7 @@ sap.ui.define([
 			var sMonth = oContext.getProperty("Month");
 			var sGuid = oContext.getProperty("Guid");
 			var sPernr = oContext.getProperty("Pernr");
-			// var sProjectCode = oContext.getProperty("ProjectCode");
+
 			var sActivityYear = oContext.getProperty("Year");
 
 
@@ -391,9 +327,8 @@ sap.ui.define([
 			this.getRouter().navTo("detail", {
 				// Month : oItem.getBindingContext().getProperty("Month")
 				Month: sMonth,
-				// Guid: sGuid,
-				// Pernr: sPernr,
-				// ProjectCode: sProjectCode,
+				Guid: "GUID_DEFAULT",
+				Pernr: sPernr,
 				ActivityYear: sActivityYear
 			}, bReplace);
 		},
@@ -431,18 +366,6 @@ sap.ui.define([
 				oViewModel.setProperty("/noDataText", this.getResourceBundle().getText("masterListNoDataText"));
 			}
 		},
-
-		/**
-		 * Internal helper method that sets the filter bar visibility property and the label's caption to be shown
-		 * @param {string} sFilterBarText the selected filter value
-		 * @private
-		 */
-		_updateFilterBar : function (sFilterBarText) {
-			var oViewModel = this.getModel("masterView");
-			oViewModel.setProperty("/isFilterBarVisible", (this._oListFilterState.aFilter.length > 0));
-			oViewModel.setProperty("/filterBarLabel", this.getResourceBundle().getText("masterFilterBarText", [sFilterBarText]));
-		},
-
 		
 		onPressEntryActivityButton: function () {
 			var oView = this.getView();
@@ -478,11 +401,6 @@ sap.ui.define([
 		onPressEntryCostButton: function () {
 			var oView = this.getView();
 
-			// var oProjectCode = this.byId("inputProjectCode");
-			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
- 
-           
- 
             if (!this.byId("entryCost")) {
               // load asynchronous XML fragment
               Fragment.load({
@@ -546,7 +464,7 @@ sap.ui.define([
 				MonthName       : "",
 				Year            : oMasterData.Year,
 				Status			: "MASTER",
-				ActivityDetailsSet: [
+				ActivityDetails: [
 					{
 						 Guid 			  : "GUID_DEFAULT",
 						Pernr			  : oMasterData.Pernr,
@@ -598,12 +516,13 @@ sap.ui.define([
             this.getOwnerComponent()
               .getModel()
               .create("/ActivityDaysSet", oActivityDays  , {
+				urlParameters: {
+					expand: "ActivityDetails",
+					// refreshAfterChange: true
+				},
                 success: function () {
                  var Msg = "Activity entry is successfull."
-				//  this.updateModel(oActivityDays,"details");
-				
-				//  this.getOwnerComponent().refreshApplication();
-				this.getView().getModel().refresh(true);
+				// this.getView().getModel().refresh(true);
 				 MessageBox.show(Msg);
 				 this.BusyDialog.close();
 				// TO DO clear data ve model yapılacak
@@ -621,10 +540,6 @@ sap.ui.define([
           },
 
 		  onPressCancelActivity: function () {
-            // this.getView().byId("selectProjectModel").setSelectedKey("");
-           
-     
-     
             this.byId("entryActivity").destroy();
           },
 
@@ -632,7 +547,6 @@ sap.ui.define([
 		  onSaveCostType: function () {
 
 			var sActivityDate = this.getView().byId("inputActivityMasterDateCost").getValue();
-		
 			var oMasterData = this.getView().byId("masterlist").getBinding("items").getContexts()[0].getObject();
 			var ui5Date = this.getView().byId("inputActivityMasterDateCost").getDateValue();
 			if (ui5Date){
@@ -659,7 +573,7 @@ sap.ui.define([
 				MonthName       : "",
 				Year            : oMasterData.Year,
 				Status			: "COST",
-				ActivityDetailsSet: [
+				ActivityDetails: [
 					{
 					    Guid 			  : "GUID_DEFAULT",
 						Pernr			  : oMasterData.Pernr,
@@ -671,8 +585,6 @@ sap.ui.define([
 						ActivityMonth     : sMonth,
 						ActivityMonthName : "",
 						ActivityYear      : oMasterData.Year,
-						// ActivityDuration  : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
-						// Description       : this.getView().byId("inputDescription").getValue(),
 						CostsSet          : [ 
 						{
 							ActivityMonth : sMonth,
@@ -697,8 +609,6 @@ sap.ui.define([
 			if (this.getView().byId("inputActivityMasterDateCost").getValue() === "") {
 				
 				this.getView().byId("inputActivityMasterDateCost").setValueState("Error");
-				//  MessageToast.show("Fill the activity date");
-				//  return;
 				MessageBox.error("Fill the activity date.");
 				return false;
 			};
@@ -732,14 +642,6 @@ sap.ui.define([
 			};
 
 
-			// if (this.getView().byId("inputActivityHour").getValue() === "") {
-				
-			// 	this.getView().byId("inputActivityHour").setValueState("Error");
-			// 	MessageBox.error("Fill the activity hour.");
-			// 	return false;
-			// };
-
-
 			this.BusyDialog = new sap.m.BusyDialog({});
             this.BusyDialog.open();
             this.getOwnerComponent()
@@ -747,7 +649,6 @@ sap.ui.define([
               .create("/ActivityDaysSet", oActivityDays  , {
                 success: function () {
                  var Msg = "Cost entry is successfull."
-				//  this.getOwnerComponent().refreshApplication();
 				this.getView().getModel().refresh(true);
 				 MessageBox.show(Msg);
 				 this.BusyDialog.close();
@@ -766,47 +667,8 @@ sap.ui.define([
           },
 
 		  onPressCancelCostType: function () {
-            // this.getView().byId("selectProjectModel").setSelectedKey("");
             this.byId("entryCost").destroy();
           },
-
-		  handleInputProjectCodeChange: function (oEvent) {
-			var sValue = oEvent.getParameter("value");
-			// var oProjectCode = this.byId("inputProjectCode");
-			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
-
-
-		  },
-
-		  handleInputCostChange: function (oEvent) {
-			var sValueCost = oEvent.getParameter("value");
-			// var oProjectCode = this.byId("inputProjectCode");
-			// oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
-
-
-		  },
- 
-		//   handleCloseSelectProject: function (oEvent) {
-		// 	var aContexts = oEvent.getParameter("selectedContexts");
-		
-		// 	var oProjectCode = this.byId("inputProjectCode");
-		// 	oProjectCode.setValue(aContexts[0].getObject().ProjectCode);
-
-		// 	var oProjectName = this.byId("inputProjectName");
-		// 	oProjectName.setValue(aContexts[0].getObject().ProjectName);
-
-		//   },  
-
-		//   handleSearchSelectProject: function (oEvent) {
-		// 	var sValue = oEvent.getParameter("value");
-		// 	var oFilter = new Filter(
-		// 	  "ProjectCode",
-		// 	  sap.ui.model.FilterOperator.Contains,
-		// 	  sValue
-		// 	);
-		// 	var oBinding = oEvent.getSource().getBinding("items");
-		// 	oBinding.filter([oFilter]);
-		//   },
 
 	});
 

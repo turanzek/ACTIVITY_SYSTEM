@@ -35,7 +35,7 @@ server:
       configuration:
         debug: true
         extraExts: "xml,json,properties"
-        port: 35730
+        port: 35731
         watchPath: "webapp"
 builder:
   customTasks:
