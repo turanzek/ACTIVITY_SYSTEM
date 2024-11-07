@@ -426,15 +426,6 @@ sap.ui.define([
 		},
 
 
-		_onPressEntryCostButton2: function (oItem) {
-			var bReplace = !Device.system.phone;
-			// set the layout property of FCL control to show two columns
-			this.getModel("appView").setProperty("/layout", "TwoColumnsMidExpanded");
-			this.getRouter().navTo("detail", {
-				Month : oItem.getBindingContext().getProperty("Month")
-			}, bReplace);
-		},
-
 	
           onSaveActivity: function () {
 			
@@ -478,7 +469,7 @@ sap.ui.define([
 						ActivityYear      : oMasterData.Year,
 						ActivityDuration  : parseFloat(this.getView().byId("inputActivityHour").getValue()).toFixed(2),
 						Description       : this.getView().byId("inputDescription").getValue(),
-						CostsSet          : [],
+						CostDetails         : [],
 					}
 				]
 				
@@ -565,16 +556,16 @@ sap.ui.define([
 
 			var oActivityDays = {
 
-				Guid 			: "GUID_DEFAULT",
-				Pernr			: oMasterData.Pernr,
-				PersonnelName   : oMasterData.PersonnelName,
-				PersonnelSurname: oMasterData.PersonnelSurname,
-				Month           : sMonth,
-				MonthName       : "",
-				Year            : oMasterData.Year,
-				Status			: "COST",
-				ActivityDetails: [
-					{
+				// Guid 			: "GUID_DEFAULT",
+				// Pernr			: oMasterData.Pernr,
+				// PersonnelName   : oMasterData.PersonnelName,
+				// PersonnelSurname: oMasterData.PersonnelSurname,
+				// Month           : sMonth,
+				// MonthName       : "",
+				// Year            : oMasterData.Year,
+				// Status			: "COST",
+				// ActivityDetails: [
+					// {
 					    Guid 			  : "GUID_DEFAULT",
 						Pernr			  : oMasterData.Pernr,
 						PersonnelName     : oMasterData.PersonnelName,
@@ -585,7 +576,7 @@ sap.ui.define([
 						ActivityMonth     : sMonth,
 						ActivityMonthName : "",
 						ActivityYear      : oMasterData.Year,
-						CostsSet          : [ 
+						CostDetails       : [ 
 						{
 							ActivityMonth : sMonth,
 							CostName      : this.getView().byId("inputCostName").getValue(), 
@@ -600,8 +591,8 @@ sap.ui.define([
 							Description   : this.getView().byId("inputDescriptionCost").getValue(),
 						}
 						]
-					}
-				]
+					// }
+				// ]
 				
 			};
 
@@ -646,8 +637,8 @@ sap.ui.define([
             this.BusyDialog.open();
             this.getOwnerComponent()
               .getModel()
-              .create("/ActivityDaysSet", oActivityDays  , {
-                success: function () {
+              .create("/ActivityDetailsSet", oActivityDays  , {
+                success: function (oData, response) {
                  var Msg = "Cost entry is successfull."
 				this.getView().getModel().refresh(true);
 				 MessageBox.show(Msg);

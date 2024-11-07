@@ -90,7 +90,7 @@
 						class="{= ${Weekend} ? 'myCustomBackground' : '' }">
 							<cells>
 
-								<CheckBox id="detailCheckBox" selected="{Box}" select="onSelectBox" enabled="{editModel>/editMode}"/>
+								<CheckBox id="detailCheckBox" selected="{Box}" select="onSelectBox" />
 								<Text text="{PersonnelName} {PersonnelSurname}"/>
 								<DatePicker id="inputActivityDate" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === X ? 'Warning' : 'None' }" editable="{editModel>/editMode}" value="{
 									path: 'ActivityDate',
@@ -140,10 +140,7 @@
 			
 				<!-- <Table items="{detailCostModel>/}" id="idDetailCostModel" > -->
 					<Table 				items="{
-						path: 'ActivityDetails',
-					    parameters: {
-           				    expand: 'CostsSet'
-        			    },
+						path: 'CostDetails',
 						sorter: {
 							path: 'ActivityDate',
 							descending: false
@@ -152,7 +149,19 @@
 					}"
 					id="idDetailCostModel"  > 
 
-
+					<!-- <Table
+					id="idDetailCostModel"
+					items="{
+						path: 'ActivityDetails',
+						parameters: {
+							expand: 'CostDetails'
+						},
+						sorter: {
+							path: 'ActivityDate',
+							descending: false
+						}
+					}"
+				> -->
 					<columns>
 						<Column demandPopin="true" minScreenWidth="Tablet">
 							<Text text="{i18n>PersonnelName}"/>
@@ -183,7 +192,7 @@
 						<ColumnListItem>
 							<cells>
 
-								<Text text="{CostSet>PersonnelName} {CostSet>PersonnelSurname}"/>
+								<Text text="{CostDetails>PersonnelName} {CostDetails>PersonnelSurname}"/>
 								<DatePicker id="inputActivityCostDate" editable="{ditModel>/editMode}" value="{
 									path: 'detailCostModel>ActivityDate',
 									type: 'sap.ui.model.type.Date',
@@ -192,12 +201,12 @@
 								}}"
 								
 								/>
-								<Text text="{CostSet>ProjectName}"/>
-								<Input id="inputCostType" value="{CostSet>CostType}" editable="{editModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
-								<Text text="{CostSet>CostName}"/>
-								<Input id="inputCostAmount" type= "Number" value="{CostSet>CostAmount}" editable="{editModel>/editMode}" />
-								<Input id="inputCostCurrency" value="{CostSet>CostCurrency}" editable="{editModel>/editMode}"  />
-								<Input value="{CostSet>Description}" editable="{editModel>/editMode}" />
+								<Text text="{CostDetails>ProjectName}"/>
+								<Input id="inputCostType" value="{CostDetails>CostType}" editable="{editModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp"/>
+								<Text text="{CostDetails>CostName}"/>
+								<Input id="inputCostAmount" type= "Number" value="{CostDetails>CostAmount}" editable="{editModel>/editMode}" />
+								<Input id="inputCostCurrency" value="{CostDetails>CostCurrency}" editable="{editModel>/editMode}"  />
+								<Input value="{CostDetails>Description}" editable="{editModel>/editMode}" />
 							</cells>
 						</ColumnListItem>
 					</items>
@@ -205,10 +214,7 @@
 			</ScrollContainer>
 			</Panel>
 		</VBox>
-			<!-- </smartTable:SmartTable>		 -->
-				
 
-		<!--Semantic ShareMenu Buttons-->
 		<semantic:sendEmailAction>
 			<semantic:SendEmailAction
 				id="shareEmail"

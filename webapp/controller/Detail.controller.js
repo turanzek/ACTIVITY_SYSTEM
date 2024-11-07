@@ -324,42 +324,100 @@ sap.ui.define(
 				return day === 0 || day === 6;
 			},
 
-			onSelectBox: function (oEvent) {
-				var oCheckbox = oEvent.getSource();
-				var bSelected = oCheckbox.getSelected();
-
-				// Get the binding context of the checkbox directly from the OData model
-				var oContext = oCheckbox.getBindingContext();
-
-				// Get the path of the current item
-				var sPath = oContext.getPath();
-
-				// Retrieve the OData model
-				var oODataModel = this.getView().getModel();
-
-				// Fetch the current item's data
-				var oItemData = oContext.getObject();
-
-				// Set the selected status
-				oItemData.Box = bSelected;
-
-				// Update the OData model with the new state
-				// oODataModel.update(sPath, oItemData, {
-				// 	success: function() {
-				// 		// Successfully updated
-				// 	},
-				// 	error: function() {
-				// 		// Handle error
-				// 	}
-				// });
-
-				// Check if the activity date is on a weekend
-				if (this._isWeekend(oItemData.ActivityDate) && bSelected) {
-					MessageBox.warning(
-						"Attention! You are writing a cost for the weekend!"
-					);
-				}
+			onSelectBox: function(oEvent) {
+				// var oTable = this.byId("lineItemsList"); // ActivityDetails tablosu
+				// var oSelectedItem = oEvent.getParameter("listItem");
+				// var oContext = oSelectedItem.getBindingContext();
+			
+				var oSelectedItem = oEvent.getSource().getBindingContext().getObject();
+				var oContext = oEvent.getSource().getBindingContext();
+				
+			
+				// Seçilen satırın verisini al
+				var oSelectedActivity = oContext.getObject();
+				
+				// Seçilen activity'nin CostDetails verisini al
+				var sPath = oContext.getPath() + "/CostDetails"; // CostDetails'e gidiyoruz
+				var oModel = this.getView().getModel();
+			
+				oModel.read(sPath, {
+					success: function(oData) {
+						if (oData.results && oData.results.length > 0) {
+							// CostDetails verilerini başarıyla aldık
+							var oDetailTable = this.byId("idDetailCostModel");
+							oDetailTable.setModel(new sap.ui.model.json.JSONModel(oData.results));
+						} else {
+							// CostDetails verisi boşsa
+							sap.m.MessageToast.show("No cost details found for this activity.");
+						}
+					}.bind(this),
+					error: function(oError) {
+						// Hata mesajı
+						sap.m.MessageToast.show("Error retrieving cost details.");
+					}
+				});
 			},
+			// onSelectBox: function (oEvent) {
+			// 	// Seçilen satır verisini al
+			// 	var oSelectedItem = oEvent.getSource().getBindingContext().getObject();
+			// 	var sGuid = oSelectedItem.Guid;
+			// 	var sPernr = oSelectedItem.Pernr;
+			// 	var sActivityDate = oSelectedItem.ActivityDate;
+			
+			// 	// Alt tablo için filtreleri oluştur
+			// 	var oFilterGuid = new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, sGuid);
+			// 	var oFilterPernr = new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, sPernr);
+			// 	var oFilterDate = new sap.ui.model.Filter("ActivityDate", sap.ui.model.FilterOperator.EQ, sActivityDate);
+			
+			// 	// Alt tabloyu al ve filtreleri uygulayın
+			// 	var oTable = this.byId("idDetailCostModel"); // Alt tablo ID'sini kullanın
+			// 	var oBinding = oTable.getBinding("items");
+				
+			// 	// Tablodaki veri bağlamlarını al
+			// 		// var aItems = oBinding.getContexts().map(function(oContext) {
+			// 		// 	return oContext.getObject();
+			// 		// });
+				
+			// 	// Veriyi konsola yazdır
+			// 	// oBinding.filter([oFilterGuid, oFilterPernr, oFilterDate]);
+			// },
+
+			// onSelectBox: function (oEvent) {
+			// 	var oCheckbox = oEvent.getSource();
+			// 	var bSelected = oCheckbox.getSelected();
+
+			// 	// Get the binding context of the checkbox directly from the OData model
+			// 	var oContext = oCheckbox.getBindingContext();
+
+			// 	// Get the path of the current item
+			// 	var sPath = oContext.getPath();
+
+			// 	// Retrieve the OData model
+			// 	var oODataModel = this.getView().getModel();
+
+			// 	// Fetch the current item's data
+			// 	var oItemData = oContext.getObject();
+
+			// 	// Set the selected status
+			// 	oItemData.Box = bSelected;
+
+			// 	// Update the OData model with the new state
+			// 	// oODataModel.update(sPath, oItemData, {
+			// 	// 	success: function() {
+			// 	// 		// Successfully updated
+			// 	// 	},
+			// 	// 	error: function() {
+			// 	// 		// Handle error
+			// 	// 	}
+			// 	// });
+
+			// 	// Check if the activity date is on a weekend
+			// 	if (this._isWeekend(oItemData.ActivityDate) && bSelected) {
+			// 		MessageBox.warning(
+			// 			"Attention! You are writing a cost for the weekend!"
+			// 		);
+			// 	}
+			// },
 
 			// onSelectBox: function (oEvent) {
 			// 	var oCheckbox = oEvent.getSource();
@@ -372,7 +430,7 @@ sap.ui.define(
 			// 		.pop();
 			// 	var oDetailModel = this.getView().getModel("detailModel");
 			// 	var oDetailModelData = oDetailModel.getData();
-			// 	var aCostData = oDetailModelData[iSelectedIndex].CostsSet.results;
+			// 	var aCostData = oDetailModelData[iSelectedIndex].CostDetails.results;
 
 			// 	oDetailModelData[iSelectedIndex].selected = bSelected;
 			// 	oDetailModel.setData(oDetailModelData);
@@ -434,7 +492,7 @@ sap.ui.define(
 								return item.selected !== true;
 							});
 						} else if (oSelection.includes("Cost")) {
-							oDetailModelData.CostsSet = oDetailModelData.CostsSet.filter(
+							oDetailModelData.CostDetails = oDetailModelData.CostDetails.filter(
 								function (item) {
 									return item.selected !== true;
 								}
@@ -724,7 +782,7 @@ sap.ui.define(
 							ActivityYear: item.ActivityYear,
 							ActivityDuration: parseFloat(item.ActivityDuration).toFixed(2),
 							Description: item.Description,
-							CostsSet: item.CostsSet,
+							CostDetails: item.CostDetails,
 						};
 					}),
 				};
@@ -775,15 +833,15 @@ sap.ui.define(
 				];
 				ws["!cols"] = wscols;
 
-				// Get the CostsSet data from detailModel
+				// Get theCostDetails data from detailModel
 				var aCostData = [];
 				aData.forEach(function (item) {
-					if (item.CostsSet && item.CostsSet.results) {
-						aCostData = aCostData.concat(item.CostsSet.results);
+					if (item.CostDetails && item.CostDetails.results) {
+						aCostData = aCostData.concat(item.CostDetails.results);
 					}
 				});
 
-				// Convert the CostsSet data to a format suitable for SheetJS
+				// Convert the CostDetails data to a format suitable for SheetJS
 				var aExportCostData = aCostData.map(function (item) {
 					return {
 						"Cost Personnel Name": item.PersonnelName,
