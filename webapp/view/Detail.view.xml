@@ -132,7 +132,7 @@
 					<Table
 					id="idDetailCostModel"
 					items="{
-						path: 'CostDetails',
+						path: 'ActivityDetails/CostDetails',
 						sorter: {
 							path: 'ActivityDate',
 							descending: false

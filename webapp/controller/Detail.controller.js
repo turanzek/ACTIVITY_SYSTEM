@@ -24,6 +24,7 @@ sap.ui.define(
 
 		return BaseController.extend("zint.activity.system.controller.Detail", {
 			formatter: formatter,
+			oTemplateBox: {},
 
 			/* =========================================================== */
 			/* lifecycle methods                                           */
@@ -250,14 +251,26 @@ sap.ui.define(
                 // var oSelectedItem = oEvent.getSource().getParent();
                 // var oContext = oSelectedItem.getBindingContext();
 				var oContext = oEvent.getSource().getBindingContext();
+				var oModel = oContext.getModel();
+				var bCurrentSelected = oModel.getProperty(oContext.getPath() + "/Box");
                 var sPath = oContext.getPath();
                 sPath = sPath + "/CostDetails";
+				var oCostTable = this.byId("idDetailCostModel");
  
-                var oCostTable = this.byId("idDetailCostModel");
-                oCostTable.bindItems({
-                    path: sPath,
-                    template: oCostTable.getBindingInfo("items").template
-                });
+				if (!bCurrentSelected){
+					if (oCostTable.getBindingInfo("items")){
+						this.oTemplateBox = oCostTable.getBindingInfo("items").template;
+					}
+					oCostTable.bindItems({
+						path: sPath,
+						template: this.oTemplateBox
+					});
+
+				}
+				else {
+					oCostTable.unbindItems();
+				}
+				oModel.setProperty(oContext.getPath() + "/Box", !bCurrentSelected);
             },
 
 			onCloseDetailPress: function () {
@@ -304,120 +317,10 @@ sap.ui.define(
 				// OData modelini doğrudan görünümden al
 				var oTable = this.getView().byId("lineItemsList");
 				var oBinding = oTable.getBinding("items");
-				var oData = oBinding.getModel().getProperty(oBinding.getPath()); // Bağlama yolundaki veriye eriş
-
-				// OData'nın boş olup olmadığını kontrol et
-				if (!oData || !Array.isArray(oData)) {
-					MessageToast.show("Veri bulunamadı. Lütfen tekrar deneyin.");
-					return;
-				}
-				// Seçili öğeleri belirle
-				var selectedItems = oData.filter((item) => item.selected === true); // Seçili öğeleri filtrele
-
-				if (selectedItems.length > 1) {
-					MessageToast.show(
-						"Birden fazla satır seçili. Lütfen sadece bir tane seçin."
-					);
-					return;
-				}
-
-				var currentIndex =
-					selectedItems.length === 0
-						? -1
-						: oData.findIndex((item) => item.selected);
-
-				if (currentIndex === -1) {
-					
-					currentIndex = oData.findIndex(function (item) {
-						return item.ActivityDate === new Date().toISOString().slice(0, 10); // Tarih karşılaştırmasını gerektiği gibi ayarlayın
-					});
-
-					if (currentIndex === -1) {
-						currentIndex = oData.length - 1; // Varsayılan olarak son öğeyi al
-					}
-				}
-
-				var oNewLine = {
-					selected: false,
-					PersonnelName:
-						selectedItems.length === 0
-							? oData[currentIndex].PersonnelName
-							: selectedItems[0].PersonnelName,
-					PersonnelSurname:
-						selectedItems.length === 0
-							? oData[currentIndex].PersonnelSurname
-							: selectedItems[0].PersonnelSurname,
-					ActivityDate: oData[currentIndex].ActivityDate,
-					ProjectCode: "",
-					ProjectName: "",
-					ActivityDuration: "",
-					Description: "",
-					Weekend: this._isWeekend(oData[currentIndex].ActivityDate),
-				};
-
-				oData.splice(currentIndex + 1, 0, oNewLine);
-
-
-				oBinding.getModel().setProperty(oBinding.getPath(), oData); // OData modelini uygun yolda güncelle
-
-				oBinding.refresh(true);
-			},
-			onAddLine: function (oEvent) {
-
-				var oTable = this.getView().byId("lineItemsList");
-				var oBinding = oTable.getBinding("items");
 				var oData = oBinding.getModel().getProperty(oBinding.getPath());
 
-				if (!oData || !Array.isArray(oData)) {
-					MessageToast.show("Data not found. Please try again.");
-					return;
-				}
-
-				var selectedItems = oData.filter((item) => item.selected === true);
-
-				if (selectedItems.length > 1) {
-					MessageToast.show(
-						"Multiple rows are selected. Please select only one row."
-					);
-					return;
-				}
-
-				var currentIndex =
-					selectedItems.length === 0
-						? -1
-						: oData.findIndex((item) => item.selected);
-
-				if (currentIndex === -1) {
-					currentIndex = oData.findIndex(function (item) {
-						return item.ActivityDate === new Date().toISOString().slice(0, 10);
-					});
-
-					if (currentIndex === -1) {
-						currentIndex = oData.length - 1; 
-					}
-				}
-
-				var oNewLine = {
-					selected: false,
-					PersonnelName:
-						selectedItems.length === 0
-							? oData[currentIndex].PersonnelName
-							: selectedItems[0].PersonnelName,
-					PersonnelSurname:
-						selectedItems.length === 0
-							? oData[currentIndex].PersonnelSurname
-							: selectedItems[0].PersonnelSurname,
-					ActivityDate: oData[currentIndex].ActivityDate,
-					ProjectCode: "",
-					ProjectName: "",
-					ActivityDuration: "",
-					Description: "",
-					Weekend: this._isWeekend(oData[currentIndex].ActivityDate),
-				};
-				oData.splice(currentIndex + 1, 0, oNewLine);
-				oBinding.getModel().setProperty(oBinding.getPath(), oData);
-				oBinding.refresh(true);
 			},
+
 			onSaveActivities: function (oEvent) {
 				var oDetailModel = this.getView().getModel("detailModel");
 				var oDetailModelData = oDetailModel.getData();
