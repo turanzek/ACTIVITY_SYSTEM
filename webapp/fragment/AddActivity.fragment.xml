@@ -25,20 +25,20 @@
                     <Label text="Project" required = "true"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectCode" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
+                            <Input id="inputProjectCodActe" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
                         </InputListItem>
                     </List>
                     
                     <Label text="Project Name"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectName" type="Text" editable = "false"  ></Input>
+                            <Input id="inputProjectNameAct" type="Text" editable = "false"  ></Input>
                         </InputListItem>
                     </List>  
                     
                     <Label text="Activity Hour" required = "true"/>
                     <Input id="inputActivityHour" value="{path:'/number', type:'sap.ui.model.type.Float'}" fieldGroupIds="Fragment" required="true" placeholder="8,00"   />
-                    <ObjectNumber number=" { path : 'personnelModel>/PersonnelName' , type: 'sap.ui.model.type.Float' } ₺" id="idObjectNumber" state="Warning"></ObjectNumber>
+                    <!-- <ObjectNumber number=" { path : 'personnelModel>/PersonnelName' , type: 'sap.ui.model.type.Float' } ₺" id="idObjectNumber" state="Warning"></ObjectNumber> -->
                
                     <Label text="Description" required = "true"/>
                     <Input id="inputDescription" type="Text" fieldGroupIds="Fragment" required="true" placeholder="Please type description."/>

@@ -26,14 +26,14 @@
                     <Label text="Project" required = "true"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectCode" editable="false" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
+                            <Input id="inputProjectCodeCost" editable="false" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
                         </InputListItem>
                     </List>
                     
                     <Label text="Project Name"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectName" type="Text" editable = "false"  ></Input>
+                            <Input id="inputProjectNamecost" type="Text" editable = "false"  ></Input>
                         </InputListItem>
                     </List>  
                    

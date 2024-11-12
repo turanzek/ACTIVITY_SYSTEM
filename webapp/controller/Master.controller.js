@@ -339,8 +339,8 @@ sap.ui.define(
 							PersonnelName: oMasterData.PersonnelName,
 							PersonnelSurname: oMasterData.PersonnelSurname,
 							ActivityDate: ui5Date,
-							ProjectCode: this.getView().byId("inputProjectCode").getValue(),
-							ProjectName: this.getView().byId("inputProjectName").getValue(),
+							ProjectCode: this.getView().byId("inputProjectCodeAct").getValue(),
+							ProjectName: this.getView().byId("inputProjectNameAct").getValue(),
 							ActivityMonth: sMonth,
 							ActivityMonthName: "",
 							ActivityYear: oMasterData.Year,
@@ -359,8 +359,8 @@ sap.ui.define(
 					return false;
 				}
 
-				if (this.getView().byId("inputProjectCode").getValue() === "") {
-					this.getView().byId("inputProjectCode").setValueState("Error");
+				if (this.getView().byId("inputProjectCodeAct").getValue() === "") {
+					this.getView().byId("inputProjectCodeAct").setValueState("Error");
 					MessageBox.error("Fill the project code.");
 					return false;
 				}
@@ -429,8 +429,8 @@ sap.ui.define(
 					PersonnelName: oMasterData.PersonnelName,
 					PersonnelSurname: oMasterData.PersonnelSurname,
 					ActivityDate: ui5Date,
-					ProjectCode: this.getView().byId("inputProjectCode").getValue(),
-					ProjectName: this.getView().byId("inputProjectName").getValue(),
+					ProjectCode: this.getView().byId("inputProjectCodeCost").getValue(),
+					ProjectName: this.getView().byId("inputProjectNameCost").getValue(),
 					ActivityMonth: sMonth,
 					ActivityMonthName: "",
 					ActivityYear: oMasterData.Year,
@@ -469,8 +469,8 @@ sap.ui.define(
 					return false;
 				}
 
-				if (this.getView().byId("inputProjectCode").getValue() === "") {
-					this.getView().byId("inputProjectCode").setValueState("Error");
+				if (this.getView().byId("inputProjectCodeCost").getValue() === "") {
+					this.getView().byId("inputProjectCodeCost").setValueState("Error");
 					MessageBox.error("Fill the project code.");
 					return false;
 				}

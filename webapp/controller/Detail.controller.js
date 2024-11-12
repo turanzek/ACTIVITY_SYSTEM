@@ -370,9 +370,14 @@ sap.ui.define(
 
 			onExportToExcel: function () {
 				var oModel = this.getView().getModel("detailModel");
-				var aData = oModel.getData();
-
-				// Convert the data to a format suitable for SheetJS
+				
+				// Verileri OData'dan almak için expand parametresiyle ilgili ilişkileri alıyoruz
+				var oBinding = this.byId("lineItemsList").getBinding("items");
+				var aData = oBinding.getCurrentContexts().map(function (context) {
+					return context.getObject();
+				});
+			
+				// Excel formatına uygun hale getirme
 				var aExportData = aData.map(function (item) {
 					return {
 						"Personnel Name": item.PersonnelName,
@@ -383,12 +388,13 @@ sap.ui.define(
 						Description: item.Description,
 					};
 				});
-
+			
+				// Excel dosyasını oluşturma
 				var wb = XLSX.utils.book_new();
 				var ws = XLSX.utils.json_to_sheet(aExportData);
 				XLSX.utils.book_append_sheet(wb, ws, "Details");
-
-				// Set column widths
+			
+				// Kolon genişliklerini ayarlama
 				var wscols = [
 					{ wch: 20 }, // "Personnel Name" column width
 					{ wch: 15 }, // "Activity Date" column width
@@ -398,14 +404,28 @@ sap.ui.define(
 					{ wch: 30 }, // "Description" column width
 				];
 				ws["!cols"] = wscols;
-
+			
+				// CostDetails ilişkisini almak için veriyi işleyelim
+				var sPernr = aData[0].Pernr;
+				var sGuid = aData[0].Guid;
+				var sActivityYear = aData[0].ActivityYear;
+				var sActivityMonth = aData[0].ActivityMonth;
 				var aCostData = [];
-				aData.forEach(function (item) {
-					if (item.CostDetails && item.CostDetails.results) {
-						aCostData = aCostData.concat(item.CostDetails.results);
-					}
-				});
 
+				this.getModel().read("/CostsSet", {
+					filters: [
+						new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, sPernr),
+						new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, sGuid),
+						new sap.ui.model.Filter("ActivityYear", sap.ui.model.FilterOperator.EQ, sActivityYear),
+						new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
+					],
+					success: function (oData) {
+						// COSTSSET verilerini aCostData'ya ekleyelim
+						if (oData && oData.results) {
+							aCostData = aCostData.concat(oData.results);
+						}
+
+			
 				var aExportCostData = aCostData.map(function (item) {
 					return {
 						"Cost Personnel Name": item.PersonnelName,
@@ -416,22 +436,32 @@ sap.ui.define(
 						"Cost Description": item.Description,
 					};
 				});
-
+			
+				// Cost verilerini yeni bir sayfaya ekleyelim
 				var wsCost = XLSX.utils.json_to_sheet(aExportCostData);
 				XLSX.utils.book_append_sheet(wb, wsCost, "Detail Costs");
-
-				// Set column widths
+			
+				// Kolon genişliklerini ayarlama
 				var wsCostcols = [
 					{ wch: 20 }, // "Cost Personnel Name" column width
 					{ wch: 15 }, // "Cost Activity Date" column width
 					{ wch: 15 }, // "Cost Project Code" column width
-					{ wch: 20 }, // "CostProject Name" column width
+					{ wch: 20 }, // "Cost Project Name" column width
 					{ wch: 15 }, // "Activity Hour" column width
 					{ wch: 30 }, // "Description" column width
 				];
 				wsCost["!cols"] = wsCostcols;
+			
+				// Excel dosyasını kaydediyoruz
 				XLSX.writeFile(wb, "DetailData.xlsx");
 			},
+            error: function (oError) {
+                // Hata işlemesi
+                console.log("Error while fetching COSTSSET data:", oError);
+            }
+		});
+			}
+			,
 			onLiveChangeRestrictToNumbers: function (oEvent) {
 				var oInput = oEvent.getSource();
 				var sValue = oInput.getValue();
