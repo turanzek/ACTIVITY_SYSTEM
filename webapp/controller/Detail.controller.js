@@ -7,6 +7,8 @@ sap.ui.define(
 		"sap/ui/export/Spreadsheet",
 		"sap/m/MessageBox",
 		"sap/m/MessageToast",
+		// "exceljs",  // exceljs modülünü ekleyin
+		// "file-saver" // FileSaver modülünü ekleyin,
 	],
 	function (
 		BaseController,
@@ -16,6 +18,8 @@ sap.ui.define(
 		Spreadsheet,
 		MessageBox,
 		MessageToast
+		// Exceljs,
+		// FileSaver
 	) {
 		"use strict";
 
@@ -29,7 +33,6 @@ sap.ui.define(
 			/* =========================================================== */
 			/* lifecycle methods                                           */
 			/* =========================================================== */
-
 
 			onInit: function () {
 				this.getView().setModel(oViewModel, "viewModel");
@@ -84,7 +87,7 @@ sap.ui.define(
 					sMonth +
 					"',Year='" +
 					sYear +
-					"')"; 
+					"')";
 				this.getModel()
 					.metadataLoaded()
 					.then(
@@ -204,19 +207,297 @@ sap.ui.define(
 			/* =========================================================== */
 
 			onSendEmailPress: function () {
+				var oBinding = this.byId("lineItemsList").getBinding("items");
+				var aData = oBinding.getCurrentContexts().map(function (context) {
+					return context.getObject();
+				});
+			
+				var sPernr = aData[0].Pernr;
+				var sGuid = aData[0].Guid;
+				var sActivityYear = aData[0].ActivityYear;
+				var sActivityMonth = aData[0].ActivityMonth;
+			
+				// Promisify read request for COSTSSET data
+				var aCostDataPromise = new Promise((resolve, reject) => {
+					this.getModel().read("/CostsSet", {
+						filters: [
+							new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, sPernr),
+							new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, sGuid),
+							new sap.ui.model.Filter("ActivityYear", sap.ui.model.FilterOperator.EQ, sActivityYear),
+							new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
+						],
+						success: function (oData) {
+							resolve(oData.results || []);
+						},
+						error: function (error) {
+							reject(error);
+						}
+					});
+				});
+			
+				// Read request completed, now generate Excel
+				aCostDataPromise.then((aCostData) => {
+					var workbook = new ExcelJS.Workbook();
+					var worksheet = [workbook.addWorksheet("Details"), workbook.addWorksheet("Costs")];
+			
+					// Set columns and header styles
+					worksheet[0].columns = [
+						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+						{ header: "Activity Date", key: "ActivityDate", width: 15 },
+						{ header: "Project Code", key: "ProjectCode", width: 15 },
+						{ header: "Project Name", key: "ProjectName", width: 25 },
+						{ header: "Activity Hour", key: "ActivityHour", width: 12 },
+						{ header: "Description", key: "Description", width: 80 },
+					];
+			
+					worksheet[1].columns = [
+						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+						{ header: "Activity Date", key: "ActivityDate", width: 15 },
+						{ header: "Project Name", key: "ProjectName", width: 25 },
+						{ header: "Cost Type", key: "CostType", width: 10 },
+						{ header: "Cost Name", key: "CostName", width: 20 },
+						{ header: "Amount", key: "Amount", width: 15 },
+						{ header: "Currency", key: "Currency", width: 10 },
+						{ header: "Description", key: "Description", width: 80 },
+					];
+			
+					// Apply header styling
+					worksheet.forEach((ws) => {
+						ws.getRow(1).eachCell(function (cell) {
+							cell.fill = {
+								type: "pattern",
+								pattern: "solid",
+								fgColor: { argb: "FFFFFF00" } // Yellow background
+							};
+							cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
+							cell.border = {
+								top: { style: 'thin', color: { argb: 'FF000000' } },
+								left: { style: 'thin', color: { argb: 'FF000000' } },
+								bottom: { style: 'thin', color: { argb: 'FF000000' } },
+								right: { style: 'thin', color: { argb: 'FF000000' } }
+							};
+						});
+					});
+			
+					// Add data to the first sheet
+					aData.map(function (item) {
+						worksheet[0].addRow({
+							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+							ActivityDate: item.ActivityDate,
+							ProjectCode: item.ProjectCode,
+							ProjectName: item.ProjectName,
+							ActivityHour: item.ActivityHour,
+							Description: item.Description,
+						});
+					});
+			
+					// Add cost data to the second sheet
+					aCostData.map(function (item) {
+						worksheet[1].addRow({
+							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+							ActivityDate: item.ActivityDate,
+							ProjectName: item.ProjectName,
+							CostName: item.CostName,
+							CostType: item.CostType,
+							Amount: item.CostAmount,
+							Currency: item.CostCurrency,
+							Description: item.Description
+						});
+					});
+			
+					var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
+						+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
+			
+					// Create the Excel buffer
+					workbook.xlsx.writeBuffer().then(function (buffer) {
+						var blob = new Blob([buffer], { type: "application/octet-stream" });
+			
+						// Prepare FormData with the file to send it to the backend
+						var formData = new FormData();
+						formData.append("file", blob, sExcelName);
+			
+						// Send data to backend (make sure to replace with your backend URL)
+
+						// POST https://graph.microsoft.com/v1.0/me/messages/{id}/attachments
+						// Content-type: application/json
+						
+						// {
+						//   "@odata.type": "microsoft.graph.fileAttachment",
+						//   "name": "name-value",
+						//   "contentType": "contentType-value",
+						//   "isInline": false,
+						//   "contentLocation": "contentLocation-value",
+						//   "contentBytes": "base64-contentBytes-value"
+						// }
+
+
+
+
+						fetch("https://graph.microsoft.com/v1.0/me/messages/{id}/attachments", {
+							method: "POST",
+							body: formData
+						})
+							.then(response => response.json())
+							.then(data => {
+								if (data.success) {
+									MessageBox.success("E-mail sent successfully!");
+								} else {
+									MessageBox.error("Error sending e-mail: " + data.error);
+								}
+							})
+							.catch(error => {
+								MessageBox.error("Error sending e-mail: " + error.message);
+							});
+					});
+				}).catch((error) => {
+					MessageBox.error("Error fetching COSTSSET data: " + error.message);
+				});
+			},
+			onSendEmailPress4: function () {
+				var oBinding = this.byId("lineItemsList").getBinding("items");
+				var aData = oBinding.getCurrentContexts().map(function (context) {
+					return context.getObject();
+				});
+			
+				var sPernr = aData[0].Pernr;
+				var sGuid = aData[0].Guid;
+				var sActivityYear = aData[0].ActivityYear;
+				var sActivityMonth = aData[0].ActivityMonth;
+			
+				// Promisify read request for COSTSSET data
+				var aCostDataPromise = new Promise((resolve, reject) => {
+					this.getModel().read("/CostsSet", {
+						filters: [
+							new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, sPernr),
+							new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, sGuid),
+							new sap.ui.model.Filter("ActivityYear", sap.ui.model.FilterOperator.EQ, sActivityYear),
+							new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
+						],
+						success: function (oData) {
+							resolve(oData.results || []);
+						},
+						error: function (error) {
+							reject(error);
+						}
+					});
+				});
+			
+				// Read request completed, now generate Excel
+				aCostDataPromise.then((aCostData) => {
+					var workbook = new ExcelJS.Workbook();
+					var worksheet = [workbook.addWorksheet("Details"), workbook.addWorksheet("Costs")];
+			
+					// Set columns and header styles
+					worksheet[0].columns = [
+						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+						{ header: "Activity Date", key: "ActivityDate", width: 15 },
+						{ header: "Project Code", key: "ProjectCode", width: 15 },
+						{ header: "Project Name", key: "ProjectName", width: 25 },
+						{ header: "Activity Hour", key: "ActivityHour", width: 12 },
+						{ header: "Description", key: "Description", width: 80 },
+					];
+			
+					worksheet[1].columns = [
+						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+						{ header: "Activity Date", key: "ActivityDate", width: 15 },
+						{ header: "Project Name", key: "ProjectName", width: 25 },
+						{ header: "Cost Type", key: "CostType", width: 10 },
+						{ header: "Cost Name", key: "CostName", width: 20 },
+						{ header: "Amount", key: "Amount", width: 15 },
+						{ header: "Currency", key: "Currency", width: 10 },
+						{ header: "Description", key: "Description", width: 80 },
+					];
+			
+					// Apply header styling
+					worksheet.forEach((ws) => {
+						ws.getRow(1).eachCell(function (cell) {
+							cell.fill = {
+								type: "pattern",
+								pattern: "solid",
+								fgColor: { argb: "FFFFFF00" } // Yellow background
+							};
+							cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
+							cell.border = {
+								top: { style: 'thin', color: { argb: 'FF000000' } },
+								left: { style: 'thin', color: { argb: 'FF000000' } },
+								bottom: { style: 'thin', color: { argb: 'FF000000' } },
+								right: { style: 'thin', color: { argb: 'FF000000' } }
+							};
+						});
+					});
+			
+					// Add data to the first sheet
+					aData.map(function (item) {
+						worksheet[0].addRow({
+							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+							ActivityDate: item.ActivityDate,
+							ProjectCode: item.ProjectCode,
+							ProjectName: item.ProjectName,
+							ActivityHour: item.ActivityHour,
+							Description: item.Description,
+						});
+					});
+			
+					// Add cost data to the second sheet
+					aCostData.map(function (item) {
+						worksheet[1].addRow({
+							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+							ActivityDate: item.ActivityDate,
+							ProjectName: item.ProjectName,
+							CostName: item.CostName,
+							CostType: item.CostType,
+							Amount: item.CostAmount,
+							Currency: item.CostCurrency,
+							Description: item.Description
+						});
+					});
+			
+					var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
+						+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
+			
+					// Create the Excel buffer
+					// workbook.xlsx.writeBuffer().then(function (buffer) {
+					// 	var blob = new Blob([buffer], { type: "application/octet-stream" });
+
+					    // Dosyayı oluştur ve indir
+    workbook.xlsx.writeBuffer().then(function (buffer) {
+        var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        var url = URL.createObjectURL(blob);
+        
+        // Dosyayı indir
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = sExcelName;
+        a.click();
+
+        // `mailto` linki ile e-posta aç
+        var sRecipient = "yunus.tuzun@interise.com.tr";
+        var sSubject = encodeURIComponent("Aktivite Raporu: " + sExcelName);
+        var sBody = encodeURIComponent("Merhaba,\n\nLütfen ekteki aktiviteleri inceleyin.\n\nSaygılarımla,\n\n[Adınız]");
+        var mailtoLink = "mailto:" + sRecipient + "?subject=" + sSubject + "&body=" + sBody;
+        
+        window.location.href = mailtoLink;
+			
+	
+					});
+				}).catch((error) => {
+					MessageBox.error("Error fetching COSTSSET data: " + error.message);
+				});
+			},
+			onSendEmailPress2: function () {
 				var oMonthTranslations = {
-					"January": "Ocak",
-					"February": "Şubat",
-					"March": "Mart",
-					"April": "Nisan",
-					"May": "Mayıs",
-					"June": "Haziran",
-					"July": "Temmuz",
-					"August": "Ağustos",
-					"September": "Eylül",
-					"October": "Ekim",
-					"November": "Kasım",
-					"December": "Aralık"
+					January: "Ocak",
+					February: "Şubat",
+					March: "Mart",
+					April: "Nisan",
+					May: "Mayıs",
+					June: "Haziran",
+					July: "Temmuz",
+					August: "Ağustos",
+					September: "Eylül",
+					October: "Ekim",
+					November: "Kasım",
+					December: "Aralık",
 				};
 
 				var oViewModel = this.getModel("detailView");
@@ -227,11 +508,13 @@ sap.ui.define(
 				var sMonth = aData[0].ActivityMonthName;
 				var sMonthTurkish = oMonthTranslations[sMonth] || sMonth;
 				var sRecipient = "yunus.tuzun@interise.com.tr";
-				var sSubject = sMonthTurkish + " Ayı Aktiviteleri";			
-				var sMessage = "Selam abi,\n\n" + sMonthTurkish + " ayına ait aktivitelerim ektedir.";
+				var sSubject = sMonthTurkish + " Ayı Aktiviteleri";
+				var sMessage =
+					"Selam abi,\n\n" +
+					sMonthTurkish +
+					" ayına ait aktivitelerim ektedir.";
 
 				URLHelper.triggerEmail(sRecipient, sSubject, sMessage);
-
 			},
 
 			onListUpdateFinished: function (oEvent) {
@@ -266,32 +549,29 @@ sap.ui.define(
 				return day === 0 || day === 6;
 			},
 
-
 			onSelectBox: function (oEvent) {
-                // var oSelectedItem = oEvent.getSource().getParent();
-                // var oContext = oSelectedItem.getBindingContext();
+				// var oSelectedItem = oEvent.getSource().getParent();
+				// var oContext = oSelectedItem.getBindingContext();
 				var oContext = oEvent.getSource().getBindingContext();
 				var oModel = oContext.getModel();
 				var bCurrentSelected = oModel.getProperty(oContext.getPath() + "/Box");
-                var sPath = oContext.getPath();
-                sPath = sPath + "/CostDetails";
+				var sPath = oContext.getPath();
+				sPath = sPath + "/CostDetails";
 				var oCostTable = this.byId("idDetailCostModel");
- 
-				if (!bCurrentSelected){
-					if (oCostTable.getBindingInfo("items")){
+
+				if (!bCurrentSelected) {
+					if (oCostTable.getBindingInfo("items")) {
 						this.oTemplateBox = oCostTable.getBindingInfo("items").template;
 					}
 					oCostTable.bindItems({
 						path: sPath,
-						template: this.oTemplateBox
+						template: this.oTemplateBox,
 					});
-
-				}
-				else {
+				} else {
 					oCostTable.unbindItems();
 				}
 				oModel.setProperty(oContext.getPath() + "/Box", !bCurrentSelected);
-            },
+			},
 
 			onCloseDetailPress: function () {
 				this.getModel("appView").setProperty(
@@ -319,48 +599,46 @@ sap.ui.define(
 								return item.selected !== true;
 							});
 						} else if (oSelection.includes("Cost")) {
-							oDetailModelData.CostDetails = oDetailModelData.CostDetails.filter(
-								function (item) {
+							oDetailModelData.CostDetails =
+								oDetailModelData.CostDetails.filter(function (item) {
 									return item.selected !== true;
-								}
-							);
+								});
 						}
 
 						oDetailModel.setData(oDetailModelData);
 					}
 				} else if (oSelection.includes("add")) {
 				}
-
 			},
 
 			onAddLine: function () {
 				var oTable = this.byId("lineItemsList"); // Tabloyu alıyoruz
 				var oBinding = oTable.getBinding("items"); // Tabloyu bağlayan bindingi alıyoruz
-					
+
 				// Tabloyu bağlayan modelin "ActivityDetails" path'ine veri eklemek için,
 				// veri setini alıyoruz ve yeni satırı ekliyoruz
 				var oModel = this.getView().getModel();
 				var aData = oBinding.getCurrentContexts().map(function (context) {
 					return context.getObject();
 				});
-				
-								// Yeni satır verisini hazırlıyoruz
-								var oNewLine = {
-									PersonnelName: aData[0].PersonnelName,
-									ActivityDate: aData[0].ActivityDate,
-									ProjectCode: "",
-									ProjectName: "",
-									ActivityHour: 0,
-									Description: "",
-									Box: false, // Eğer checkbox varsa
-									Weekend: false // Weekend durumunu da dahil edebiliriz
-								};
+
+				// Yeni satır verisini hazırlıyoruz
+				var oNewLine = {
+					PersonnelName: aData[0].PersonnelName,
+					ActivityDate: aData[0].ActivityDate,
+					ProjectCode: "",
+					ProjectName: "",
+					ActivityHour: 0,
+					Description: "",
+					Box: false, // Eğer checkbox varsa
+					Weekend: false, // Weekend durumunu da dahil edebiliriz
+				};
 				// Yeni satırı veriye ekliyoruz
 				aData.push(oNewLine);
-			
+
 				// Veriyi backend'e eklemeden yalnızca frontend'de güncelledik
-				oBinding.refresh();  // Tabloyu güncelliyoruz
-			 },
+				oBinding.refresh(); // Tabloyu güncelliyoruz
+			},
 
 			onSaveActivities: function (oEvent) {
 				var oDetailModel = this.getView().getModel("detailModel");
@@ -409,106 +687,117 @@ sap.ui.define(
 				});
 			},
 			onExportToExcel: function () {
-				var oModel = this.getView().getModel("detailModel");
 				
-				// Verileri OData'dan almak için expand parametresiyle ilgili ilişkileri alıyoruz
 				var oBinding = this.byId("lineItemsList").getBinding("items");
-				var aData = oBinding.getCurrentContexts().map(function (context) {
+				var aData    = oBinding.getCurrentContexts().map(function (context) {
 					return context.getObject();
 				});
 			
-				// Excel formatına uygun hale getirme
-				var aExportData = aData.map(function (item) {
-					return {
-						"Personnel Name": item.PersonnelName + " " + item.PersonnelSurname,
-						"Activity Date": item.ActivityDate,
-						"Project Code": item.ProjectCode,
-						"Project Name": item.ProjectName,
-						"Activity Hour": item.ActivityHour,
-						"Description": item.Description,
-					};
-				});
-			
-				// Excel dosyasını oluşturma
-				var wb = XLSX.utils.book_new();
-				var ws = XLSX.utils.json_to_sheet(aExportData);
-				XLSX.utils.book_append_sheet(wb, ws, "Details");
-			
-				// Kolon genişliklerini ayarlama
-				var wscols = [
-					{ wch: 15 }, // "Personnel Name" column width
-					{ wch: 12 }, // "Activity Date" column width
-					{ wch: 8 }, // "Project Code" column width
-					{ wch: 20 }, // "Project Name" column width
-					{ wch: 12 }, // "Activity Hour" column width
-					{ wch: 80 }, // "Description" column width
-				];
-				ws["!cols"] = wscols;
-			
-				// CostDetails ilişkisini almak için veriyi işleyelim
-				var sPernr = aData[0].Pernr;
-				var sGuid = aData[0].Guid;
-				var sActivityYear = aData[0].ActivityYear;
+				var sPernr 		   = aData[0].Pernr;
+				var sGuid          = aData[0].Guid;
+				var sActivityYear  = aData[0].ActivityYear;
 				var sActivityMonth = aData[0].ActivityMonth;
-				var aCostData = [];
-
-				this.getModel().read("/CostsSet", {
-					filters: [
-						new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, sPernr),
-						new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, sGuid),
-						new sap.ui.model.Filter("ActivityYear", sap.ui.model.FilterOperator.EQ, sActivityYear),
-						new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
-					],
-					success: function (oData) {
-						// COSTSSET verilerini aCostData'ya ekleyelim
-						if (oData && oData.results) {
-							aCostData = aCostData.concat(oData.results);
-						}
-
 			
-				var aExportCostData = aCostData.map(function (item) {
-					return {
-						"Personnel Name": item.PersonnelName + " " + item.PersonnelSurname,
-						"Activity Date": item.ActivityDate,
-						"Project Name": item.ProjectName,
-						"Cost Type": item.CostType,
-						"Cost Name": item.CostName,
-						"Amount": item.CostAmount,
-						"Currency": item.CostCurrency,
-						"Description": item.Description,
-					};
+				// Promisify read request for COSTSSET data
+				var aCostDataPromise = new Promise((resolve, reject) => {
+					this.getModel().read("/CostsSet", {
+						filters: [
+							new sap.ui.model.Filter("Pernr",         sap.ui.model.FilterOperator.EQ, sPernr),
+							new sap.ui.model.Filter("Guid", 		 sap.ui.model.FilterOperator.EQ, sGuid),
+							new sap.ui.model.Filter("ActivityYear",  sap.ui.model.FilterOperator.EQ, sActivityYear),
+							new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
+						],
+						success: function (oData) {
+							resolve(oData.results || []);
+						},
+						error: function (error) {
+							reject(error);
+						}
+					});
 				});
 			
-				// Cost verilerini yeni bir sayfaya ekleyelim
-				var wsCost = XLSX.utils.json_to_sheet(aExportCostData);
-				XLSX.utils.book_append_sheet(wb, wsCost, "Detail Costs");
+				// Read request completed, now generate Excel
+				aCostDataPromise.then((aCostData) => {
+					var workbook = new ExcelJS.Workbook();
+					var worksheet = [workbook.addWorksheet("Details"), workbook.addWorksheet("Costs")];
 			
-				// Kolon genişliklerini ayarlama
-				var wsCostcols = [
-					{ wch: 15 }, // "Personnel Name" column width
-					{ wch: 12 }, // "Activity Date" column width
-					{ wch: 20 }, // "Project Name" column width
-					{ wch: 10 }, // "Cost Type" column width
-					{ wch: 20 }, // "Cost Name" column width
-					{ wch: 11 }, // "Cost Amount" column width
-					{ wch: 8 }, // "Cost Currency" column width
-					{ wch: 80 }, // "Description" column width
-				];
-				wsCost["!cols"] = wsCostcols;
+					// Set columns and header styles
+					worksheet[0].columns = [
+						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+						{ header: "Activity Date",  key: "ActivityDate",  width: 15 },
+						{ header: "Project Code",   key: "ProjectCode",   width: 15 },
+						{ header: "Project Name",   key: "ProjectName",   width: 25 },
+						{ header: "Activity Hour",  key: "ActivityHour",  width: 12 },
+						{ header: "Description",    key: "Description",   width: 80 },
+					];
+			
+					worksheet[1].columns = [
+						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+						{ header: "Activity Date",  key: "ActivityDate",  width: 15 },
+						{ header: "Project Name",   key: "ProjectName",   width: 25 },
+						{ header: "Cost Type",      key: "CostType",      width: 10 },
+						{ header: "Cost Name",      key: "CostName",      width: 20 },
+						{ header: "Amount",         key: "Amount",        width: 15 },
+						{ header: "Currency",       key: "Currency",      width: 10 },
+						{ header: "Description",    key: "Description",   width: 80 },
+					];
+			
+					// Apply header styling
+					worksheet.forEach((ws) => {
+						ws.getRow(1).eachCell(function (cell) {
+							cell.fill = {
+								type   : "pattern",
+								pattern: "solid",
+								fgColor: { argb: "FFFFFF00" } // Yellow background
+							};
+							cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
+							cell.border = {
+								top:    { style: 'thin', color: { argb: 'FF000000' } },
+								left:   { style: 'thin', color: { argb: 'FF000000' } },
+								bottom: { style: 'thin', color: { argb: 'FF000000' } },
+								right:  { style: 'thin', color: { argb: 'FF000000' } }
+							};
+						});
+					});
+			
+					// Add data to the first sheet
+					aData.map(function (item) {
+						worksheet[0].addRow({
+							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+							ActivityDate : item.ActivityDate,
+							ProjectCode  : item.ProjectCode,
+							ProjectName  : item.ProjectName,
+							ActivityHour : item.ActivityHour,
+							Description  : item.Description,
+						});
+					});
+			
+					// Add cost data to the second sheet
+					aCostData.map(function (item) {
+						worksheet[1].addRow({
+							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+							ActivityDate : item.ActivityDate,
+							ProjectName  : item.ProjectName,
+							CostName     : item.CostName,
+							CostType     : item.CostType,
+							Amount       : item.CostAmount,
+							Currency     : item.CostCurrency,
+							Description  : item.Description
+						});
+					});
 
-				var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
-				+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
-			
-				// Excel dosyasını kaydediyoruz
-				XLSX.writeFile(wb, sExcelName);
+					var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
+					+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
+					// Create and save Excel file
+					workbook.xlsx.writeBuffer().then(function (buffer) {
+						var blob = new Blob([buffer], { type: "application/octet-stream" });
+						saveAs(blob, sExcelName);
+					});
+				}).catch((error) => {
+					MessageBox.error("Error fetching COSTSSET data: " + error.message);
+				});
 			},
-            error: function (oError) {
-                // Hata işlemesi
-                console.log("Error while fetching COSTSSET data:", oError);
-            }
-		});
-			}
-			,
+
 			onLiveChangeRestrictToNumbers: function (oEvent) {
 				var oInput = oEvent.getSource();
 				var sValue = oInput.getValue();
