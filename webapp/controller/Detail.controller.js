@@ -30,9 +30,8 @@ sap.ui.define(
 			/* lifecycle methods                                           */
 			/* =========================================================== */
 
+
 			onInit: function () {
-
-
 				this.getView().setModel(oViewModel, "viewModel");
 				var oViewModel = new JSONModel({
 					busy: false,
@@ -205,13 +204,34 @@ sap.ui.define(
 			/* =========================================================== */
 
 			onSendEmailPress: function () {
-				var oViewModel = this.getModel("detailView");
+				var oMonthTranslations = {
+					"January": "Ocak",
+					"February": "Şubat",
+					"March": "Mart",
+					"April": "Nisan",
+					"May": "Mayıs",
+					"June": "Haziran",
+					"July": "Temmuz",
+					"August": "Ağustos",
+					"September": "Eylül",
+					"October": "Ekim",
+					"November": "Kasım",
+					"December": "Aralık"
+				};
 
-				URLHelper.triggerEmail(
-					null,
-					oViewModel.getProperty("/shareSendEmailSubject"),
-					oViewModel.getProperty("/shareSendEmailMessage")
-				);
+				var oViewModel = this.getModel("detailView");
+				var oBinding = this.byId("lineItemsList").getBinding("items");
+				var aData = oBinding.getCurrentContexts().map(function (context) {
+					return context.getObject();
+				});
+				var sMonth = aData[0].ActivityMonthName;
+				var sMonthTurkish = oMonthTranslations[sMonth] || sMonth;
+				var sRecipient = "yunus.tuzun@interise.com.tr";
+				var sSubject = sMonthTurkish + " Ayı Aktiviteleri";			
+				var sMessage = "Selam abi,\n\n" + sMonthTurkish + " ayına ait aktivitelerim ektedir.";
+
+				URLHelper.triggerEmail(sRecipient, sSubject, sMessage);
+
 			},
 
 			onListUpdateFinished: function (oEvent) {
@@ -313,13 +333,34 @@ sap.ui.define(
 
 			},
 
-			onAddLine: function (oEvent) {
-				// OData modelini doğrudan görünümden al
-				var oTable = this.getView().byId("lineItemsList");
-				var oBinding = oTable.getBinding("items");
-				var oData = oBinding.getModel().getProperty(oBinding.getPath());
-
-			},
+			onAddLine: function () {
+				var oTable = this.byId("lineItemsList"); // Tabloyu alıyoruz
+				var oBinding = oTable.getBinding("items"); // Tabloyu bağlayan bindingi alıyoruz
+					
+				// Tabloyu bağlayan modelin "ActivityDetails" path'ine veri eklemek için,
+				// veri setini alıyoruz ve yeni satırı ekliyoruz
+				var oModel = this.getView().getModel();
+				var aData = oBinding.getCurrentContexts().map(function (context) {
+					return context.getObject();
+				});
+				
+								// Yeni satır verisini hazırlıyoruz
+								var oNewLine = {
+									PersonnelName: aData[0].PersonnelName,
+									ActivityDate: aData[0].ActivityDate,
+									ProjectCode: "",
+									ProjectName: "",
+									ActivityHour: 0,
+									Description: "",
+									Box: false, // Eğer checkbox varsa
+									Weekend: false // Weekend durumunu da dahil edebiliriz
+								};
+				// Yeni satırı veriye ekliyoruz
+				aData.push(oNewLine);
+			
+				// Veriyi backend'e eklemeden yalnızca frontend'de güncelledik
+				oBinding.refresh();  // Tabloyu güncelliyoruz
+			 },
 
 			onSaveActivities: function (oEvent) {
 				var oDetailModel = this.getView().getModel("detailModel");
@@ -367,7 +408,6 @@ sap.ui.define(
 					}.bind(this),
 				});
 			},
-
 			onExportToExcel: function () {
 				var oModel = this.getView().getModel("detailModel");
 				
@@ -380,12 +420,12 @@ sap.ui.define(
 				// Excel formatına uygun hale getirme
 				var aExportData = aData.map(function (item) {
 					return {
-						"Personnel Name": item.PersonnelName,
+						"Personnel Name": item.PersonnelName + " " + item.PersonnelSurname,
 						"Activity Date": item.ActivityDate,
 						"Project Code": item.ProjectCode,
 						"Project Name": item.ProjectName,
 						"Activity Hour": item.ActivityHour,
-						Description: item.Description,
+						"Description": item.Description,
 					};
 				});
 			
@@ -396,12 +436,12 @@ sap.ui.define(
 			
 				// Kolon genişliklerini ayarlama
 				var wscols = [
-					{ wch: 20 }, // "Personnel Name" column width
-					{ wch: 15 }, // "Activity Date" column width
-					{ wch: 15 }, // "Project Code" column width
+					{ wch: 15 }, // "Personnel Name" column width
+					{ wch: 12 }, // "Activity Date" column width
+					{ wch: 8 }, // "Project Code" column width
 					{ wch: 20 }, // "Project Name" column width
-					{ wch: 15 }, // "Activity Hour" column width
-					{ wch: 30 }, // "Description" column width
+					{ wch: 12 }, // "Activity Hour" column width
+					{ wch: 80 }, // "Description" column width
 				];
 				ws["!cols"] = wscols;
 			
@@ -428,12 +468,14 @@ sap.ui.define(
 			
 				var aExportCostData = aCostData.map(function (item) {
 					return {
-						"Cost Personnel Name": item.PersonnelName,
-						"Cost Activity Date": item.ActivityDate,
-						"Cost Project Code": item.ProjectCode,
-						"Cost Project Name": item.ProjectName,
-						"Cost Activity Hour": item.ActivityHour,
-						"Cost Description": item.Description,
+						"Personnel Name": item.PersonnelName + " " + item.PersonnelSurname,
+						"Activity Date": item.ActivityDate,
+						"Project Name": item.ProjectName,
+						"Cost Type": item.CostType,
+						"Cost Name": item.CostName,
+						"Amount": item.CostAmount,
+						"Currency": item.CostCurrency,
+						"Description": item.Description,
 					};
 				});
 			
@@ -443,17 +485,22 @@ sap.ui.define(
 			
 				// Kolon genişliklerini ayarlama
 				var wsCostcols = [
-					{ wch: 20 }, // "Cost Personnel Name" column width
-					{ wch: 15 }, // "Cost Activity Date" column width
-					{ wch: 15 }, // "Cost Project Code" column width
-					{ wch: 20 }, // "Cost Project Name" column width
-					{ wch: 15 }, // "Activity Hour" column width
-					{ wch: 30 }, // "Description" column width
+					{ wch: 15 }, // "Personnel Name" column width
+					{ wch: 12 }, // "Activity Date" column width
+					{ wch: 20 }, // "Project Name" column width
+					{ wch: 10 }, // "Cost Type" column width
+					{ wch: 20 }, // "Cost Name" column width
+					{ wch: 11 }, // "Cost Amount" column width
+					{ wch: 8 }, // "Cost Currency" column width
+					{ wch: 80 }, // "Description" column width
 				];
 				wsCost["!cols"] = wsCostcols;
+
+				var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
+				+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
 			
 				// Excel dosyasını kaydediyoruz
-				XLSX.writeFile(wb, "DetailData.xlsx");
+				XLSX.writeFile(wb, sExcelName);
 			},
             error: function (oError) {
                 // Hata işlemesi
