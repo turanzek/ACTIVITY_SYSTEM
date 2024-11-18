@@ -73,6 +73,31 @@ sap.ui.define(
 					);
 				}
 
+				// Modeldeki tüm bağlamları al
+				if (this.getView().getModel().getBindings() !== undefined) {
+					var aBindings = this.getView().getModel().getBindings();
+
+					// Binding'lerdeki verileri kontrol et
+					aBindings.forEach(function (oBinding) {
+						var oContext = oBinding.getContext(); // Bağlamı al
+						if (oContext) {
+							var sPath = oContext.getPath(); // Bağlamdaki path
+							var oData = oContext.getModel().getObject(sPath);
+
+							// Eğer Box özelliği varsa, Box'ı false yap
+							if (oData && oData.Box !== undefined) {
+								oContext.getModel().setProperty(sPath + "/Box", false);
+							}
+						}
+					});
+
+					// idDetailCostModel tablosunun verisini sıfırla
+					var oCostTable = this.byId("idDetailCostModel");
+					if (oCostTable &&  this.oTemplateBox.hasOwnProperty("sId") ) {
+						oCostTable.unbindItems(); // Tablodaki tüm veriyi kaldırır
+					}
+				}
+
 				var sGUID = oArguments.Guid;
 				var sPernr = oArguments.Pernr;
 				var sMonth = oArguments.Month;
@@ -211,278 +236,350 @@ sap.ui.define(
 				var aData = oBinding.getCurrentContexts().map(function (context) {
 					return context.getObject();
 				});
-			
+
 				var sPernr = aData[0].Pernr;
 				var sGuid = aData[0].Guid;
 				var sActivityYear = aData[0].ActivityYear;
 				var sActivityMonth = aData[0].ActivityMonth;
-			
+
 				// Promisify read request for COSTSSET data
 				var aCostDataPromise = new Promise((resolve, reject) => {
 					this.getModel().read("/CostsSet", {
 						filters: [
-							new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, sPernr),
-							new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, sGuid),
-							new sap.ui.model.Filter("ActivityYear", sap.ui.model.FilterOperator.EQ, sActivityYear),
-							new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
+							new sap.ui.model.Filter(
+								"Pernr",
+								sap.ui.model.FilterOperator.EQ,
+								sPernr
+							),
+							new sap.ui.model.Filter(
+								"Guid",
+								sap.ui.model.FilterOperator.EQ,
+								sGuid
+							),
+							new sap.ui.model.Filter(
+								"ActivityYear",
+								sap.ui.model.FilterOperator.EQ,
+								sActivityYear
+							),
+							new sap.ui.model.Filter(
+								"ActivityMonth",
+								sap.ui.model.FilterOperator.EQ,
+								sActivityMonth
+							),
 						],
 						success: function (oData) {
 							resolve(oData.results || []);
 						},
 						error: function (error) {
 							reject(error);
-						}
+						},
 					});
 				});
-			
+
 				// Read request completed, now generate Excel
-				aCostDataPromise.then((aCostData) => {
-					var workbook = new ExcelJS.Workbook();
-					var worksheet = [workbook.addWorksheet("Details"), workbook.addWorksheet("Costs")];
-			
-					// Set columns and header styles
-					worksheet[0].columns = [
-						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-						{ header: "Activity Date", key: "ActivityDate", width: 15 },
-						{ header: "Project Code", key: "ProjectCode", width: 15 },
-						{ header: "Project Name", key: "ProjectName", width: 25 },
-						{ header: "Activity Hour", key: "ActivityHour", width: 12 },
-						{ header: "Description", key: "Description", width: 80 },
-					];
-			
-					worksheet[1].columns = [
-						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-						{ header: "Activity Date", key: "ActivityDate", width: 15 },
-						{ header: "Project Name", key: "ProjectName", width: 25 },
-						{ header: "Cost Type", key: "CostType", width: 10 },
-						{ header: "Cost Name", key: "CostName", width: 20 },
-						{ header: "Amount", key: "Amount", width: 15 },
-						{ header: "Currency", key: "Currency", width: 10 },
-						{ header: "Description", key: "Description", width: 80 },
-					];
-			
-					// Apply header styling
-					worksheet.forEach((ws) => {
-						ws.getRow(1).eachCell(function (cell) {
-							cell.fill = {
-								type: "pattern",
-								pattern: "solid",
-								fgColor: { argb: "FFFFFF00" } // Yellow background
-							};
-							cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
-							cell.border = {
-								top: { style: 'thin', color: { argb: 'FF000000' } },
-								left: { style: 'thin', color: { argb: 'FF000000' } },
-								bottom: { style: 'thin', color: { argb: 'FF000000' } },
-								right: { style: 'thin', color: { argb: 'FF000000' } }
-							};
-						});
-					});
-			
-					// Add data to the first sheet
-					aData.map(function (item) {
-						worksheet[0].addRow({
-							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-							ActivityDate: item.ActivityDate,
-							ProjectCode: item.ProjectCode,
-							ProjectName: item.ProjectName,
-							ActivityHour: item.ActivityHour,
-							Description: item.Description,
-						});
-					});
-			
-					// Add cost data to the second sheet
-					aCostData.map(function (item) {
-						worksheet[1].addRow({
-							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-							ActivityDate: item.ActivityDate,
-							ProjectName: item.ProjectName,
-							CostName: item.CostName,
-							CostType: item.CostType,
-							Amount: item.CostAmount,
-							Currency: item.CostCurrency,
-							Description: item.Description
-						});
-					});
-			
-					var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
-						+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
-			
-					// Create the Excel buffer
-					workbook.xlsx.writeBuffer().then(function (buffer) {
-						var blob = new Blob([buffer], { type: "application/octet-stream" });
-			
-						// Prepare FormData with the file to send it to the backend
-						var formData = new FormData();
-						formData.append("file", blob, sExcelName);
-			
-						// Send data to backend (make sure to replace with your backend URL)
+				aCostDataPromise
+					.then((aCostData) => {
+						var workbook = new ExcelJS.Workbook();
+						var worksheet = [
+							workbook.addWorksheet("Details"),
+							workbook.addWorksheet("Costs"),
+						];
 
-						// POST https://graph.microsoft.com/v1.0/me/messages/{id}/attachments
-						// Content-type: application/json
-						
-						// {
-						//   "@odata.type": "microsoft.graph.fileAttachment",
-						//   "name": "name-value",
-						//   "contentType": "contentType-value",
-						//   "isInline": false,
-						//   "contentLocation": "contentLocation-value",
-						//   "contentBytes": "base64-contentBytes-value"
-						// }
+						// Set columns and header styles
+						worksheet[0].columns = [
+							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+							{ header: "Activity Date", key: "ActivityDate", width: 15 },
+							{ header: "Project Code", key: "ProjectCode", width: 15 },
+							{ header: "Project Name", key: "ProjectName", width: 25 },
+							{ header: "Activity Hour", key: "ActivityHour", width: 12 },
+							{ header: "Description", key: "Description", width: 80 },
+						];
 
+						worksheet[1].columns = [
+							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+							{ header: "Activity Date", key: "ActivityDate", width: 15 },
+							{ header: "Project Name", key: "ProjectName", width: 25 },
+							{ header: "Cost Type", key: "CostType", width: 10 },
+							{ header: "Cost Name", key: "CostName", width: 20 },
+							{ header: "Amount", key: "Amount", width: 15 },
+							{ header: "Currency", key: "Currency", width: 10 },
+							{ header: "Description", key: "Description", width: 80 },
+						];
 
-
-
-						fetch("https://graph.microsoft.com/v1.0/me/messages/{id}/attachments", {
-							method: "POST",
-							body: formData
-						})
-							.then(response => response.json())
-							.then(data => {
-								if (data.success) {
-									MessageBox.success("E-mail sent successfully!");
-								} else {
-									MessageBox.error("Error sending e-mail: " + data.error);
-								}
-							})
-							.catch(error => {
-								MessageBox.error("Error sending e-mail: " + error.message);
+						// Apply header styling
+						worksheet.forEach((ws) => {
+							ws.getRow(1).eachCell(function (cell) {
+								cell.fill = {
+									type: "pattern",
+									pattern: "solid",
+									fgColor: { argb: "FFFFFF00" }, // Yellow background
+								};
+								cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
+								cell.border = {
+									top: { style: "thin", color: { argb: "FF000000" } },
+									left: { style: "thin", color: { argb: "FF000000" } },
+									bottom: { style: "thin", color: { argb: "FF000000" } },
+									right: { style: "thin", color: { argb: "FF000000" } },
+								};
 							});
+						});
+
+						// Add data to the first sheet
+						aData.map(function (item) {
+							worksheet[0].addRow({
+								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+								ActivityDate: item.ActivityDate,
+								ProjectCode: item.ProjectCode,
+								ProjectName: item.ProjectName,
+								ActivityHour: item.ActivityHour,
+								Description: item.Description,
+							});
+						});
+
+						// Add cost data to the second sheet
+						aCostData.map(function (item) {
+							worksheet[1].addRow({
+								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+								ActivityDate: item.ActivityDate,
+								ProjectName: item.ProjectName,
+								CostName: item.CostName,
+								CostType: item.CostType,
+								Amount: item.CostAmount,
+								Currency: item.CostCurrency,
+								Description: item.Description,
+							});
+						});
+
+						var sExcelName =
+							aData[0].PersonnelName +
+							"_" +
+							aData[0].PersonnelSurname +
+							"_" +
+							aData[0].ActivityYear +
+							"_" +
+							aData[0].ActivityMonthName +
+							"_" +
+							"Activity" +
+							".xlsx";
+
+						// Create the Excel buffer
+						workbook.xlsx.writeBuffer().then(function (buffer) {
+							var blob = new Blob([buffer], {
+								type: "application/octet-stream",
+							});
+
+							// Prepare FormData with the file to send it to the backend
+							var formData = new FormData();
+							formData.append("file", blob, sExcelName);
+
+							// Send data to backend (make sure to replace with your backend URL)
+
+							// POST https://graph.microsoft.com/v1.0/me/messages/{id}/attachments
+							// Content-type: application/json
+
+							// {
+							//   "@odata.type": "microsoft.graph.fileAttachment",
+							//   "name": "name-value",
+							//   "contentType": "contentType-value",
+							//   "isInline": false,
+							//   "contentLocation": "contentLocation-value",
+							//   "contentBytes": "base64-contentBytes-value"
+							// }
+
+							fetch(
+								"https://graph.microsoft.com/v1.0/me/messages/{id}/attachments",
+								{
+									method: "POST",
+									body: formData,
+								}
+							)
+								.then((response) => response.json())
+								.then((data) => {
+									if (data.success) {
+										MessageBox.success("E-mail sent successfully!");
+									} else {
+										MessageBox.error("Error sending e-mail: " + data.error);
+									}
+								})
+								.catch((error) => {
+									MessageBox.error("Error sending e-mail: " + error.message);
+								});
+						});
+					})
+					.catch((error) => {
+						MessageBox.error("Error fetching COSTSSET data: " + error.message);
 					});
-				}).catch((error) => {
-					MessageBox.error("Error fetching COSTSSET data: " + error.message);
-				});
 			},
 			onSendEmailPress4: function () {
 				var oBinding = this.byId("lineItemsList").getBinding("items");
 				var aData = oBinding.getCurrentContexts().map(function (context) {
 					return context.getObject();
 				});
-			
+
 				var sPernr = aData[0].Pernr;
 				var sGuid = aData[0].Guid;
 				var sActivityYear = aData[0].ActivityYear;
 				var sActivityMonth = aData[0].ActivityMonth;
-			
+
 				// Promisify read request for COSTSSET data
 				var aCostDataPromise = new Promise((resolve, reject) => {
 					this.getModel().read("/CostsSet", {
 						filters: [
-							new sap.ui.model.Filter("Pernr", sap.ui.model.FilterOperator.EQ, sPernr),
-							new sap.ui.model.Filter("Guid", sap.ui.model.FilterOperator.EQ, sGuid),
-							new sap.ui.model.Filter("ActivityYear", sap.ui.model.FilterOperator.EQ, sActivityYear),
-							new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
+							new sap.ui.model.Filter(
+								"Pernr",
+								sap.ui.model.FilterOperator.EQ,
+								sPernr
+							),
+							new sap.ui.model.Filter(
+								"Guid",
+								sap.ui.model.FilterOperator.EQ,
+								sGuid
+							),
+							new sap.ui.model.Filter(
+								"ActivityYear",
+								sap.ui.model.FilterOperator.EQ,
+								sActivityYear
+							),
+							new sap.ui.model.Filter(
+								"ActivityMonth",
+								sap.ui.model.FilterOperator.EQ,
+								sActivityMonth
+							),
 						],
 						success: function (oData) {
 							resolve(oData.results || []);
 						},
 						error: function (error) {
 							reject(error);
-						}
+						},
 					});
 				});
-			
+
 				// Read request completed, now generate Excel
-				aCostDataPromise.then((aCostData) => {
-					var workbook = new ExcelJS.Workbook();
-					var worksheet = [workbook.addWorksheet("Details"), workbook.addWorksheet("Costs")];
-			
-					// Set columns and header styles
-					worksheet[0].columns = [
-						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-						{ header: "Activity Date", key: "ActivityDate", width: 15 },
-						{ header: "Project Code", key: "ProjectCode", width: 15 },
-						{ header: "Project Name", key: "ProjectName", width: 25 },
-						{ header: "Activity Hour", key: "ActivityHour", width: 12 },
-						{ header: "Description", key: "Description", width: 80 },
-					];
-			
-					worksheet[1].columns = [
-						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-						{ header: "Activity Date", key: "ActivityDate", width: 15 },
-						{ header: "Project Name", key: "ProjectName", width: 25 },
-						{ header: "Cost Type", key: "CostType", width: 10 },
-						{ header: "Cost Name", key: "CostName", width: 20 },
-						{ header: "Amount", key: "Amount", width: 15 },
-						{ header: "Currency", key: "Currency", width: 10 },
-						{ header: "Description", key: "Description", width: 80 },
-					];
-			
-					// Apply header styling
-					worksheet.forEach((ws) => {
-						ws.getRow(1).eachCell(function (cell) {
-							cell.fill = {
-								type: "pattern",
-								pattern: "solid",
-								fgColor: { argb: "FFFFFF00" } // Yellow background
-							};
-							cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
-							cell.border = {
-								top: { style: 'thin', color: { argb: 'FF000000' } },
-								left: { style: 'thin', color: { argb: 'FF000000' } },
-								bottom: { style: 'thin', color: { argb: 'FF000000' } },
-								right: { style: 'thin', color: { argb: 'FF000000' } }
-							};
-						});
-					});
-			
-					// Add data to the first sheet
-					aData.map(function (item) {
-						worksheet[0].addRow({
-							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-							ActivityDate: item.ActivityDate,
-							ProjectCode: item.ProjectCode,
-							ProjectName: item.ProjectName,
-							ActivityHour: item.ActivityHour,
-							Description: item.Description,
-						});
-					});
-			
-					// Add cost data to the second sheet
-					aCostData.map(function (item) {
-						worksheet[1].addRow({
-							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-							ActivityDate: item.ActivityDate,
-							ProjectName: item.ProjectName,
-							CostName: item.CostName,
-							CostType: item.CostType,
-							Amount: item.CostAmount,
-							Currency: item.CostCurrency,
-							Description: item.Description
-						});
-					});
-			
-					var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
-						+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
-			
-					// Create the Excel buffer
-					// workbook.xlsx.writeBuffer().then(function (buffer) {
-					// 	var blob = new Blob([buffer], { type: "application/octet-stream" });
+				aCostDataPromise
+					.then((aCostData) => {
+						var workbook = new ExcelJS.Workbook();
+						var worksheet = [
+							workbook.addWorksheet("Details"),
+							workbook.addWorksheet("Costs"),
+						];
 
-					    // Dosyayı oluştur ve indir
-    workbook.xlsx.writeBuffer().then(function (buffer) {
-        var blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        var url = URL.createObjectURL(blob);
-        
-        // Dosyayı indir
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = sExcelName;
-        a.click();
+						// Set columns and header styles
+						worksheet[0].columns = [
+							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+							{ header: "Activity Date", key: "ActivityDate", width: 15 },
+							{ header: "Project Code", key: "ProjectCode", width: 15 },
+							{ header: "Project Name", key: "ProjectName", width: 25 },
+							{ header: "Activity Hour", key: "ActivityHour", width: 12 },
+							{ header: "Description", key: "Description", width: 80 },
+						];
 
-        // `mailto` linki ile e-posta aç
-        var sRecipient = "yunus.tuzun@interise.com.tr";
-        var sSubject = encodeURIComponent("Aktivite Raporu: " + sExcelName);
-        var sBody = encodeURIComponent("Merhaba,\n\nLütfen ekteki aktiviteleri inceleyin.\n\nSaygılarımla,\n\n[Adınız]");
-        var mailtoLink = "mailto:" + sRecipient + "?subject=" + sSubject + "&body=" + sBody;
-        
-        window.location.href = mailtoLink;
-			
-	
+						worksheet[1].columns = [
+							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+							{ header: "Activity Date", key: "ActivityDate", width: 15 },
+							{ header: "Project Name", key: "ProjectName", width: 25 },
+							{ header: "Cost Type", key: "CostType", width: 10 },
+							{ header: "Cost Name", key: "CostName", width: 20 },
+							{ header: "Amount", key: "Amount", width: 15 },
+							{ header: "Currency", key: "Currency", width: 10 },
+							{ header: "Description", key: "Description", width: 80 },
+						];
+
+						// Apply header styling
+						worksheet.forEach((ws) => {
+							ws.getRow(1).eachCell(function (cell) {
+								cell.fill = {
+									type: "pattern",
+									pattern: "solid",
+									fgColor: { argb: "FFFFFF00" }, // Yellow background
+								};
+								cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
+								cell.border = {
+									top: { style: "thin", color: { argb: "FF000000" } },
+									left: { style: "thin", color: { argb: "FF000000" } },
+									bottom: { style: "thin", color: { argb: "FF000000" } },
+									right: { style: "thin", color: { argb: "FF000000" } },
+								};
+							});
+						});
+
+						// Add data to the first sheet
+						aData.map(function (item) {
+							worksheet[0].addRow({
+								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+								ActivityDate: item.ActivityDate,
+								ProjectCode: item.ProjectCode,
+								ProjectName: item.ProjectName,
+								ActivityHour: item.ActivityHour,
+								Description: item.Description,
+							});
+						});
+
+						// Add cost data to the second sheet
+						aCostData.map(function (item) {
+							worksheet[1].addRow({
+								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+								ActivityDate: item.ActivityDate,
+								ProjectName: item.ProjectName,
+								CostName: item.CostName,
+								CostType: item.CostType,
+								Amount: item.CostAmount,
+								Currency: item.CostCurrency,
+								Description: item.Description,
+							});
+						});
+
+						var sExcelName =
+							aData[0].PersonnelName +
+							"_" +
+							aData[0].PersonnelSurname +
+							"_" +
+							aData[0].ActivityYear +
+							"_" +
+							aData[0].ActivityMonthName +
+							"_" +
+							"Activity" +
+							".xlsx";
+
+						// Create the Excel buffer
+						// workbook.xlsx.writeBuffer().then(function (buffer) {
+						// 	var blob = new Blob([buffer], { type: "application/octet-stream" });
+
+						// Dosyayı oluştur ve indir
+						workbook.xlsx.writeBuffer().then(function (buffer) {
+							var blob = new Blob([buffer], {
+								type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+							});
+							var url = URL.createObjectURL(blob);
+
+							// Dosyayı indir
+							var a = document.createElement("a");
+							a.href = url;
+							a.download = sExcelName;
+							a.click();
+
+							// `mailto` linki ile e-posta aç
+							var sRecipient = "yunus.tuzun@interise.com.tr";
+							var sSubject = encodeURIComponent(
+								"Aktivite Raporu: " + sExcelName
+							);
+							var sBody = encodeURIComponent(
+								"Merhaba,\n\nLütfen ekteki aktiviteleri inceleyin.\n\nSaygılarımla,\n\n[Adınız]"
+							);
+							var mailtoLink =
+								"mailto:" +
+								sRecipient +
+								"?subject=" +
+								sSubject +
+								"&body=" +
+								sBody;
+
+							window.location.href = mailtoLink;
+						});
+					})
+					.catch((error) => {
+						MessageBox.error("Error fetching COSTSSET data: " + error.message);
 					});
-				}).catch((error) => {
-					MessageBox.error("Error fetching COSTSSET data: " + error.message);
-				});
 			},
 			onSendEmailPress2: function () {
 				var oMonthTranslations = {
@@ -687,115 +784,146 @@ sap.ui.define(
 				});
 			},
 			onExportToExcel: function () {
-				
 				var oBinding = this.byId("lineItemsList").getBinding("items");
-				var aData    = oBinding.getCurrentContexts().map(function (context) {
+				var aData = oBinding.getCurrentContexts().map(function (context) {
 					return context.getObject();
 				});
-			
-				var sPernr 		   = aData[0].Pernr;
-				var sGuid          = aData[0].Guid;
-				var sActivityYear  = aData[0].ActivityYear;
+
+				var sPernr = aData[0].Pernr;
+				var sGuid = aData[0].Guid;
+				var sActivityYear = aData[0].ActivityYear;
 				var sActivityMonth = aData[0].ActivityMonth;
-			
+
 				// Promisify read request for COSTSSET data
 				var aCostDataPromise = new Promise((resolve, reject) => {
 					this.getModel().read("/CostsSet", {
 						filters: [
-							new sap.ui.model.Filter("Pernr",         sap.ui.model.FilterOperator.EQ, sPernr),
-							new sap.ui.model.Filter("Guid", 		 sap.ui.model.FilterOperator.EQ, sGuid),
-							new sap.ui.model.Filter("ActivityYear",  sap.ui.model.FilterOperator.EQ, sActivityYear),
-							new sap.ui.model.Filter("ActivityMonth", sap.ui.model.FilterOperator.EQ, sActivityMonth)
+							new sap.ui.model.Filter(
+								"Pernr",
+								sap.ui.model.FilterOperator.EQ,
+								sPernr
+							),
+							new sap.ui.model.Filter(
+								"Guid",
+								sap.ui.model.FilterOperator.EQ,
+								sGuid
+							),
+							new sap.ui.model.Filter(
+								"ActivityYear",
+								sap.ui.model.FilterOperator.EQ,
+								sActivityYear
+							),
+							new sap.ui.model.Filter(
+								"ActivityMonth",
+								sap.ui.model.FilterOperator.EQ,
+								sActivityMonth
+							),
 						],
 						success: function (oData) {
 							resolve(oData.results || []);
 						},
 						error: function (error) {
 							reject(error);
-						}
+						},
 					});
 				});
-			
-				// Read request completed, now generate Excel
-				aCostDataPromise.then((aCostData) => {
-					var workbook = new ExcelJS.Workbook();
-					var worksheet = [workbook.addWorksheet("Details"), workbook.addWorksheet("Costs")];
-			
-					// Set columns and header styles
-					worksheet[0].columns = [
-						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-						{ header: "Activity Date",  key: "ActivityDate",  width: 15 },
-						{ header: "Project Code",   key: "ProjectCode",   width: 15 },
-						{ header: "Project Name",   key: "ProjectName",   width: 25 },
-						{ header: "Activity Hour",  key: "ActivityHour",  width: 12 },
-						{ header: "Description",    key: "Description",   width: 80 },
-					];
-			
-					worksheet[1].columns = [
-						{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-						{ header: "Activity Date",  key: "ActivityDate",  width: 15 },
-						{ header: "Project Name",   key: "ProjectName",   width: 25 },
-						{ header: "Cost Type",      key: "CostType",      width: 10 },
-						{ header: "Cost Name",      key: "CostName",      width: 20 },
-						{ header: "Amount",         key: "Amount",        width: 15 },
-						{ header: "Currency",       key: "Currency",      width: 10 },
-						{ header: "Description",    key: "Description",   width: 80 },
-					];
-			
-					// Apply header styling
-					worksheet.forEach((ws) => {
-						ws.getRow(1).eachCell(function (cell) {
-							cell.fill = {
-								type   : "pattern",
-								pattern: "solid",
-								fgColor: { argb: "FFFFFF00" } // Yellow background
-							};
-							cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
-							cell.border = {
-								top:    { style: 'thin', color: { argb: 'FF000000' } },
-								left:   { style: 'thin', color: { argb: 'FF000000' } },
-								bottom: { style: 'thin', color: { argb: 'FF000000' } },
-								right:  { style: 'thin', color: { argb: 'FF000000' } }
-							};
-						});
-					});
-			
-					// Add data to the first sheet
-					aData.map(function (item) {
-						worksheet[0].addRow({
-							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-							ActivityDate : item.ActivityDate,
-							ProjectCode  : item.ProjectCode,
-							ProjectName  : item.ProjectName,
-							ActivityHour : item.ActivityHour,
-							Description  : item.Description,
-						});
-					});
-			
-					// Add cost data to the second sheet
-					aCostData.map(function (item) {
-						worksheet[1].addRow({
-							PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-							ActivityDate : item.ActivityDate,
-							ProjectName  : item.ProjectName,
-							CostName     : item.CostName,
-							CostType     : item.CostType,
-							Amount       : item.CostAmount,
-							Currency     : item.CostCurrency,
-							Description  : item.Description
-						});
-					});
 
-					var sExcelName = aData[0].PersonnelName + "_" + aData[0].PersonnelSurname + "_"
-					+ aData[0].ActivityYear + "_" + aData[0].ActivityMonthName + "_" + "Activity" + ".xlsx";
-					// Create and save Excel file
-					workbook.xlsx.writeBuffer().then(function (buffer) {
-						var blob = new Blob([buffer], { type: "application/octet-stream" });
-						saveAs(blob, sExcelName);
+				// Read request completed, now generate Excel
+				aCostDataPromise
+					.then((aCostData) => {
+						var workbook = new ExcelJS.Workbook();
+						var worksheet = [
+							workbook.addWorksheet("Details"),
+							workbook.addWorksheet("Costs"),
+						];
+
+						// Set columns and header styles
+						worksheet[0].columns = [
+							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+							{ header: "Activity Date", key: "ActivityDate", width: 15 },
+							{ header: "Project Code", key: "ProjectCode", width: 15 },
+							{ header: "Project Name", key: "ProjectName", width: 25 },
+							{ header: "Activity Hour", key: "ActivityHour", width: 12 },
+							{ header: "Description", key: "Description", width: 80 },
+						];
+
+						worksheet[1].columns = [
+							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+							{ header: "Activity Date", key: "ActivityDate", width: 15 },
+							{ header: "Project Name", key: "ProjectName", width: 25 },
+							{ header: "Cost Type", key: "CostType", width: 10 },
+							{ header: "Cost Name", key: "CostName", width: 20 },
+							{ header: "Amount", key: "Amount", width: 15 },
+							{ header: "Currency", key: "Currency", width: 10 },
+							{ header: "Description", key: "Description", width: 80 },
+						];
+
+						// Apply header styling
+						worksheet.forEach((ws) => {
+							ws.getRow(1).eachCell(function (cell) {
+								cell.fill = {
+									type: "pattern",
+									pattern: "solid",
+									fgColor: { argb: "FFFFFF00" }, // Yellow background
+								};
+								cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
+								cell.border = {
+									top: { style: "thin", color: { argb: "FF000000" } },
+									left: { style: "thin", color: { argb: "FF000000" } },
+									bottom: { style: "thin", color: { argb: "FF000000" } },
+									right: { style: "thin", color: { argb: "FF000000" } },
+								};
+							});
+						});
+
+						// Add data to the first sheet
+						aData.map(function (item) {
+							worksheet[0].addRow({
+								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+								ActivityDate: item.ActivityDate,
+								ProjectCode: item.ProjectCode,
+								ProjectName: item.ProjectName,
+								ActivityHour: item.ActivityHour,
+								Description: item.Description,
+							});
+						});
+
+						// Add cost data to the second sheet
+						aCostData.map(function (item) {
+							worksheet[1].addRow({
+								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+								ActivityDate: item.ActivityDate,
+								ProjectName: item.ProjectName,
+								CostName: item.CostName,
+								CostType: item.CostType,
+								Amount: item.CostAmount,
+								Currency: item.CostCurrency,
+								Description: item.Description,
+							});
+						});
+
+						var sExcelName =
+							aData[0].PersonnelName +
+							"_" +
+							aData[0].PersonnelSurname +
+							"_" +
+							aData[0].ActivityYear +
+							"_" +
+							aData[0].ActivityMonthName +
+							"_" +
+							"Activity" +
+							".xlsx";
+						// Create and save Excel file
+						workbook.xlsx.writeBuffer().then(function (buffer) {
+							var blob = new Blob([buffer], {
+								type: "application/octet-stream",
+							});
+							saveAs(blob, sExcelName);
+						});
+					})
+					.catch((error) => {
+						MessageBox.error("Error fetching COSTSSET data: " + error.message);
 					});
-				}).catch((error) => {
-					MessageBox.error("Error fetching COSTSSET data: " + error.message);
-				});
 			},
 
 			onLiveChangeRestrictToNumbers: function (oEvent) {
