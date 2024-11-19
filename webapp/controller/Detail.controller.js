@@ -7,6 +7,7 @@ sap.ui.define(
 		"sap/ui/export/Spreadsheet",
 		"sap/m/MessageBox",
 		"sap/m/MessageToast",
+		"sap/ui/core/Fragment",
 		// "exceljs",  // exceljs modülünü ekleyin
 		// "file-saver" // FileSaver modülünü ekleyin,
 	],
@@ -17,7 +18,9 @@ sap.ui.define(
 		mobileLibrary,
 		Spreadsheet,
 		MessageBox,
-		MessageToast
+		MessageToast,
+		Fragment
+        // "exceljs",  // Exceljs modülünü ekleyin
 		// Exceljs,
 		// FileSaver
 	) {
@@ -925,6 +928,116 @@ sap.ui.define(
 						MessageBox.error("Error fetching COSTSSET data: " + error.message);
 					});
 			},
+
+
+			onViewFilePress: function () {
+				var oView = this.getView();
+
+				if (!this.byId("idEditFile")) {
+					Fragment.load({
+						id: oView.getId(),
+						name: "zint.activity.system.fragment.EditFile",
+						controller: this,
+					}).then(
+						function (oDialog) {
+							oView.addDependent(oDialog);
+							oDialog.data("sourceFragment", "EditFile");
+							oDialog.open();
+							this._dialog = oDialog;
+						}.bind(this)
+					);
+				} else {
+					this.byId("idEditFile").open();
+				}
+			},
+			onSaveFile: function () {
+				var sActivityDate = this.getView()
+				.byId("inputActivityMasterDateCost")
+				.getValue();
+			var oMasterData = this.getView()
+				.byId("masterlist")
+				.getBinding("items")
+				.getContexts()[0]
+				.getObject();
+			var ui5Date = this.getView()
+				.byId("inputActivityMasterDateCost")
+				.getDateValue();
+			if (ui5Date) {
+				ui5Date.setHours(3, 0, 0);
+			}
+
+			var sDate = sActivityDate;
+			if (sDate.substring(1, 2) == ".") {
+				var sMonth = sDate.substring(2, 4);
+			} else {
+				sMonth = sDate.substring(3, 5);
+			}
+
+			var oActivityDetails = {
+				Guid: "GUID_DEFAULT",
+				Pernr: oMasterData.Pernr,
+				PersonnelName: oMasterData.PersonnelName,
+				PersonnelSurname: oMasterData.PersonnelSurname,
+				ActivityDate: ui5Date,
+				ProjectCode: this.getView().byId("inputProjectCodeCost").getValue(),
+				ProjectName: this.getView().byId("inputProjectNameCost").getValue(),
+				ActivityMonth: sMonth,
+				ActivityMonthName: "",
+				ActivityYear: oMasterData.Year,
+				CostDetails: [
+					{
+						// TO DO burası seçili satırdan alınacak
+						ActivityMonth: sMonth,
+						CostName: this.getView().byId("inputCostName").getValue(),
+						CostType: this.getView().byId("inputCostType").getValue(),
+						Guid: "GUID_DEFAULT",
+						Pernr: oMasterData.Pernr,
+						PersonnelName: oMasterData.PersonnelName,
+						PersonnelSurname: oMasterData.PersonnelSurname,
+						ActivityYear: oMasterData.Year,
+						CostAmount: this.getView().byId("inputCostAmountCost").getValue(),
+						ProjectCode: this.getView().byId("inputProjectCode").getValue(),
+						ProjectName: this.getView().byId("inputProjectName").getValue(),
+						ActivityDate: ui5Date,
+						CostCurrency: this.getView()
+							.byId("inputCostCurrencyCost")
+							.getValue(),
+						Description: this.getView()
+							.byId("inputDescriptionCost")
+							.getValue(),
+					},
+				],
+
+			};
+
+
+
+			this.BusyDialog = new sap.m.BusyDialog({});
+			this.BusyDialog.open();
+			this.getOwnerComponent()
+				.getModel()
+				.create("/ActivityDetailsSet", oActivityDetails, {
+					success: function (oData, response) {
+						var Msg = "Cost entry is successfull.";
+						this.getView().getModel().refresh(true);
+						MessageBox.show(Msg);
+						this.BusyDialog.close();
+						this.byId("idEditFile").destroy();
+					}.bind(this),
+					error: function (error) {
+						MessageBox.error(
+							JSON.parse(error.responseText).error.message.value
+						);
+						this.BusyDialog.close();
+					}.bind(this),
+				});
+			},
+
+			onPressCancelFile: function () {
+				this.byId("idEditFile").destroy();
+			},
+
+
 
 			onLiveChangeRestrictToNumbers: function (oEvent) {
 				var oInput = oEvent.getSource();

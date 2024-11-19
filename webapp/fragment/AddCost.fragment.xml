@@ -1,4 +1,4 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:u="sap.ui.unified" xmlns:f="sap.ui.layout.form">
     <Dialog  title="Add Cost" id="entryCost">
         <content>
             <f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="4"
@@ -7,10 +7,8 @@
                 <f:content>
                     <!-- <Label text="Aracın Modeli"/>
                     <Input id="inputVehicleModel" fieldGroupIds="Fragment" required="true"  placeholder="Seat Leon"/> -->
- 
                     <Label text="Personnel Name"/>
-					<Input id="personnelNameCost" value="{personnelModel>/PersonnelName} {personnelModel>/PersonnelSurname}" fieldGroupIds="Fragment" required="true" editable="false"/>
-					
+                    <Input id="personnelNameCost" value="{personnelModel>/PersonnelName} {personnelModel>/PersonnelSurname}" fieldGroupIds="Fragment" required="true" editable="false"/>
                     <Label text="Activity Date" />
                     <DatePicker id="inputActivityMasterDateCost" value="{
                         path: '/date',
@@ -22,57 +20,51 @@
                     required="true"
                     change="onCostDateChange"
                     />
-
                     <Label text="Project" required = "true"/>
                     <List>
                         <InputListItem >
                             <Input id="inputProjectCodeCost" editable="false" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
                         </InputListItem>
                     </List>
-                    
                     <Label text="Project Name"/>
                     <List>
                         <InputListItem >
                             <Input id="inputProjectNamecost" type="Text" editable = "false"  ></Input>
                         </InputListItem>
-                    </List>  
-                   
+                    </List>
                     <Label text="Cost Type" required = "true"/>
                     <List>
                         <InputListItem >
                             <Input id="inputCostType" type="Text" required="true" placeholder="Please select Cost Type" showValueHelp="true" valueHelpRequest="handleInputCostTypeValueHelp" value="{selectCostModel>/CostType}"></Input>
                         </InputListItem>
                     </List>
-                    
                     <Label text="Cost Name"/>
                     <List>
                         <InputListItem >
                             <Input id="inputCostName" type="Text" editable = "false"  ></Input>
                         </InputListItem>
-                    </List>  
-
-
+                    </List>
                     <Label text="Cost Amount" required = "true"/>
                     <List>
                         <InputListItem >
                             <Input id="inputCostAmountCost" type= "Number" value="{detailCostModel>CostAmount}" editable="{detailModel>/editMode}" />
                         </InputListItem>
                     </List>
-                    
                     <Label text="Cost Currency"/>
                     <List>
                         <InputListItem >
                             <Input id="inputCostCurrencyCost" value="{detailCostModel>CostCurrency}" editable="{detailModel>/editMode}"  />
                         </InputListItem>
-                    </List>                      
-               
+                    </List>
                     <Label text="Description" required = "true"/>
                     <Input id="inputDescriptionCost" type="Text" fieldGroupIds="Fragment" required="true" placeholder="Please type description."/>
-
-
-
+                    <u:FileUploader
+			            id="fileUploader"
+			            name="myFileUpload"
+			            uploadUrl="upload/"
+			            tooltip="Upload your file to the local server"
+			            uploadComplete="handleUploadComplete"/>
                 </f:content>
-                
             </f:SimpleForm>
         </content>
         <beginButton>

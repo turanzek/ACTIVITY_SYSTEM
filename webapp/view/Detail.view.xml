@@ -9,7 +9,8 @@
 	xmlns:semantic="sap.f.semantic"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:table="sap.ui.table"
-	xmlns:u="sap.ui.unified" >
+	xmlns:u="sap.ui.unified" 
+	xmlns:upload="sap.m.upload">
 	<semantic:SemanticPage
 		id="detailPage"
 		busy="{detailView>/busy}"
@@ -164,6 +165,9 @@
 							<Column demandPopin="true" minScreenWidth="Tablet">
 								<Text text="{i18n>Description}"/>
 							</Column>
+							<Column demandPopin="true" minScreenWidth="Tablet">
+								<Text text="{i18n>CostFile}"/>
+							</Column>	
 						</columns>
 						<items>
 							<ColumnListItem>
@@ -204,6 +208,23 @@
 									value="{Description}" 
 									editable="{editModel>/editMode}" 
 								/>
+
+					
+								<Button 
+								text="View File" 
+								press="onViewFilePress" 
+								type="Emphasized"/>
+
+								<!-- <Image 
+								src="{Files}" 
+								width="50px" 
+								height="50px" 
+								tooltip="Görüntüle" 
+								press="onImagePress" />
+								<Button 
+								text="View" 
+								press="onViewButtonPress" 
+								type="Emphasized"/> -->
 								</cells>
 							</ColumnListItem>
 						</items>
