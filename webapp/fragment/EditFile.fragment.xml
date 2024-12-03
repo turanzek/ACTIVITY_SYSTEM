@@ -10,8 +10,11 @@
         maxFileNameLength="30"
         maxFileSize="200"
         mediaTypes="text/plain,application/msword,image/png"
-        uploadUrl="../../../../upload"
-        items="{path: '/items', templateShareable: false}"
+        uploadUrl="/sap/opu/odata/sap/ZINT_ACTIVITY_SRV/Files"
+        items="{
+        path: 'CostDetails/CostFiles' 
+
+        }"
         mode="MultiSelect"
         selectionChanged="onSelectionChange"
         afterItemRemoved="onAfterItemRemoved">
@@ -36,8 +39,8 @@
     </upload:toolbar>
     <upload:items>
         <upload:UploadSetItem
-                fileName="{fileName}"
-                mediaType="{mediaType}"
+                fileName="{FileName}"
+                mediaType="{MimeType}"
                 url="{url}"
                 thumbnailUrl="{thumbnailUrl}"
                 markers="{path: 'markers', templateShareable: false}"

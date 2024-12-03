@@ -8,6 +8,7 @@ sap.ui.define(
 		"sap/m/MessageBox",
 		"sap/m/MessageToast",
 		"sap/ui/core/Fragment",
+		"sap/m/upload/UploadSet"
 		// "exceljs",  // exceljs modülünü ekleyin
 		// "file-saver" // FileSaver modülünü ekleyin,
 	],
@@ -19,7 +20,8 @@ sap.ui.define(
 		Spreadsheet,
 		MessageBox,
 		MessageToast,
-		Fragment
+		Fragment,
+		UploadSet
         // "exceljs",  // Exceljs modülünü ekleyin
 		// Exceljs,
 		// FileSaver
@@ -930,7 +932,7 @@ sap.ui.define(
 			},
 
 
-			onViewFilePress: function () {
+			onViewFilePress: function (oEvent) {
 				var oView = this.getView();
 
 				if (!this.byId("idEditFile")) {
@@ -942,12 +944,43 @@ sap.ui.define(
 						function (oDialog) {
 							oView.addDependent(oDialog);
 							oDialog.data("sourceFragment", "EditFile");
+							this.onFetchFiles(oEvent);
 							oDialog.open();
 							this._dialog = oDialog;
 						}.bind(this)
 					);
 				} else {
+					this.onFetchFiles(oEvent);
 					this.byId("idEditFile").open();
+				}
+			},
+
+
+			onFetchFiles: function(oEvent) {
+			
+				var oContext = oEvent.getSource().getBindingContext();
+    
+				// İlgili ActivityDetails objesinin yolunu alın
+				var sPath = oContext.getPath();  // örneğin: /ActivityDetailsSet(ActivityMonth='01', ...)
+				
+				// CostDetails içindeki Files'a olan yolu oluşturun
+				var sFilesPath = sPath + "/Costs/CostDetails/CostFiles	";  // Bu yol doğru olduğundan emin olun
+				
+				// UploadSet'e dosya öğelerini bağla
+				var oUploadSet = this.getView().byId("UploadSet");
+				
+				// Eğer UploadSet bileşeni mevcutsa, bindAggregation ile veri bağlayın
+				if (oUploadSet) {
+					oUploadSet.bindAggregation("items", sFilesPath, new sap.m.upload.UploadSetItem({
+						fileName: "{FileName}",
+						mediaType: "{MimeType}",
+						url: "{url}",
+						// thumbnailUrl: "{thumbnailUrl}",
+						// statuses: "{path: 'statuses', templateShareable: false}",
+						// uploadState: "{uploadState}"
+					}));
+				} else {
+					console.error("UploadSet not found in the view.");
 				}
 			},
 			onSaveFile: function () {
@@ -1037,7 +1070,10 @@ sap.ui.define(
 				this.byId("idEditFile").destroy();
 			},
 
-
+			// onRowSelectionChange: function(oEvent) {
+			// 	// Kullanıcı bir satır seçtiğinde tetiklenir
+			// 	this.onFetchFiles(oEvent);
+			// },
 
 			onLiveChangeRestrictToNumbers: function (oEvent) {
 				var oInput = oEvent.getSource();

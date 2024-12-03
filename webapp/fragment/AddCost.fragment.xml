@@ -23,13 +23,13 @@
                     <Label text="Project" required = "true"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectCodeCost" editable="false" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
+                            <Input id="inputProjectCodeCost" editable="true" liveChange="preventManualInput" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
                         </InputListItem>
                     </List>
                     <Label text="Project Name"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectNamecost" type="Text" editable = "false"  ></Input>
+                            <Input id="inputProjectNameCost" type="Text" editable = "false"  ></Input>
                         </InputListItem>
                     </List>
                     <Label text="Cost Type" required = "true"/>
@@ -58,12 +58,19 @@
                     </List>
                     <Label text="Description" required = "true"/>
                     <Input id="inputDescriptionCost" type="Text" fieldGroupIds="Fragment" required="true" placeholder="Please type description."/>
-                    <u:FileUploader
+                    <!-- <u:FileUploader
 			            id="fileUploader"
 			            name="myFileUpload"
 			            uploadUrl="upload/"
 			            tooltip="Upload your file to the local server"
-			            uploadComplete="handleUploadComplete"/>
+			            uploadComplete="handleUploadComplete"/> -->
+                    <u:FileUploader
+                        id="fileUploader"
+                        name="file"
+                        uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
+                        sendXHR="true"
+                        change="onFileChange"
+/>
                 </f:content>
             </f:SimpleForm>
         </content>

@@ -25,7 +25,7 @@
                     <Label text="Project" required = "true"/>
                     <List>
                         <InputListItem >
-                            <Input id="inputProjectCodActe" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
+                            <Input id="inputProjectCodeAct" type="Text" required="true" placeholder="Please Select Project code" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp" value="{selectProjectModel>/ProjectCode}"></Input>
                         </InputListItem>
                     </List>
                     

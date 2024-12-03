@@ -1,162 +1,163 @@
-sap.ui.define([
-	"sap/ui/core/UIComponent",
-	"sap/ui/Device",
-	"./model/models",
-	"./controller/ListSelector",
-	"./controller/ErrorHandler"
-], function (UIComponent, Device, models, ListSelector, ErrorHandler) {
-	"use strict";
+sap.ui.define(
+	[
+		"sap/ui/core/UIComponent",
+		"sap/ui/Device",
+		"./model/models",
+		"./controller/ListSelector",
+		"./controller/ErrorHandler",
+	],
+	function (UIComponent, Device, models, ListSelector, ErrorHandler) {
+		"use strict";
+		var oSelectedProject = { ProjectCode: "", ProjectName: "" };
+		return UIComponent.extend("zint.activity.system.Component", {
+			metadata: {
+				manifest: "json",
+			},
 
-	return UIComponent.extend("zint.activity.system.Component", {
+			/**
+			 * The component is initialized by UI5 automatically during the startup of the app and calls the init method once.
+			 * In this method, the device models are set and the router is initialized.
+			 * @public
+			 * @override
+			 */
+			init: function () {
+				this.oListSelector = new ListSelector();
+				this._oErrorHandler = new ErrorHandler(this);
 
-		metadata : {
-			manifest : "json"
-		},
+				// set the device model
+				this.setModel(models.createDeviceModel(), "device");
 
-		/**
-		 * The component is initialized by UI5 automatically during the startup of the app and calls the init method once.
-		 * In this method, the device models are set and the router is initialized.
-		 * @public
-		 * @override
-		 */
-		init : function () {
-			this.oListSelector = new ListSelector();
-			this._oErrorHandler = new ErrorHandler(this);
+				// call the base component's init function and create the App view
+				UIComponent.prototype.init.apply(this, arguments);
 
-			// set the device model
-			this.setModel(models.createDeviceModel(), "device");
+				// create the views based on the url/hash
+				this.getRouter().initialize();
+				this._initApplication();
+			},
 
-			// call the base component's init function and create the App view
-			UIComponent.prototype.init.apply(this, arguments);
+			_initApplication: function () {
+				// var oProjectCodeModel = new sap.ui.model.json.JSONModel();
+				// sap.ui.getCore().setModel(oProjectCodeModel , "projectCode");
+				// this.setModel(oProjectCodeModel , "projectCode");
 
-			// create the views based on the url/hash
-			this.getRouter().initialize();
-			this._initApplication();
+				// var path = "/ProjectSet";
 
-		},
+				// this.getOwnerComponent().getModel().read(path, {
+				//   success: function (oData) {
+				// 	var oProjectModel = this.getView().getModel("projectCode");
+				// 	oProjectModel.setData(oData.results);
+				//   }.bind(this),
+				//   error: function (error) { },
+				// });
 
-		_initApplication: function () {
+				var odataModel = this.getModel();
+				var oMainModel = new sap.ui.model.json.JSONModel();
+				var oProjectCodeModel = new sap.ui.model.json.JSONModel();
+				var oCostTypeModel = new sap.ui.model.json.JSONModel();
+				var oActivityDaysModel = new sap.ui.model.json.JSONModel();
+				var oProjectsValueHelpModel = new sap.ui.model.json.JSONModel();
+				this.setModel(oMainModel, "mainModel");
+				this.setModel(oProjectCodeModel, "projectCodeModel");
+				this.setModel(oCostTypeModel, "costTypeModel");
+				this.setModel(oActivityDaysModel, "activityDaysModel");
+				this.setModel(oProjectsValueHelpModel, "projectValueHelp");
 
-			// var oProjectCodeModel = new sap.ui.model.json.JSONModel();
-			// sap.ui.getCore().setModel(oProjectCodeModel , "projectCode");
-			// this.setModel(oProjectCodeModel , "projectCode");
+				// TODO: Move it to OData Model.
+				odataModel.setUseBatch(true);
+				odataModel.setDeferredGroups(["group1"]);
 
-			// var path = "/ProjectSet";
-	
-			// this.getOwnerComponent().getModel().read(path, {
-			//   success: function (oData) {
-			// 	var oProjectModel = this.getView().getModel("projectCode");
-			// 	oProjectModel.setData(oData.results);
-			//   }.bind(this),
-			//   error: function (error) { },
-			// });
+				odataModel.read("/ProjectSet", {
+					groupId: "group1",
+				});
 
+				odataModel.submitChanges({
+					groupId: "group1",
+					success: function (oData) {
+						var aProjectCode = [];
 
+						aProjectCode = oData.__batchResponses[0].data.results;
 
-            var odataModel = this.getModel();
-			var oMainModel = new sap.ui.model.json.JSONModel();
-            var oProjectCodeModel= new sap.ui.model.json.JSONModel();
-			var oCostTypeModel= new sap.ui.model.json.JSONModel();
-			var oActivityDaysModel= new sap.ui.model.json.JSONModel();
-			var oProjectsValueHelpModel= new sap.ui.model.json.JSONModel();
-			this.setModel(oMainModel, "mainModel");
-			this.setModel(oProjectCodeModel, "projectCodeModel");
-			this.setModel(oCostTypeModel, "costTypeModel");
-			this.setModel(oActivityDaysModel, "activityDaysModel");
-			this.setModel(oProjectsValueHelpModel, "projectValueHelp");
-			
-            
-// TODO: Move it to OData Model.
-            odataModel.setUseBatch(true);
-			odataModel.setDeferredGroups(["group1"]);
+						oProjectCodeModel.setData({
+							list: aProjectCode,
+						});
+					}.bind(this),
+					error: function () {},
+				});
 
-            odataModel.read("/ProjectSet", {
-				groupId: "group1"
-			});
+				odataModel.setUseBatch(true);
+				odataModel.setDeferredGroups(["group1"]);
 
+				odataModel.read("/CostTypesSet", {
+					groupId: "group1",
+				});
 
-   
+				odataModel.submitChanges({
+					groupId: "group1",
+					success: function (oData) {
+						var aCostTypes = [];
 
-            odataModel.submitChanges({
-				groupId: "group1",
-				success: function (oData) {
+						aCostTypes = oData.__batchResponses[0].data.results;
 
-					var aProjectCode= [];
-                  
+						oCostTypeModel.setData({
+							list: aCostTypes,
+						});
+					}.bind(this),
+					error: function () {},
+				});
+			},
 
-					aProjectCode = oData.__batchResponses[0].data.results;
+			/**
+			 * The component is destroyed by UI5 automatically.
+			 * In this method, the ListSelector and ErrorHandler are destroyed.
+			 * @public
+			 * @override
+			 */
+			destroy: function () {
+				this.oListSelector.destroy();
+				this._oErrorHandler.destroy();
+				// call the base component's destroy function
+				UIComponent.prototype.destroy.apply(this, arguments);
+			},
 
-					oProjectCodeModel.setData({
-						list: aProjectCode
-					});  
+			getSelectedProject: function () {
+				return oSelectedProject;
+			},
 
-				}.bind(this),
-				error: function () { }
-			});
-
-
-			odataModel.setUseBatch(true);
-			odataModel.setDeferredGroups(["group1"]);
-
-            odataModel.read("/CostTypesSet", {
-				groupId: "group1"
-			});
-
-
-   
-
-            odataModel.submitChanges({
-				groupId: "group1",
-				success: function (oData) {
-
-					var aCostTypes= [];
-                  
-
-					aCostTypes = oData.__batchResponses[0].data.results;
-
-					oCostTypeModel.setData({
-						list: aCostTypes
-					});  
-
-				}.bind(this),
-				error: function () { }
-			});
-
-         },
-
-		/**
-		 * The component is destroyed by UI5 automatically.
-		 * In this method, the ListSelector and ErrorHandler are destroyed.
-		 * @public
-		 * @override
-		 */
-		destroy : function () {
-			this.oListSelector.destroy();
-			this._oErrorHandler.destroy();
-			// call the base component's destroy function
-			UIComponent.prototype.destroy.apply(this, arguments);
-		},
-
-		/**
-		 * This method can be called to determine whether the sapUiSizeCompact or sapUiSizeCozy
-		 * design mode class should be set, which influences the size appearance of some controls.
-		 * @public
-		 * @return {string} css class, either 'sapUiSizeCompact' or 'sapUiSizeCozy' - or an empty string if no css class should be set
-		 */
-		getContentDensityClass : function() {
-			if (this._sContentDensityClass === undefined) {
-				// check whether FLP has already set the content density class; do nothing in this case
-				if (document.body.classList.contains("sapUiSizeCozy") || document.body.classList.contains("sapUiSizeCompact")) {
-					this._sContentDensityClass = "";
-				} else if (!Device.support.touch) { // apply "compact" mode if touch is not supported
-					this._sContentDensityClass = "sapUiSizeCompact";
+			setSelectedProject: function (oValue) {
+				if (oValue && oValue.ProjectCode && oValue.ProjectName) {
+					oSelectedProject = {
+						ProjectCode: oValue.ProjectCode,
+						ProjectName: oValue.ProjectName,
+					};
 				} else {
-					// "cozy" in case of touch support; default for most sap.m controls, but needed for desktop-first controls like sap.ui.table.Table
-					this._sContentDensityClass = "sapUiSizeCozy";
+					oSelectedProject = { ProjectCode: "", ProjectName: "" };
 				}
-			}
-			return this._sContentDensityClass;
-		}
+			},
 
-	});
-});
+			/**
+			 * This method can be called to determine whether the sapUiSizeCompact or sapUiSizeCozy
+			 * design mode class should be set, which influences the size appearance of some controls.
+			 * @public
+			 * @return {string} css class, either 'sapUiSizeCompact' or 'sapUiSizeCozy' - or an empty string if no css class should be set
+			 */
+			getContentDensityClass: function () {
+				if (this._sContentDensityClass === undefined) {
+					// check whether FLP has already set the content density class; do nothing in this case
+					if (
+						document.body.classList.contains("sapUiSizeCozy") ||
+						document.body.classList.contains("sapUiSizeCompact")
+					) {
+						this._sContentDensityClass = "";
+					} else if (!Device.support.touch) {
+						// apply "compact" mode if touch is not supported
+						this._sContentDensityClass = "sapUiSizeCompact";
+					} else {
+						// "cozy" in case of touch support; default for most sap.m controls, but needed for desktop-first controls like sap.ui.table.Table
+						this._sContentDensityClass = "sapUiSizeCozy";
+					}
+				}
+				return this._sContentDensityClass;
+			},
+		});
+	}
+);

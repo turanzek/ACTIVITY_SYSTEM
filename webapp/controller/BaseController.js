@@ -68,6 +68,11 @@ sap.ui.define(
 
 				var oModel = this.getView().getModel();
 
+				this.byId("inputProjectCodeCost").setValue("");
+				this.byId("inputProjectNameCost").setValue("");
+
+
+
 				return new Promise(function (resolve) {
 				oModel.callFunction("/FilterProjects", { 
 					method: "GET", 
@@ -75,11 +80,12 @@ sap.ui.define(
 						DATE: sSelectedDate 
 					},
 					success: function(oData, response) {
-						this.byId("inputProjectCode").setEditable(true);;
+						this.byId("inputProjectCodeCost").setEditable(true);;
 						this.getOwnerComponent().getModel("projectValueHelp").setProperty("/list", oData.results);
 						resolve("");
 					}.bind(this),
 					error: function(oError) {
+						this.getOwnerComponent().getModel("projectValueHelp").setProperty("/list",  [] );
 						sap.m.MessageBox.error(this.parseErrorMessage(oError), {
 							title: "Error",
 							onClose: function () {
@@ -143,6 +149,18 @@ sap.ui.define(
 			},
 
 			handleCloseSelectProject: function (oEvent) {
+				var sValueCode,
+				 	sValueName;
+
+				if (this.byId("entryCost")) {
+                    sValueCode = "inputProjectCodeCost";
+					sValueName = "inputProjectNameCost";
+				}
+			    else if (this.byId("entryActivity")) {
+					sValueCode = "inputProjectCodeAct";
+					sValueName = "inputProjectNameAct";
+                }
+
 				var aSelectedItems = oEvent.getParameter("selectedContexts");
 				if (aSelectedItems && aSelectedItems.length > 0) {
 					// Bind the selected value to the specific row if the index is set
@@ -157,18 +175,26 @@ sap.ui.define(
 
 						oDetailModel.setData(aDetails);
 					}
-				}
 
-				var oProjectCode = this.byId("inputProjectCode");
+				var oProjectCode = this.byId(sValueCode);
 				oProjectCode.setValue(aSelectedItems[0].getObject().ProjectCode);
 
-				var oProjectName = this.byId("inputProjectName");
+				var oProjectName = this.byId(sValueName);
 				oProjectName.setValue(aSelectedItems[0].getObject().ProjectName);
 
 				// // Close the dialog
 				// if (this._oDialogProjectCode && this._oDialogProjectCode instanceof sap.m.TableSelectDialog) {
 				//     this._oDialogProjectCode.close();
 				// }
+				
+			
+				var oSelectedProject = { ProjectCode: aSelectedItems[0].getObject().ProjectCode ,
+										ProjectName: aSelectedItems[0].getObject().ProjectName };
+				this.getOwnerComponent().setSelectedProject(oSelectedProject);
+				
+				// this._oDialogProjectCode.close();
+				}
+				
 			},
 			handleSearchSelectProject: function (oEvent) {
 				var sValue = oEvent.getParameter("value");
@@ -239,13 +265,14 @@ sap.ui.define(
 
 						oDetailModel.setData(aDetails);
 					}
-				}
+				
 
 				var oCostType = this.byId("inputCostType");
 				oCostType.setValue(aSelectedItems[0].getObject().CostType);
 
 				var oCostName = this.byId("inputCostName");
 				oCostName.setValue(aSelectedItems[0].getObject().CostName);
+			}
 
 			},
 			handleSearchSelectCostType: function (oEvent) {

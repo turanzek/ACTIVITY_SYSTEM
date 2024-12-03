@@ -32,8 +32,17 @@ sap.ui.define(
 		return BaseController.extend("zint.activity.system.controller.Master", {
 			formatter: formatter,
 			_aProjectLists: [],
+			fileData: {
+				Value: "", // Remove data URL prefix
+				FileName: "",
+				MimeType: "",
+			},
 
-					onInit: function () {
+			onInit: function () {
+				this._selectedValue = {
+					ProjectCode:"",
+					ProjectName:""
+				}; // F4 ile seçilen değeri saklamak için
 				
 				var oList = this.byId("masterlist"),
 					oViewModel = this._createViewModel(),
@@ -65,7 +74,6 @@ sap.ui.define(
 			/* event handlers                                              */
 			/* =========================================================== */
 
-			
 			onUpdateFinished: function (oEvent) {
 				// update the master list object counter after new data is loade
 				this._updateListItemCount(oEvent.getParameter("total"));
@@ -85,7 +93,6 @@ sap.ui.define(
 				});
 			},
 
-			
 			onSearch: function (oEvent) {
 				if (oEvent.getParameters().refreshButtonPressed) {
 					this.onRefresh();
@@ -107,7 +114,6 @@ sap.ui.define(
 			onRefresh: function () {
 				this._oList.getBinding("items").refresh();
 			},
-
 
 			onOpenViewSettings: function (oEvent) {
 				var sDialogTab = "filter";
@@ -139,19 +145,16 @@ sap.ui.define(
 				}
 			},
 
-
 			onSelectionChange: function (oEvent) {
 				var oList = oEvent.getSource(),
 					bSelected = oEvent.getParameter("selected");
 
 				if (!(oList.getMode() === "MultiSelect" && !bSelected)) {
-
 					this._showDetail(
 						oEvent.getParameter("listItem") || oEvent.getSource()
 					);
 				}
 			},
-
 
 			onBypassed: function () {
 				this._oList.removeSelections(true);
@@ -194,7 +197,8 @@ sap.ui.define(
 				var sGuid = oContext.getProperty("Guid");
 				var sPernr = oContext.getProperty("Pernr");
 				var sActivityYear = oContext.getProperty("Year");
-				var oActivityDaysModel = this.getOwnerComponent().getModel("activityDaysModel");
+				var oActivityDaysModel =
+					this.getOwnerComponent().getModel("activityDaysModel");
 
 				var oActivityDay = {
 					Month: sMonth,
@@ -224,7 +228,6 @@ sap.ui.define(
 				);
 			},
 
-
 			_updateListItemCount: function (iTotalItems) {
 				var sTitle;
 				var sYear;
@@ -238,7 +241,6 @@ sap.ui.define(
 					this.getModel("masterView").setProperty("/title", sTitle);
 				}
 			},
-
 
 			_applyFilterSearch: function () {
 				var aFilters = this._oListFilterState.aSearch.concat(
@@ -339,8 +341,12 @@ sap.ui.define(
 							PersonnelName: oMasterData.PersonnelName,
 							PersonnelSurname: oMasterData.PersonnelSurname,
 							ActivityDate: ui5Date,
-							ProjectCode: this.getView().byId("inputProjectCodeAct").getValue(),
-							ProjectName: this.getView().byId("inputProjectNameAct").getValue(),
+							ProjectCode: this.getView()
+								.byId("inputProjectCodeAct")
+								.getValue(),
+							ProjectName: this.getView()
+								.byId("inputProjectNameAct")
+								.getValue(),
 							ActivityMonth: sMonth,
 							ActivityMonthName: "",
 							ActivityYear: oMasterData.Year,
@@ -423,6 +429,13 @@ sap.ui.define(
 					sMonth = sDate.substring(3, 5);
 				}
 
+
+				if (!this.fileData) {
+					MessageBox.error("Please upload a file.");
+					return false;
+				}
+
+
 				var oActivityDetails = {
 					Guid: "GUID_DEFAULT",
 					Pernr: oMasterData.Pernr,
@@ -445,8 +458,12 @@ sap.ui.define(
 							PersonnelSurname: oMasterData.PersonnelSurname,
 							ActivityYear: oMasterData.Year,
 							CostAmount: this.getView().byId("inputCostAmountCost").getValue(),
-							ProjectCode: this.getView().byId("inputProjectCode").getValue(),
-							ProjectName: this.getView().byId("inputProjectName").getValue(),
+							ProjectCode: this.getView()
+								.byId("inputProjectCodeCost")
+								.getValue(),
+							ProjectName: this.getView()
+								.byId("inputProjectNameCost")
+								.getValue(),
 							ActivityDate: ui5Date,
 							CostCurrency: this.getView()
 								.byId("inputCostCurrencyCost")
@@ -454,9 +471,26 @@ sap.ui.define(
 							Description: this.getView()
 								.byId("inputDescriptionCost")
 								.getValue(),
+						    CostFiles: [
+								{
+								Guid: "GUID_DEFAULT",
+								Pernr: oMasterData.Pernr,
+								ProjectCode: this.getView()
+								.byId("inputProjectCodeCost")
+								.getValue(),
+								ActivityDate: ui5Date,
+								CostType: this.getView().byId("inputCostType").getValue(),
+						        Value: this.fileData.Value,
+								FileName: this.fileData.FileName,
+								MimeType: this.fileData.MimeType, 
+								FileUrl: "",
+								CreateUser: "",
+								CreateDate: ui5Date,
+								CreateTime: ""
+							}
+							],	
 						},
 					],
-
 				};
 
 				if (
@@ -512,11 +546,57 @@ sap.ui.define(
 							this.BusyDialog.close();
 						}.bind(this),
 					});
+				// 	reader.readAsArrayBuffer(oFile);
+				// }
+	
 			},
 
 			onPressCancelCostType: function () {
+				this.getOwnerComponent().setSelectedProject(null);
+				this.getOwnerComponent().getModel("projectValueHelp").setProperty("/list",  [] );
 				this.byId("entryCost").destroy();
 			},
+
+			preventManualInput: function(oEvent) {
+				var oInput = oEvent.getSource();
+				var currentValue = oInput.getValue();
+				var oldVAlue     = this.getOwnerComponent().getSelectedProject().ProjectCode;
+				// Mevcut değer, F4'ten gelen değerle aynı değilse sıfırla
+				if (currentValue !== oldVAlue) {
+					oInput.setValue(oldVAlue); // Eski değeri geri koy
+					sap.m.MessageToast.show("Manual input is not allowed. Please use the value help (F4).");
+				}
+			},
+
+			onFileChange: function (oEvent) {
+				var oFileUploader = oEvent.getSource();
+				var oFile = oFileUploader.oFileUpload.files[0];
+				var that = this;
+			
+				if (!oFile) {
+					console.error("No file selected!");
+					return;
+				}
+			
+				var reader = new FileReader();
+			
+				reader.onload = function (e) {
+					// Base64 string of the file
+					that.fileData = {
+						Value: e.target.result.split(",")[1], // Remove data URL prefix
+						FileName: oFile.name,
+						MimeType: oFile.type,
+					};
+					console.log("File loaded successfully:", that.fileData);
+				};
+			
+				reader.onerror = function (error) {
+					console.error("Error reading file:", error);
+				};
+			
+				reader.readAsDataURL(oFile); // Read as Base64
+			},
+
 		});
 	}
 );
