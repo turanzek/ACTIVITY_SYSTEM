@@ -131,6 +131,8 @@ sap.ui.define(
 							this._bindView("/" + sObjectPath);
 						}.bind(this)
 					);
+
+					
 			},
 
 			_bindView: function (sDetailPath) {
@@ -955,34 +957,100 @@ sap.ui.define(
 				}
 			},
 
+			onFetchFiles: function (oEvent) {
+				var oData = oEvent.getSource().getBindingContext().getObject();
 
-			onFetchFiles: function(oEvent) {
+				var oImage = this.getView().byId("idImageControl");
+
+				var sPernr = oData.Pernr;
+				var sProjectCode = oData.ProjectCode;
+				var sActivityDate = oData.ActivityDate; // Tarih formatı datetime olmalı
+				var sCostType = oData.CostType;
+
+				var year = sActivityDate.getUTCFullYear();
+				var month = ('0' + (sActivityDate.getUTCMonth() + 1)).slice(-2); // Aylar 0'dan başlar, bu yüzden 1 ekliyoruz
+				var day = ('0' + sActivityDate.getUTCDate()).slice(-2);
+				var hours = ('0' + sActivityDate.getUTCHours()).slice(-2);
+				var minutes = ('0' + sActivityDate.getUTCMinutes()).slice(-2);
+				var seconds = ('0' + sActivityDate.getUTCSeconds()).slice(-2);
+
+// Formatlı datetime string oluşturma
+				var formattedDate = "datetime'" + year + "-" + month + "-" + day + "T" + hours + "%3A" + minutes + "%3A" + seconds + "'";
 			
-				var oContext = oEvent.getSource().getBindingContext();
-    
-				// İlgili ActivityDetails objesinin yolunu alın
-				var sPath = oContext.getPath();  // örneğin: /ActivityDetailsSet(ActivityMonth='01', ...)
-				
-				// CostDetails içindeki Files'a olan yolu oluşturun
-				var sFilesPath = sPath + "/Costs/CostDetails/CostFiles	";  // Bu yol doğru olduğundan emin olun
-				
-				// UploadSet'e dosya öğelerini bağla
-				var oUploadSet = this.getView().byId("UploadSet");
-				
-				// Eğer UploadSet bileşeni mevcutsa, bindAggregation ile veri bağlayın
-				if (oUploadSet) {
-					oUploadSet.bindAggregation("items", sFilesPath, new sap.m.upload.UploadSetItem({
-						fileName: "{FileName}",
-						mediaType: "{MimeType}",
-						url: "{url}",
-						// thumbnailUrl: "{thumbnailUrl}",
-						// statuses: "{path: 'statuses', templateShareable: false}",
-						// uploadState: "{uploadState}"
-					}));
-				} else {
-					console.error("UploadSet not found in the view.");
-				}
+				// URL'yi doğru bir şekilde oluşturun
+				var sPath = "/CostsSet(Pernr='" + sPernr + 
+				"',ProjectCode='" + sProjectCode +
+				"',ActivityDate=" + formattedDate + 
+				",CostType='" + sCostType + "')/CostFiles";
+
+				// ODataModel ile read isteği gönderme
+				this.getView().getModel().read(sPath, {
+					success: function(oData, response) {
+						// Başarılı işlem
+						console.log("Veri başarıyla alındı:", oData);
+
+						var xStringData = oData.results[0].Value;  // Eğer XString zaten base64 ise, bu adımı atlayabilirsiniz
+
+						var byteArray = new Uint8Array(xStringData);
+						var base64Sbase64Imagering = btoa(String.fromCharCode.apply(null, byteArray));
+
+
+					// UI5 Image kontrolünü oluşturma
+					var oImage = new sap.m.Image({
+						src: "data:image/png;base64," + base64Image,  // Eğer PNG resimse
+						alt: "Resim Yüklenemedi"
+					});
+
+							
+							oImage.setSrc("data:image/png;base64," + base64Image); 
+					},
+					error: function(oError) {
+						// Hata durumu
+						console.error("Veri alınırken hata oluştu:", oError);
+					}
+				});
+			
+				// // Tam URL'yi oluşturmak
+				// var sFullUrl = this.getView().getModel().sServiceUrl + sPath;
+			
+				// // Resmi yüklemek için image kontrolünü al
+				// var oImage = this.byId("idImageControl");
+				// oImage.setSrc(sFullUrl); // Resmi belirtilen URL'den yükle
 			},
+			convertXStringToBase64: function(xstring) {
+					var byteArray = new Uint8Array(xstring);
+					var base64String = btoa(String.fromCharCode.apply(null, byteArray));
+					return base64String;
+				},
+
+
+			// onFetchFiles: function(oEvent) {
+			
+			// 	var oContext = oEvent.getSource().getBindingContext();
+    
+			// 	// İlgili ActivityDetails objesinin yolunu alın
+			// 	var sPath = oContext.getPath();  // örneğin: /ActivityDetailsSet(ActivityMonth='01', ...)
+				
+			// 	// CostDetails içindeki Files'a olan yolu oluşturun
+			// 	var sFilesPath = sPath + "/Costs/CostDetails/CostFiles	";  // Bu yol doğru olduğundan emin olun
+				
+			// 	// UploadSet'e dosya öğelerini bağla
+			// 	var oUploadSet = this.getView().byId("UploadSet");
+				
+			// 	// Eğer UploadSet bileşeni mevcutsa, bindAggregation ile veri bağlayın
+			// 	if (oUploadSet) {
+			// 		oUploadSet.bindAggregation("items", sFilesPath, new sap.m.upload.UploadSetItem({
+			// 			fileName: "{FileName}",
+			// 			mediaType: "{MimeType}",
+			// 			url: "{url}",
+			// 			// thumbnailUrl: "{thumbnailUrl}",
+			// 			// statuses: "{path: 'statuses', templateShareable: false}",
+			// 			// uploadState: "{uploadState}"
+			// 		}));
+			// 	} else {
+			// 		console.error("UploadSet not found in the view.");
+			// 	}
+			// },
 			onSaveFile: function () {
 				var sActivityDate = this.getView()
 				.byId("inputActivityMasterDateCost")

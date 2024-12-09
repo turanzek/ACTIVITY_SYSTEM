@@ -168,6 +168,11 @@
 							<Column demandPopin="true" minScreenWidth="Tablet">
 								<Text text="{i18n>CostFile}"/>
 							</Column>	
+
+							<Column demandPopin="true" minScreenWidth="Tablet">
+								<Text text="Resim"/>
+							</Column>	
+
 						</columns>
 						<items>
 							<ColumnListItem>
@@ -214,6 +219,9 @@
 								text="View File" 
 								press="onViewFilePress" 
 								type="Emphasized"/>
+
+								 <Image id="idImageControl" alt="Resim" />
+
 
 								<!-- <Image 
 								src="{Files}" 
