@@ -62,6 +62,7 @@ sap.ui.define(
 				this.setModel(oActivityDaysModel, "activityDaysModel");
 				this.setModel(oProjectsValueHelpModel, "projectValueHelp");
 
+
 				// TODO: Move it to OData Model.
 				odataModel.setUseBatch(true);
 				odataModel.setDeferredGroups(["group1"]);

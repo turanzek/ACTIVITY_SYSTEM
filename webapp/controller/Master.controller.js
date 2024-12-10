@@ -394,9 +394,7 @@ sap.ui.define(
 							this.byId("entryActivity").destroy();
 						}.bind(this),
 						error: function (error) {
-							MessageBox.error(
-								JSON.parse(error.responseText).error.message.value
-							);
+							MessageBox.error("Hata!")
 							this.BusyDialog.close();
 						}.bind(this),
 					});
@@ -540,9 +538,7 @@ sap.ui.define(
 							this.byId("entryCost").destroy();
 						}.bind(this),
 						error: function (error) {
-							MessageBox.error(
-								JSON.parse(error.responseText).error.message.value
-							);
+							MessageBox.error("Hata!")
 							this.BusyDialog.close();
 						}.bind(this),
 					});
@@ -570,7 +566,7 @@ sap.ui.define(
 
 			onFileChange: function (oEvent) {
 				var oFileUploader = oEvent.getSource();
-				var oFile = oFileUploader.oFileUpload.files[0];
+				var oFile = oEvent.getParameter("files") && oFileUploader.oFileUpload.files[0];
 				var that = this;
 			
 				if (!oFile) {
@@ -588,6 +584,8 @@ sap.ui.define(
 						MimeType: oFile.type,
 					};
 					console.log("File loaded successfully:", that.fileData);
+					var oImageControl = that.byId("idImageControl2");
+                    oImageControl.setSrc("data:" + oFile.type + ";base64," + e.target.result.split(",")[1]);
 				};
 			
 				reader.onerror = function (error) {
@@ -595,6 +593,11 @@ sap.ui.define(
 				};
 			
 				reader.readAsDataURL(oFile); // Read as Base64
+			},
+
+
+			onUploadComplete: function (oEvent) {
+				MessageToast.show("Dosya yüklendi!");
 			},
 
 		});

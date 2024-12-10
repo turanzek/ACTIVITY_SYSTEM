@@ -58,19 +58,26 @@
                     </List>
                     <Label text="Description" required = "true"/>
                     <Input id="inputDescriptionCost" type="Text" fieldGroupIds="Fragment" required="true" placeholder="Please type description."/>
+
+                    <Label text="Upload File" width="100%" required = "true"/>
+                    <u:FileUploader id="fileUploader" change="onFileChange" uploadComplete="onUploadComplete" width="100%" />
+
+
+                            <Image
+            id="idImageControl2"
+            src=""
+            alt="Resim"
+            width="100%"
+            height="auto"
+            class="sapUiSmallMargin" />
+
                     <!-- <u:FileUploader
-			            id="fileUploader"
-			            name="myFileUpload"
-			            uploadUrl="upload/"
-			            tooltip="Upload your file to the local server"
-			            uploadComplete="handleUploadComplete"/> -->
-                    <u:FileUploader
                         id="fileUploader"
                         name="file"
                         uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
                         sendXHR="true"
                         change="onFileChange"
-/>
+/> -->
                 </f:content>
             </f:SimpleForm>
         </content>

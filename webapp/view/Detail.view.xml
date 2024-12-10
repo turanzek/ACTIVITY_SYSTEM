@@ -167,11 +167,8 @@
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
 								<Text text="{i18n>CostFile}"/>
-							</Column>	
+							</Column>
 
-							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="Resim"/>
-							</Column>	
 
 						</columns>
 						<items>
@@ -213,26 +210,25 @@
 									value="{Description}" 
 									editable="{editModel>/editMode}" 
 								/>
-
 					
 								<Button 
-								text="View File" 
+								id="onEditFileButton"
+								text="{= ${HasFile} === true ? 'View File' : 'Add File'  }" 
+								visible ="{HasFile}" 
 								press="onViewFilePress" 
-								type="Emphasized"/>
+								type="{= ${HasFile} === true ? 'Success' : 'Attention'  }"
+								width="100px"
+								/>
 
-								 <Image id="idImageControl" alt="Resim" />
+								<u:FileUploader
+                        id="fileUploader"
+                        name="file"
+                        uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
+                        sendXHR="true"
+                        change="onFileChange"
+						visible ="{= ${HasFile} === true ? false : true  }"
+/>
 
-
-								<!-- <Image 
-								src="{Files}" 
-								width="50px" 
-								height="50px" 
-								tooltip="Görüntüle" 
-								press="onImagePress" />
-								<Button 
-								text="View" 
-								press="onViewButtonPress" 
-								type="Emphasized"/> -->
 								</cells>
 							</ColumnListItem>
 						</items>
