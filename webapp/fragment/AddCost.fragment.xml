@@ -70,14 +70,6 @@
             width="100%"
             height="auto"
             class="sapUiSmallMargin" />
-
-                    <!-- <u:FileUploader
-                        id="fileUploader"
-                        name="file"
-                        uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
-                        sendXHR="true"
-                        change="onFileChange"
-/> -->
                 </f:content>
             </f:SimpleForm>
         </content>

@@ -34,6 +34,11 @@ sap.ui.define(
 		return BaseController.extend("zint.activity.system.controller.Detail", {
 			formatter: formatter,
 			oTemplateBox: {},
+			costFileData: {
+				Value: "", // Remove data URL prefix
+				FileName: "",
+				MimeType: "",
+			},
 
 			/* =========================================================== */
 			/* lifecycle methods                                           */
@@ -937,27 +942,7 @@ sap.ui.define(
 			onViewFilePress: function (oEvent) {
 				var oView = this.getView();
 				var sButtonText = oEvent.getSource().getText();
-
-				// if(sButtonText === "Add File"){					
-				// if (!this.byId("idAddFile")) {
-				// 	Fragment.load({
-				// 		id: oView.getId(),
-				// 		name: "zint.activity.system.fragment.AddFile",
-				// 		controller: this,
-				// 	}).then(
-				// 		function (oDialog) {
-				// 			oView.addDependent(oDialog);
-				// 			oDialog.data("sourceFragment", sButtonText);
-				// 			oDialog.open();
-				// 			this._dialog = oDialog;
-
-				// 		}.bind(this)
-				// 	);
-				// } else {
-				// 	this.byId("idAddFile").open();
-				// }
-
-
+			
 					if (!this.byId("idEditFile")) {
 						Fragment.load({
 							id: oView.getId(),
@@ -978,69 +963,8 @@ sap.ui.define(
 						this.byId("idEditFile").open();
 					}
 
-
 			},
 
-			// onViewFilePress: function (oEvent) {
-			// 	var oView = this.getView();
-			// 	var sButtonText = oEvent.getSource().getText();
-			// 	var oDialog = this.byId("idEditFile");
-			
-			// 	if (!oDialog) {
-			// 		// Eğer fragment mevcut değilse, yeni fragmenti yükleyelim
-			// 		Fragment.load({
-			// 			id: oView.getId(),
-			// 			name: "zint.activity.system.fragment.EditFile",
-			// 			controller: this,
-			// 		}).then(function (oDialog) {
-			// 			// Fragment'i View'a ekliyoruz
-			// 			oView.addDependent(oDialog);
-			
-			// 			// Başlık ve buton metni ayarlamaları
-			// 			if (sButtonText === "View File") {
-			// 				oDialog.setTitle("View File");
-			// 				oDialog.getButtons().forEach(function (oButton) {
-			// 					if (oButton.getText() === "Download") {
-			// 						oButton.setText("Download");
-			// 					}
-			// 				});
-			// 			} else if (sButtonText === "Add File") {
-			// 				oDialog.setTitle("Add File");
-			// 				oDialog.getButtons().forEach(function (oButton) {
-			// 					if (oButton.getText() === "Download") {
-			// 						oButton.setText("Upload");
-			// 					}
-			// 				});
-			// 			}
-			
-			// 			// Dialog'u açıyoruz
-			// 			oDialog.open();
-			// 			this._dialog = oDialog;
-			// 			this.onFetchFiles(oEvent);
-			
-			// 		}.bind(this));
-			// 	} else {
-			// 		// Fragment zaten açıksa, başlık ve buton metnini güncelle
-			// 		if (sButtonText === "View File") {
-			// 			oDialog.setTitle("View File");
-			// 			oDialog.getButtons().forEach(function (oButton) {
-			// 				if (oButton.getText() === "Upload") {
-								
-			// 				}
-			// 			});
-			// 		} else if (sButtonText === "Add File") {
-			// 			oDialog.setTitle("Add File");
-			// 			oDialog.getButtons().forEach(function (oButton) {
-						
-							
-			// 			});
-			// 		}
-			
-			// 		// Dialog'u açıyoruz
-			// 		oDialog.open();
-			// 		this.onFetchFiles(oEvent);
-			// 	}
-			// },
 			onFetchFiles: function (oEvent) {
 				var oKeys = oEvent.getSource().getBindingContext().getObject();
 
@@ -1095,6 +1019,7 @@ sap.ui.define(
 						if(oRequest.getResponseHeader("Content-Disposition").match(/filename="(.+)"/) !== null &&
 						 oRequest.getResponseHeader("Content-Disposition").match(/filename="(.+)"/)){
 							var sFileName = oRequest.getResponseHeader("Content-Disposition").match(/filename="(.+)"/)[1];
+							sFileName = decodeURIComponent(sFileName);
 						}
 						
 						if(sFileName){					
@@ -1160,6 +1085,38 @@ sap.ui.define(
 				};
 				oRequest.send();
 			},
+
+			onFileChangeCost: function (oEvent) {
+				var oFileUploader = oEvent.getSource();
+				var oFile = oEvent.getParameter("files") && oFileUploader.oFileUpload.files[0];
+				var that = this;
+			
+				if (!oFile) {
+					console.error("No file selected!");
+					return;
+				}
+			
+				var reader = new FileReader();
+			
+				reader.onload = function (e) {
+					// Base64 string of the file
+					that.costFileData = {
+						Value: e.target.result.split(",")[1], // Remove data URL prefix
+						FileName: oFile.name,
+						MimeType: oFile.type,
+					};
+					console.log("File loaded successfully:", that.costFileData);
+					// var oImageControl = that.byId("idImageControl2");
+                    // oImageControl.setSrc("data:" + oFile.type + ";base64," + e.target.result.split(",")[1]);
+				};
+			
+				reader.onerror = function (error) {
+					console.error("Error reading file:", error);
+				};
+			
+				reader.readAsDataURL(oFile); // Read as Base64
+			},
+
 			onDownloadPress: function() {
 				var aFiles = this.getView().getModel("uploadModel").getProperty("/items");
 				var sFileUrl = aFiles.url;
@@ -1173,116 +1130,12 @@ sap.ui.define(
 					sap.m.MessageBox.error("No file available for download.");
 				}
 			},
-			
+
 			onClosePress: function() {
 				var oDialog = this.byId("idEditFile");
 				oDialog.close();
 			},
 
-			onClosePressAddFile: function() {
-				var oDialog = this.byId("idAddFile");
-				oDialog.close();
-			},
-
-			// 			onFetchFiles: function (oEvent) {
-			// 				var oData = oEvent.getSource().getBindingContext().getObject();
-
-			// 				var oImage = this.getView().byId("idImageControl");
-
-			// 				var sPernr = oData.Pernr;
-			// 				var sProjectCode = oData.ProjectCode;
-			// 				var sActivityDate = oData.ActivityDate; // Tarih formatı datetime olmalı
-			// 				var sCostType = oData.CostType;
-
-			// 				var year = sActivityDate.getUTCFullYear();
-			// 				var month = ('0' + (sActivityDate.getUTCMonth() + 1)).slice(-2); // Aylar 0'dan başlar, bu yüzden 1 ekliyoruz
-			// 				var day = ('0' + sActivityDate.getUTCDate()).slice(-2);
-			// 				var hours = ('0' + sActivityDate.getUTCHours()).slice(-2);
-			// 				var minutes = ('0' + sActivityDate.getUTCMinutes()).slice(-2);
-			// 				var seconds = ('0' + sActivityDate.getUTCSeconds()).slice(-2);
-			// 				var xStringData;
-
-			// // Formatlı datetime string oluşturma
-			// 				var formattedDate = "datetime'" + year + "-" + month + "-" + day + "T" + hours + "%3A" + minutes + "%3A" + seconds + "'";
-
-			// 				// URL'yi doğru bir şekilde oluşturun
-			// 				// var sPath = "/CostsSet(Pernr='" + sPernr +
-			// 				// "',ProjectCode='" + sProjectCode +
-			// 				// "',ActivityDate=" + formattedDate +
-			// 				// ",CostType='" + sCostType + "')/CostFiles";
-
-			// 				// /sap/opu/odata/sap/ZBEN_TT_CARSI_SRV/FilesSet{ lv_key }/$value
-			// 				// var sKey = |(Pernr='{ sPernr }',CatalogId='{ es_files-catalog_id }',BenefitId='{ es_files-benefit_id }',Phttype='{ lv_ptype }')|.
-
-			// 				var sKey = "(Pernr='" + sPernr +
-			// 				"',ProjectCode='" + sProjectCode +
-			// 				"',ActivityDate=" + formattedDate +
-			// 				",CostType='" + sCostType + "')";
-
-			// 				var sPath = "/sap/opu/odata/sap/ZINT_ACTIVITY_SRV/FilesSet" + sKey +"/$value";
-
-			// 				// ODataModel ile read isteği gönderme
-			// 				this.getView().getModel().read(sPath, {
-			// 					success: function(oData, response) {
-			// 						// Başarılı işlem
-			// 						console.log("Veri başarıyla alındı:", oData);
-
-			// 						xStringData = oData.results[0].Value;  // Eğer XString zaten base64 ise, bu adımı atlayabilirsiniz
-
-			// 						var byteArray = new Uint8Array(xStringData);
-			// 						var base64Sbase64Imagering = btoa(String.fromCharCode.apply(null, byteArray));
-
-			// 						this.onSetImageDeneme(xStringData);
-
-			// 					// // UI5 Image kontrolünü oluşturma
-			// 					// var oImage = new sap.m.Image({
-			// 					// 	src: "data:image/png;base64," + base64Sbase64Imagering,  // Eğer PNG resimse
-			// 					// 	alt: "Resim Yüklenemedi"
-			// 					// });
-
-			// 							// oImage.setSrc("data:image/png;base64," + base64Sbase64Imagering);
-			// 					},
-			// 					error: function(oError) {
-			// 						// Hata durumu
-			// 						console.error("Veri alınırken hata oluştu:", oError);
-			// 					}
-			// 				});
-
-			// // Tam URL'yi oluşturmak
-			// var sFullUrl = this.getView().getModel().sServiceUrl + sPath;
-
-			// // Resmi yüklemek için image kontrolünü al
-			// var oImage = this.byId("idImageControl");
-			// oImage.setSrc(sFullUrl); // Resmi belirtilen URL'den yükle
-			// },
-
-			// onFetchFiles: function(oEvent) {
-
-			// 	var oContext = oEvent.getSource().getBindingContext();
-
-			// 	// İlgili ActivityDetails objesinin yolunu alın
-			// 	var sPath = oContext.getPath();  // örneğin: /ActivityDetailsSet(ActivityMonth='01', ...)
-
-			// 	// CostDetails içindeki Files'a olan yolu oluşturun
-			// 	var sFilesPath = sPath + "/Costs/CostDetails/CostFiles	";  // Bu yol doğru olduğundan emin olun
-
-			// 	// UploadSet'e dosya öğelerini bağla
-			// 	var oUploadSet = this.getView().byId("UploadSet");
-
-			// 	// Eğer UploadSet bileşeni mevcutsa, bindAggregation ile veri bağlayın
-			// 	if (oUploadSet) {
-			// 		oUploadSet.bindAggregation("items", sFilesPath, new sap.m.upload.UploadSetItem({
-			// 			fileName: "{FileName}",
-			// 			mediaType: "{MimeType}",
-			// 			url: "{url}",
-			// 			// thumbnailUrl: "{thumbnailUrl}",
-			// 			// statuses: "{path: 'statuses', templateShareable: false}",
-			// 			// uploadState: "{uploadState}"
-			// 		}));
-			// 	} else {
-			// 		console.error("UploadSet not found in the view.");
-			// 	}
-			// },
 			onSaveFile: function () {
 				var sActivityDate = this.getView()
 					.byId("inputActivityMasterDateCost")
@@ -1364,11 +1217,6 @@ sap.ui.define(
 			onPressCancelFile: function () {
 				this.byId("idEditFile").destroy();
 			},
-
-			// onRowSelectionChange: function(oEvent) {
-			// 	// Kullanıcı bir satır seçtiğinde tetiklenir
-			// 	this.onFetchFiles(oEvent);
-			// },
 
 			onLiveChangeRestrictToNumbers: function (oEvent) {
 				var oInput = oEvent.getSource();

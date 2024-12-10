@@ -35,22 +35,11 @@
 						<Button id="deleteActButton" text="{i18n>DeleteActLines}"  visible= "{= ${editModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
 						<Button id="editButton2" text= "{= ${editModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${editModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
 						<Button id="exportButton" text="{i18n>ExportExcel}" press="onExportToExcel" icon="sap-icon://excel-attachment"/>
-						<!-- <Button id="importButton" text="Import from Excel" press="onImportFromExcel" icon="sap-icon://upload"/> -->
-						<!-- <Button id="buttonPaste" type="Default" text="{i18n>Paste}" icon="sap-icon://paste" press="onTablePaste" visible="true"></Button> -->
 					</Toolbar>
 				</headerToolbar>
-				<!-- <FlexBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent" direction="Column">
-						<u:FileUploader id="fileUploader" name="file" change="onFileUploadChange"  multiple="false"/>
-						Existing code for Table
-						<u:FileUploader id="fileUploader" name="file" change="onFileUploadChange"  multiple="false"/>
-					</FlexBox>	 -->
+
 				<ScrollContainer horizontal="true" vertical="true" height="550px">
 					<VBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent">
-						<!-- <table:Table id="tableEntrance" visibleRowCount="5" enableColumnFreeze="true" visibleRowCountMode="Auto" busyIndicatorDelay="{detailView>/lineItemTableDelay}" class="sapUiNoMargin sapUiNoPadding" alternateRowColors="true" selectionMode="None">
-							<table:extension>
-								<Button id="buttonPaste" type="Default" text="Yapıştır" icon="sap-icon://paste" press="onTablePaste" visible="true"></Button>
-							</table:extension>
-						</table:Table> -->
 						<Table 	items="{
 						path: 'ActivityDetails',
 						sorter: {
@@ -169,6 +158,10 @@
 								<Text text="{i18n>CostFile}"/>
 							</Column>
 
+							<Column demandPopin="true" minScreenWidth="Tablet" visible="false">
+								<Text text="TEST"/>
+							</Column>
+
 
 						</columns>
 						<items>
@@ -210,24 +203,31 @@
 									value="{Description}" 
 									editable="{editModel>/editMode}" 
 								/>
-					
+
+							<HBox>
+
 								<Button 
 								id="onEditFileButton"
 								text="{= ${HasFile} === true ? 'View File' : 'Add File'  }" 
-								visible ="{HasFile}" 
+								visible ="{= ${HasFile} === true }" 
 								press="onViewFilePress" 
 								type="{= ${HasFile} === true ? 'Success' : 'Attention'  }"
 								width="100px"
 								/>
 
 								<u:FileUploader
-                        id="fileUploader"
-                        name="file"
-                        uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
-                        sendXHR="true"
-                        change="onFileChange"
-						visible ="{= ${HasFile} === true ? false : true  }"
-/>
+									id="fileUploaderCost"
+									name="file"
+									uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
+									sendXHR="true"
+									change="onFileChangeCost"
+									visible="{= ${HasFile} === false }"
+									width="100px"
+									buttonOnly="true"
+									enabled="{editModel>/editMode}"  
+								/>
+               				 </HBox>
+ 
 
 								</cells>
 							</ColumnListItem>
