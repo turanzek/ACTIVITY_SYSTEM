@@ -8,7 +8,7 @@ sap.ui.define(
 		"sap/m/MessageBox",
 		"sap/m/MessageToast",
 		"sap/ui/core/Fragment",
-		"sap/m/upload/UploadSet"
+		"sap/m/upload/UploadSet",
 		// "exceljs",  // exceljs modülünü ekleyin
 		// "file-saver" // FileSaver modülünü ekleyin,
 	],
@@ -71,9 +71,73 @@ sap.ui.define(
 				this.setModel(oViewModel, "editModel");
 
 				var oUploadModel = new sap.ui.model.json.JSONModel({
-					items: [] // Başlangıçta boş bir liste
+					items: [], // Başlangıçta boş bir liste
 				});
 				this.getView().setModel(oUploadModel, "uploadModel");
+
+				this.oEventBus = sap.ui.getCore().getEventBus();
+				this.oEventBus.subscribe(
+					"master",
+					"masterToDetail",
+					this.onMasterButtonPressed,
+					this
+				);
+			},
+
+			onAfterRendering: function () {
+				var oChristmasModeModel =
+					this.getOwnerComponent().getModel("christmasMode");
+				var boChristmasMode = oChristmasModeModel.getData().christmasMode;
+
+				if (boChristmasMode) {
+					this.addDetailStyleClass();
+				} else {
+					this.removeDetailStyleClass();
+				}
+			},
+			onMasterButtonPressed: function (sChannel, sEvent, oData) {
+				if (oData.mode) {
+					this.addDetailStyleClass();
+				} else {
+					this.removeDetailStyleClass();
+				}
+			},
+
+			addDetailStyleClass: function () {
+				this.byId("addActButton").addStyleClass("christmasPanelStyle");
+				this.byId("deleteActButton").addStyleClass("christmasPanelStyle");
+				this.byId("editButton2").addStyleClass("christmasPanelStyle");
+				this.byId("exportButton").addStyleClass("christmasPanelStyle");
+				this.byId("addCostButton").addStyleClass("christmasPanelStyle");
+				this.byId("deleteCostButton").addStyleClass("christmasPanelStyle");
+				this.byId("idDetailTitle").addStyleClass("customTitle");
+				this.byId("idCostTableTitle").addStyleClass("customTableTitle");
+				this.byId("idDetailTableTitle").addStyleClass("customTableTitle");
+				this.byId("idChristmasImage").setVisible(true);
+
+			},
+
+			removeDetailStyleClass: function () {
+				this.byId("addActButton").removeStyleClass("christmasPanelStyle");
+				this.byId("deleteActButton").removeStyleClass("christmasPanelStyle");
+				this.byId("editButton2").removeStyleClass("christmasPanelStyle");
+				this.byId("exportButton").removeStyleClass("christmasPanelStyle");
+				this.byId("addCostButton").removeStyleClass("christmasPanelStyle");
+				this.byId("deleteCostButton").removeStyleClass("christmasPanelStyle");
+				this.byId("idDetailTitle").removeStyleClass("customTitle");
+				this.byId("idCostTableTitle").removeStyleClass("customTableTitle");
+				this.byId("idDetailTableTitle").removeStyleClass("customTableTitle");
+				this.byId("idChristmasImage").setVisible(false);
+			},
+			onExit: function () {
+				if (this.oEventBus) {
+					this.oEventBus.unsubscribe(
+						"master",
+						"masterToDetail",
+						this.onMasterButtonPressed,
+						this
+					);
+				}
 			},
 
 			_onObjectMatched: function (oEvent) {
@@ -252,383 +316,213 @@ sap.ui.define(
 					return context.getObject();
 				});
 
+				// İlk satırdan verileri al
 				var sPernr = aData[0].Pernr;
-				var sGuid = aData[0].Guid;
 				var sActivityYear = aData[0].ActivityYear;
-				var sActivityMonth = aData[0].ActivityMonth;
+				var sActivityMonth = aData[0].ActivityMonthName;
+				var sRecipient = "yunus.tuzun@interise.com.tr"; // Gönderilecek kişi e-posta adresi
 
-				// Promisify read request for COSTSSET data
-				var aCostDataPromise = new Promise((resolve, reject) => {
-					this.getModel().read("/CostsSet", {
-						filters: [
-							new sap.ui.model.Filter(
-								"Pernr",
-								sap.ui.model.FilterOperator.EQ,
-								sPernr
-							),
-							new sap.ui.model.Filter(
-								"Guid",
-								sap.ui.model.FilterOperator.EQ,
-								sGuid
-							),
-							new sap.ui.model.Filter(
-								"ActivityYear",
-								sap.ui.model.FilterOperator.EQ,
-								sActivityYear
-							),
-							new sap.ui.model.Filter(
-								"ActivityMonth",
-								sap.ui.model.FilterOperator.EQ,
-								sActivityMonth
-							),
-						],
-						success: function (oData) {
-							resolve(oData.results || []);
-						},
-						error: function (error) {
-							reject(error);
-						},
-					});
-				});
+				// E-posta bilgileri
+				var sSubject =
+					"Monthly Activity Report - " + sActivityYear + " " + sActivityMonth;
+				var sBody =
+					"Hello,\n\nPlease find the activity report for " +
+					sActivityMonth +
+					" " +
+					sActivityYear; // + ".\n\nBest regards,\nYour Team";
 
-				// Read request completed, now generate Excel
-				aCostDataPromise
-					.then((aCostData) => {
-						var workbook = new ExcelJS.Workbook();
-						var worksheet = [
-							workbook.addWorksheet("Details"),
-							workbook.addWorksheet("Costs"),
-						];
+				// mailto protokolü ile varsayılan e-posta uygulamasını aç
+				var sMailTo =
+					"mailto:" +
+					encodeURIComponent(sRecipient) +
+					"?subject=" +
+					encodeURIComponent(sSubject) +
+					"&body=" +
+					encodeURIComponent(sBody);
 
-						// Set columns and header styles
-						worksheet[0].columns = [
-							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-							{ header: "Activity Date", key: "ActivityDate", width: 15 },
-							{ header: "Project Code", key: "ProjectCode", width: 15 },
-							{ header: "Project Name", key: "ProjectName", width: 25 },
-							{ header: "Activity Hour", key: "ActivityHour", width: 12 },
-							{ header: "Description", key: "Description", width: 80 },
-						];
-
-						worksheet[1].columns = [
-							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-							{ header: "Activity Date", key: "ActivityDate", width: 15 },
-							{ header: "Project Name", key: "ProjectName", width: 25 },
-							{ header: "Cost Type", key: "CostType", width: 10 },
-							{ header: "Cost Name", key: "CostName", width: 20 },
-							{ header: "Amount", key: "Amount", width: 15 },
-							{ header: "Currency", key: "Currency", width: 10 },
-							{ header: "Description", key: "Description", width: 80 },
-						];
-
-						// Apply header styling
-						worksheet.forEach((ws) => {
-							ws.getRow(1).eachCell(function (cell) {
-								cell.fill = {
-									type: "pattern",
-									pattern: "solid",
-									fgColor: { argb: "FFFFFF00" }, // Yellow background
-								};
-								cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
-								cell.border = {
-									top: { style: "thin", color: { argb: "FF000000" } },
-									left: { style: "thin", color: { argb: "FF000000" } },
-									bottom: { style: "thin", color: { argb: "FF000000" } },
-									right: { style: "thin", color: { argb: "FF000000" } },
-								};
-							});
-						});
-
-						// Add data to the first sheet
-						aData.map(function (item) {
-							worksheet[0].addRow({
-								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-								ActivityDate: item.ActivityDate,
-								ProjectCode: item.ProjectCode,
-								ProjectName: item.ProjectName,
-								ActivityHour: item.ActivityHour,
-								Description: item.Description,
-							});
-						});
-
-						// Add cost data to the second sheet
-						aCostData.map(function (item) {
-							worksheet[1].addRow({
-								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-								ActivityDate: item.ActivityDate,
-								ProjectName: item.ProjectName,
-								CostName: item.CostName,
-								CostType: item.CostType,
-								Amount: item.CostAmount,
-								Currency: item.CostCurrency,
-								Description: item.Description,
-							});
-						});
-
-						var sExcelName =
-							aData[0].PersonnelName +
-							"_" +
-							aData[0].PersonnelSurname +
-							"_" +
-							aData[0].ActivityYear +
-							"_" +
-							aData[0].ActivityMonthName +
-							"_" +
-							"Activity" +
-							".xlsx";
-
-						// Create the Excel buffer
-						workbook.xlsx.writeBuffer().then(function (buffer) {
-							var blob = new Blob([buffer], {
-								type: "application/octet-stream",
-							});
-
-							// Prepare FormData with the file to send it to the backend
-							var formData = new FormData();
-							formData.append("file", blob, sExcelName);
-
-							// Send data to backend (make sure to replace with your backend URL)
-
-							// POST https://graph.microsoft.com/v1.0/me/messages/{id}/attachments
-							// Content-type: application/json
-
-							// {
-							//   "@odata.type": "microsoft.graph.fileAttachment",
-							//   "name": "name-value",
-							//   "contentType": "contentType-value",
-							//   "isInline": false,
-							//   "contentLocation": "contentLocation-value",
-							//   "contentBytes": "base64-contentBytes-value"
-							// }
-
-							fetch(
-								"https://graph.microsoft.com/v1.0/me/messages/{id}/attachments",
-								{
-									method: "POST",
-									body: formData,
-								}
-							)
-								.then((response) => response.json())
-								.then((data) => {
-									if (data.success) {
-										MessageBox.success("E-mail sent successfully!");
-									} else {
-										MessageBox.error("Error sending e-mail: " + data.error);
-									}
-								})
-								.catch((error) => {
-									MessageBox.error("Error sending e-mail: " + error.message);
-								});
-						});
-					})
-					.catch((error) => {
-						MessageBox.error("Error fetching COSTSSET data: " + error.message);
-					});
-			},
-			onSendEmailPress4: function () {
-				var oBinding = this.byId("lineItemsList").getBinding("items");
-				var aData = oBinding.getCurrentContexts().map(function (context) {
-					return context.getObject();
-				});
-
-				var sPernr = aData[0].Pernr;
-				var sGuid = aData[0].Guid;
-				var sActivityYear = aData[0].ActivityYear;
-				var sActivityMonth = aData[0].ActivityMonth;
-
-				// Promisify read request for COSTSSET data
-				var aCostDataPromise = new Promise((resolve, reject) => {
-					this.getModel().read("/CostsSet", {
-						filters: [
-							new sap.ui.model.Filter(
-								"Pernr",
-								sap.ui.model.FilterOperator.EQ,
-								sPernr
-							),
-							new sap.ui.model.Filter(
-								"Guid",
-								sap.ui.model.FilterOperator.EQ,
-								sGuid
-							),
-							new sap.ui.model.Filter(
-								"ActivityYear",
-								sap.ui.model.FilterOperator.EQ,
-								sActivityYear
-							),
-							new sap.ui.model.Filter(
-								"ActivityMonth",
-								sap.ui.model.FilterOperator.EQ,
-								sActivityMonth
-							),
-						],
-						success: function (oData) {
-							resolve(oData.results || []);
-						},
-						error: function (error) {
-							reject(error);
-						},
-					});
-				});
-
-				// Read request completed, now generate Excel
-				aCostDataPromise
-					.then((aCostData) => {
-						var workbook = new ExcelJS.Workbook();
-						var worksheet = [
-							workbook.addWorksheet("Details"),
-							workbook.addWorksheet("Costs"),
-						];
-
-						// Set columns and header styles
-						worksheet[0].columns = [
-							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-							{ header: "Activity Date", key: "ActivityDate", width: 15 },
-							{ header: "Project Code", key: "ProjectCode", width: 15 },
-							{ header: "Project Name", key: "ProjectName", width: 25 },
-							{ header: "Activity Hour", key: "ActivityHour", width: 12 },
-							{ header: "Description", key: "Description", width: 80 },
-						];
-
-						worksheet[1].columns = [
-							{ header: "Personnel Name", key: "PersonnelName", width: 18 },
-							{ header: "Activity Date", key: "ActivityDate", width: 15 },
-							{ header: "Project Name", key: "ProjectName", width: 25 },
-							{ header: "Cost Type", key: "CostType", width: 10 },
-							{ header: "Cost Name", key: "CostName", width: 20 },
-							{ header: "Amount", key: "Amount", width: 15 },
-							{ header: "Currency", key: "Currency", width: 10 },
-							{ header: "Description", key: "Description", width: 80 },
-						];
-
-						// Apply header styling
-						worksheet.forEach((ws) => {
-							ws.getRow(1).eachCell(function (cell) {
-								cell.fill = {
-									type: "pattern",
-									pattern: "solid",
-									fgColor: { argb: "FFFFFF00" }, // Yellow background
-								};
-								cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
-								cell.border = {
-									top: { style: "thin", color: { argb: "FF000000" } },
-									left: { style: "thin", color: { argb: "FF000000" } },
-									bottom: { style: "thin", color: { argb: "FF000000" } },
-									right: { style: "thin", color: { argb: "FF000000" } },
-								};
-							});
-						});
-
-						// Add data to the first sheet
-						aData.map(function (item) {
-							worksheet[0].addRow({
-								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-								ActivityDate: item.ActivityDate,
-								ProjectCode: item.ProjectCode,
-								ProjectName: item.ProjectName,
-								ActivityHour: item.ActivityHour,
-								Description: item.Description,
-							});
-						});
-
-						// Add cost data to the second sheet
-						aCostData.map(function (item) {
-							worksheet[1].addRow({
-								PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
-								ActivityDate: item.ActivityDate,
-								ProjectName: item.ProjectName,
-								CostName: item.CostName,
-								CostType: item.CostType,
-								Amount: item.CostAmount,
-								Currency: item.CostCurrency,
-								Description: item.Description,
-							});
-						});
-
-						var sExcelName =
-							aData[0].PersonnelName +
-							"_" +
-							aData[0].PersonnelSurname +
-							"_" +
-							aData[0].ActivityYear +
-							"_" +
-							aData[0].ActivityMonthName +
-							"_" +
-							"Activity" +
-							".xlsx";
-
-						// Create the Excel buffer
-						// workbook.xlsx.writeBuffer().then(function (buffer) {
-						// 	var blob = new Blob([buffer], { type: "application/octet-stream" });
-
-						// Dosyayı oluştur ve indir
-						workbook.xlsx.writeBuffer().then(function (buffer) {
-							var blob = new Blob([buffer], {
-								type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-							});
-							var url = URL.createObjectURL(blob);
-
-							// Dosyayı indir
-							var a = document.createElement("a");
-							a.href = url;
-							a.download = sExcelName;
-							a.click();
-
-							// `mailto` linki ile e-posta aç
-							var sRecipient = "yunus.tuzun@interise.com.tr";
-							var sSubject = encodeURIComponent(
-								"Aktivite Raporu: " + sExcelName
-							);
-							var sBody = encodeURIComponent(
-								"Merhaba,\n\nLütfen ekteki aktiviteleri inceleyin.\n\nSaygılarımla,\n\n[Adınız]"
-							);
-							var mailtoLink =
-								"mailto:" +
-								sRecipient +
-								"?subject=" +
-								sSubject +
-								"&body=" +
-								sBody;
-
-							window.location.href = mailtoLink;
-						});
-					})
-					.catch((error) => {
-						MessageBox.error("Error fetching COSTSSET data: " + error.message);
-					});
-			},
-			onSendEmailPress2: function () {
-				var oMonthTranslations = {
-					January: "Ocak",
-					February: "Şubat",
-					March: "Mart",
-					April: "Nisan",
-					May: "Mayıs",
-					June: "Haziran",
-					July: "Temmuz",
-					August: "Ağustos",
-					September: "Eylül",
-					October: "Ekim",
-					November: "Kasım",
-					December: "Aralık",
-				};
-
-				var oViewModel = this.getModel("detailView");
-				var oBinding = this.byId("lineItemsList").getBinding("items");
-				var aData = oBinding.getCurrentContexts().map(function (context) {
-					return context.getObject();
-				});
-				var sMonth = aData[0].ActivityMonthName;
-				var sMonthTurkish = oMonthTranslations[sMonth] || sMonth;
-				var sRecipient = "yunus.tuzun@interise.com.tr";
-				var sSubject = sMonthTurkish + " Ayı Aktiviteleri";
-				var sMessage =
-					"Selam abi,\n\n" +
-					sMonthTurkish +
-					" ayına ait aktivitelerim ektedir.";
-
-				URLHelper.triggerEmail(sRecipient, sSubject, sMessage);
+				// Yeni bir pencere veya sekme açarak e-posta istemcisini tetikle
+				window.location.href = sMailTo;
 			},
 
+			// onSendEmailPress: function () {
+			// 	var oBinding = this.byId("lineItemsList").getBinding("items");
+			// 	var aData = oBinding.getCurrentContexts().map(function (context) {
+			// 		return context.getObject();
+			// 	});
+
+			// 	var sPernr = aData[0].Pernr;
+			// 	var sGuid = aData[0].Guid;
+			// 	var sActivityYear = aData[0].ActivityYear;
+			// 	var sActivityMonth = aData[0].ActivityMonth;
+
+			// 	// Promisify read request for COSTSSET data
+			// 	var aCostDataPromise = new Promise((resolve, reject) => {
+			// 		this.getModel().read("/CostsSet", {
+			// 			filters: [
+			// 				new sap.ui.model.Filter(
+			// 					"Pernr",
+			// 					sap.ui.model.FilterOperator.EQ,
+			// 					sPernr
+			// 				),
+			// 				new sap.ui.model.Filter(
+			// 					"Guid",
+			// 					sap.ui.model.FilterOperator.EQ,
+			// 					sGuid
+			// 				),
+			// 				new sap.ui.model.Filter(
+			// 					"ActivityYear",
+			// 					sap.ui.model.FilterOperator.EQ,
+			// 					sActivityYear
+			// 				),
+			// 				new sap.ui.model.Filter(
+			// 					"ActivityMonth",
+			// 					sap.ui.model.FilterOperator.EQ,
+			// 					sActivityMonth
+			// 				),
+			// 			],
+			// 			success: function (oData) {
+			// 				resolve(oData.results || []);
+			// 			},
+			// 			error: function (error) {
+			// 				reject(error);
+			// 			},
+			// 		});
+			// 	});
+
+			// 	// Read request completed, now generate Excel
+			// 	aCostDataPromise
+			// 		.then((aCostData) => {
+			// 			var workbook = new ExcelJS.Workbook();
+			// 			var worksheet = [
+			// 				workbook.addWorksheet("Details"),
+			// 				workbook.addWorksheet("Costs"),
+			// 			];
+
+			// 			// Set columns and header styles
+			// 			worksheet[0].columns = [
+			// 				{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+			// 				{ header: "Activity Date", key: "ActivityDate", width: 15 },
+			// 				{ header: "Project Code", key: "ProjectCode", width: 15 },
+			// 				{ header: "Project Name", key: "ProjectName", width: 25 },
+			// 				{ header: "Activity Hour", key: "ActivityHour", width: 12 },
+			// 				{ header: "Description", key: "Description", width: 80 },
+			// 			];
+
+			// 			worksheet[1].columns = [
+			// 				{ header: "Personnel Name", key: "PersonnelName", width: 18 },
+			// 				{ header: "Activity Date", key: "ActivityDate", width: 15 },
+			// 				{ header: "Project Name", key: "ProjectName", width: 25 },
+			// 				{ header: "Cost Type", key: "CostType", width: 10 },
+			// 				{ header: "Cost Name", key: "CostName", width: 20 },
+			// 				{ header: "Amount", key: "Amount", width: 15 },
+			// 				{ header: "Currency", key: "Currency", width: 10 },
+			// 				{ header: "Description", key: "Description", width: 80 },
+			// 			];
+
+			// 			// Apply header styling
+			// 			worksheet.forEach((ws) => {
+			// 				ws.getRow(1).eachCell(function (cell) {
+			// 					cell.fill = {
+			// 						type: "pattern",
+			// 						pattern: "solid",
+			// 						fgColor: { argb: "FFFFFF00" }, // Yellow background
+			// 					};
+			// 					cell.font = { bold: true, color: { argb: "FF000000" } }; // Bold text
+			// 					cell.border = {
+			// 						top: { style: "thin", color: { argb: "FF000000" } },
+			// 						left: { style: "thin", color: { argb: "FF000000" } },
+			// 						bottom: { style: "thin", color: { argb: "FF000000" } },
+			// 						right: { style: "thin", color: { argb: "FF000000" } },
+			// 					};
+			// 				});
+			// 			});
+
+			// 			// Add data to the first sheet
+			// 			aData.map(function (item) {
+			// 				worksheet[0].addRow({
+			// 					PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+			// 					ActivityDate: item.ActivityDate,
+			// 					ProjectCode: item.ProjectCode,
+			// 					ProjectName: item.ProjectName,
+			// 					ActivityHour: item.ActivityHour,
+			// 					Description: item.Description,
+			// 				});
+			// 			});
+
+			// 			// Add cost data to the second sheet
+			// 			aCostData.map(function (item) {
+			// 				worksheet[1].addRow({
+			// 					PersonnelName: item.PersonnelName + " " + item.PersonnelSurname,
+			// 					ActivityDate: item.ActivityDate,
+			// 					ProjectName: item.ProjectName,
+			// 					CostName: item.CostName,
+			// 					CostType: item.CostType,
+			// 					Amount: item.CostAmount,
+			// 					Currency: item.CostCurrency,
+			// 					Description: item.Description,
+			// 				});
+			// 			});
+
+			// 			var sExcelName =
+			// 				aData[0].PersonnelName +
+			// 				"_" +
+			// 				aData[0].PersonnelSurname +
+			// 				"_" +
+			// 				aData[0].ActivityYear +
+			// 				"_" +
+			// 				aData[0].ActivityMonthName +
+			// 				"_" +
+			// 				"Activity" +
+			// 				".xlsx";
+
+			// 			// Create the Excel buffer
+			// 			workbook.xlsx.writeBuffer().then(function (buffer) {
+			// 				var blob = new Blob([buffer], {
+			// 					type: "application/octet-stream",
+			// 				});
+
+			// 				// Prepare FormData with the file to send it to the backend
+			// 				var formData = new FormData();
+			// 				formData.append("file", blob, sExcelName);
+
+			// 				// Send data to backend (make sure to replace with your backend URL)
+
+			// 				// POST https://graph.microsoft.com/v1.0/me/messages/{id}/attachments
+			// 				// Content-type: application/json
+
+			// 				// {
+			// 				//   "@odata.type": "microsoft.graph.fileAttachment",
+			// 				//   "name": "name-value",
+			// 				//   "contentType": "contentType-value",
+			// 				//   "isInline": false,
+			// 				//   "contentLocation": "contentLocation-value",
+			// 				//   "contentBytes": "base64-contentBytes-value"
+			// 				// }
+
+			// 				fetch(
+			// 					"https://graph.microsoft.com/v1.0/me/messages/{id}/attachments",
+			// 					{
+			// 						method: "POST",
+			// 						body: formData,
+			// 					}
+			// 				)
+			// 					.then((response) => response.json())
+			// 					.then((data) => {
+			// 						if (data.success) {
+			// 							MessageBox.success("E-mail sent successfully!");
+			// 						} else {
+			// 							MessageBox.error("Error sending e-mail: " + data.error);
+			// 						}
+			// 					})
+			// 					.catch((error) => {
+			// 						MessageBox.error("Error sending e-mail: " + error.message);
+			// 					});
+			// 			});
+			// 		})
+			// 		.catch((error) => {
+			// 			MessageBox.error("Error fetching COSTSSET data: " + error.message);
+			// 		});
+			// },
 			onListUpdateFinished: function (oEvent) {
 				var sTitle,
 					iTotalItems = oEvent.getParameter("total"),
@@ -724,32 +618,56 @@ sap.ui.define(
 			},
 
 			onAddLine: function () {
-				var oTable = this.byId("lineItemsList"); // Tabloyu alıyoruz
-				var oBinding = oTable.getBinding("items"); // Tabloyu bağlayan bindingi alıyoruz
+				// var oTable = this.byId("lineItemsList"); // Tabloyu alıyoruz
+				// var oBinding = oTable.getBinding("items"); // Tabloyu bağlayan bindingi alıyoruz
 
-				// Tabloyu bağlayan modelin "ActivityDetails" path'ine veri eklemek için,
-				// veri setini alıyoruz ve yeni satırı ekliyoruz
-				var oModel = this.getView().getModel();
-				var aData = oBinding.getCurrentContexts().map(function (context) {
-					return context.getObject();
-				});
+				// // Tabloyu bağlayan modelin "ActivityDetails" path'ine veri eklemek için,
+				// // veri setini alıyoruz ve yeni satırı ekliyoruz
+				// var oModel = this.getView().getModel();
+				// var aData = oBinding.getCurrentContexts().map(function (context) {
+				// 	return context.getObject();
+				// });
 
-				// Yeni satır verisini hazırlıyoruz
-				var oNewLine = {
-					PersonnelName: aData[0].PersonnelName,
-					ActivityDate: aData[0].ActivityDate,
+				// // Yeni satır verisini hazırlıyoruz
+				// var oNewLine = {
+				// 	PersonnelName: aData[0].PersonnelName,
+				// 	ActivityDate: aData[0].ActivityDate,
+				// 	ProjectCode: "",
+				// 	ProjectName: "",
+				// 	ActivityHour: 0,
+				// 	Description: "",
+				// 	Box: false, // Eğer checkbox varsa
+				// 	Weekend: false, // Weekend durumunu da dahil edebiliriz
+				// };
+				// // Yeni satırı veriye ekliyoruz
+				// aData.push(oNewLine);
+
+				// // Veriyi backend'e eklemeden yalnızca frontend'de güncelledik
+				// oBinding.refresh(); // Tabloyu güncelliyoruz
+
+				// Tabloya bağlı olan modeli alın
+				var oModel = this.getView().getModel("ActivityDetails");
+
+				// Modelin mevcut verilerini alın
+				var aData = oModel.getProperty("/");
+
+				// Yeni bir satır için varsayılan veriler
+				var oNewActivity = {
+					PersonnelName: "John Doe", // Bu kısmı kendi dinamik verinize göre düzenleyebilirsiniz
+					ActivityDate: new Date(),
 					ProjectCode: "",
 					ProjectName: "",
-					ActivityHour: 0,
+					ActivityDuration: 0,
 					Description: "",
-					Box: false, // Eğer checkbox varsa
-					Weekend: false, // Weekend durumunu da dahil edebiliriz
+					Weekend: false, // Varsayılan olarak hafta sonu değil
+					Box: false, // Varsayılan olarak seçim kutusu işaretli değil
 				};
-				// Yeni satırı veriye ekliyoruz
-				aData.push(oNewLine);
 
-				// Veriyi backend'e eklemeden yalnızca frontend'de güncelledik
-				oBinding.refresh(); // Tabloyu güncelliyoruz
+				// Yeni satırı mevcut verilere ekleyin
+				aData.push(oNewActivity);
+
+				// Güncellenmiş verileri modele geri yazın
+				oModel.setProperty("/", aData);
 			},
 
 			onSaveActivities: function (oEvent) {
@@ -942,27 +860,25 @@ sap.ui.define(
 			onViewFilePress: function (oEvent) {
 				var oView = this.getView();
 				var sButtonText = oEvent.getSource().getText();
-			
-					if (!this.byId("idEditFile")) {
-						Fragment.load({
-							id: oView.getId(),
-							name: "zint.activity.system.fragment.EditFile",
-							controller: this,
-						}).then(
-							function (oDialog) {
-								oView.addDependent(oDialog);
-								oDialog.data("sourceFragment", sButtonText);
-								this.onFetchFiles(oEvent);
-								oDialog.open();
-								this._dialog = oDialog;
-	
-							}.bind(this)
-						);
-					} else {
-						this.onFetchFiles(oEvent);
-						this.byId("idEditFile").open();
-					}
 
+				if (!this.byId("idEditFile")) {
+					Fragment.load({
+						id: oView.getId(),
+						name: "zint.activity.system.fragment.EditFile",
+						controller: this,
+					}).then(
+						function (oDialog) {
+							oView.addDependent(oDialog);
+							oDialog.data("sourceFragment", sButtonText);
+							this.onFetchFiles(oEvent);
+							oDialog.open();
+							this._dialog = oDialog;
+						}.bind(this)
+					);
+				} else {
+					this.onFetchFiles(oEvent);
+					this.byId("idEditFile").open();
+				}
 			},
 
 			onFetchFiles: function (oEvent) {
@@ -981,12 +897,31 @@ sap.ui.define(
 				var hours = ("0" + sActivityDate.getUTCHours()).slice(-2);
 				var minutes = ("0" + sActivityDate.getUTCMinutes()).slice(-2);
 				var seconds = ("0" + sActivityDate.getUTCSeconds()).slice(-2);
-				var formattedDate = "datetime'" + year + "-" + month + "-" + day + "T" + hours + "%3A" + minutes + "%3A" + seconds + "'";
-				
-				var sPath = "/FilesSet(Pernr='" + sPernr +
-							"',ProjectCode='" + sProjectCode +
-							"',ActivityDate=" + formattedDate +
-							",CostType='" + sCostType + "')/$value";
+				var formattedDate =
+					"datetime'" +
+					year +
+					"-" +
+					month +
+					"-" +
+					day +
+					"T" +
+					hours +
+					"%3A" +
+					minutes +
+					"%3A" +
+					seconds +
+					"'";
+
+				var sPath =
+					"/FilesSet(Pernr='" +
+					sPernr +
+					"',ProjectCode='" +
+					sProjectCode +
+					"',ActivityDate=" +
+					formattedDate +
+					",CostType='" +
+					sCostType +
+					"')/$value";
 
 				var oModel = new sap.ui.model.odata.v2.ODataModel(
 					"/sap/opu/odata/sap/ZINT_ACTIVITY_SRV/",
@@ -1016,62 +951,77 @@ sap.ui.define(
 						var oIcon = this.byId("idFileIcon");
 						var oObject = this.byId("idPreviewObject");
 
-						if(oRequest.getResponseHeader("Content-Disposition").match(/filename="(.+)"/) !== null &&
-						 oRequest.getResponseHeader("Content-Disposition").match(/filename="(.+)"/)){
-							var sFileName = oRequest.getResponseHeader("Content-Disposition").match(/filename="(.+)"/)[1];
+						if (
+							oRequest
+								.getResponseHeader("Content-Disposition")
+								.match(/filename="(.+)"/) !== null &&
+							oRequest
+								.getResponseHeader("Content-Disposition")
+								.match(/filename="(.+)"/)
+						) {
+							var sFileName = oRequest
+								.getResponseHeader("Content-Disposition")
+								.match(/filename="(.+)"/)[1];
 							sFileName = decodeURIComponent(sFileName);
 						}
-						
-						if(sFileName){					
-						
-						// File details (FileName, MimeType, etc.)
-						var aFiles = [];
-						aFiles.FileName = sFileName;
-						aFiles.MimeType = sMimeType;
-						aFiles.url = sBlobUrl;  // Blob URL for preview
-						
-			
-						var oUploadSetModel = this.getView().getModel("uploadModel");
-						oUploadSetModel.setProperty("/items", aFiles);
-			
 
+						if (sFileName) {
+							// File details (FileName, MimeType, etc.)
+							var aFiles = [];
+							aFiles.FileName = sFileName;
+							aFiles.MimeType = sMimeType;
+							aFiles.url = sBlobUrl; // Blob URL for preview
 
-						if (sMimeType === "application/pdf") {
-							oIcon.setSrc("images/pdf-icon.png");
-						} else if (sMimeType === "application/msword" || sMimeType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-							oIcon.setSrc("images/word-icon.jpg"); // Word simgesi
-						} else if (sMimeType === "application/vnd.ms-excel" || sMimeType === "text/csv" || sMimeType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-							oIcon.setSrc("images/excel-icon.png"); // Excel simgesi
-						} else if (sMimeType === "text/plain") {
-							oIcon.setSrc("images/txt-icon.png");
-						} else if (sMimeType === "application/vnd.ms-powerpoint" || sMimeType === "application/vnd.openxmlformats-officedocument.presentationml.presentation") {
-							oIcon.setSrc("images/ppt-icon.png")
-						} else if(sMimeType.startsWith("image/")){
-							oImage.setSrc(sBlobUrl); // Resmi göster
-							oImage.setVisible(true); // Görünür yap
-							oObject.setVisible(false); // PDF veya Word gibi diğer dosyaları gizle
-							oIcon.setVisible(false); // İconu gizle
+							var oUploadSetModel = this.getView().getModel("uploadModel");
+							oUploadSetModel.setProperty("/items", aFiles);
+
+							if (sMimeType === "application/pdf") {
+								oIcon.setSrc("images/pdf-icon.png");
+							} else if (
+								sMimeType === "application/msword" ||
+								sMimeType ===
+									"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+							) {
+								oIcon.setSrc("images/word-icon.jpg"); // Word simgesi
+							} else if (
+								sMimeType === "application/vnd.ms-excel" ||
+								sMimeType === "text/csv" ||
+								sMimeType ===
+									"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+							) {
+								oIcon.setSrc("images/excel-icon.png"); // Excel simgesi
+							} else if (sMimeType === "text/plain") {
+								oIcon.setSrc("images/txt-icon.png");
+							} else if (
+								sMimeType === "application/vnd.ms-powerpoint" ||
+								sMimeType ===
+									"application/vnd.openxmlformats-officedocument.presentationml.presentation"
+							) {
+								oIcon.setSrc("images/ppt-icon.png");
+							} else if (sMimeType.startsWith("image/")) {
+								oImage.setSrc(sBlobUrl); // Resmi göster
+								oImage.setVisible(true); // Görünür yap
+								oObject.setVisible(false); // PDF veya Word gibi diğer dosyaları gizle
+								oIcon.setVisible(false); // İconu gizle
+							}
+
+							// Resim için kontrol (image/ MIME tipi)
+							if (!sMimeType.startsWith("image/")) {
+								// Resim değilse dosya adı tıklanabilir yapılacak
+								oObject.setTitle(sFileName); // Dosya adını link olarak yaz
+								oObject.setVisible(true); // Dosya adını görünür yap
+								oImage.setVisible(false); // Resmi gizle
+								oIcon.setVisible(true);
+							}
+						} else {
+							var aFiles = [];
+
+							var oUploadSetModel = this.getView().getModel("uploadModel");
+							oUploadSetModel.setProperty("/items", aFiles);
+							oImage.setVisible(false); // Görünür yap
+							oObject.setVisible(false);
+							oIcon.setVisible(false);
 						}
-						
-						// Resim için kontrol (image/ MIME tipi)
-						if (!sMimeType.startsWith("image/")) {
-							// Resim değilse dosya adı tıklanabilir yapılacak
-							oObject.setTitle(sFileName); // Dosya adını link olarak yaz
-							oObject.setVisible(true); // Dosya adını görünür yap
-							oImage.setVisible(false); // Resmi gizle
-							oIcon.setVisible(true);
-						}
-
-					}
-					else{
-						var aFiles = [];
-		
-						var oUploadSetModel = this.getView().getModel("uploadModel");
-						oUploadSetModel.setProperty("/items", aFiles);
-						oImage.setVisible(false); // Görünür yap
-						oObject.setVisible(false);
-						oIcon.setVisible(false);
-					}
 					} else {
 						// Hata durumunu yönetin
 						sap.m.MessageBox.error(
@@ -1088,16 +1038,17 @@ sap.ui.define(
 
 			onFileChangeCost: function (oEvent) {
 				var oFileUploader = oEvent.getSource();
-				var oFile = oEvent.getParameter("files") && oFileUploader.oFileUpload.files[0];
+				var oFile =
+					oEvent.getParameter("files") && oFileUploader.oFileUpload.files[0];
 				var that = this;
-			
+
 				if (!oFile) {
 					console.error("No file selected!");
 					return;
 				}
-			
+
 				var reader = new FileReader();
-			
+
 				reader.onload = function (e) {
 					// Base64 string of the file
 					that.costFileData = {
@@ -1107,20 +1058,22 @@ sap.ui.define(
 					};
 					console.log("File loaded successfully:", that.costFileData);
 					// var oImageControl = that.byId("idImageControl2");
-                    // oImageControl.setSrc("data:" + oFile.type + ";base64," + e.target.result.split(",")[1]);
+					// oImageControl.setSrc("data:" + oFile.type + ";base64," + e.target.result.split(",")[1]);
 				};
-			
+
 				reader.onerror = function (error) {
 					console.error("Error reading file:", error);
 				};
-			
+
 				reader.readAsDataURL(oFile); // Read as Base64
 			},
 
-			onDownloadPress: function() {
-				var aFiles = this.getView().getModel("uploadModel").getProperty("/items");
+			onDownloadPress: function () {
+				var aFiles = this.getView()
+					.getModel("uploadModel")
+					.getProperty("/items");
 				var sFileUrl = aFiles.url;
-				
+
 				if (sFileUrl) {
 					var oLink = document.createElement("a");
 					oLink.href = sFileUrl;
@@ -1131,7 +1084,7 @@ sap.ui.define(
 				}
 			},
 
-			onClosePress: function() {
+			onClosePress: function () {
 				var oDialog = this.byId("idEditFile");
 				oDialog.close();
 			},
@@ -1208,7 +1161,7 @@ sap.ui.define(
 							this.byId("idEditFile").destroy();
 						}.bind(this),
 						error: function (error) {
-							MessageBox.error("Hata!")
+							MessageBox.error("Hata!");
 							this.BusyDialog.close();
 						}.bind(this),
 					});

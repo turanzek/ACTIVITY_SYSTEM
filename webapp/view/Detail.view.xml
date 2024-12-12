@@ -9,38 +9,53 @@
 	xmlns:semantic="sap.f.semantic"
 	xmlns:mvc="sap.ui.core.mvc"
 	xmlns:table="sap.ui.table"
-	xmlns:u="sap.ui.unified" 
+	xmlns:u="sap.ui.unified"
 	xmlns:upload="sap.m.upload">
 	<semantic:SemanticPage
 		id="detailPage"
 		busy="{detailView>/busy}"
 		busyIndicatorDelay="{detailView>/delay}">
 		<semantic:titleHeading>
-			<Title
-				text="{ActivityMonth}"
-				level="H2"/>
+			<HBox justifyContent="SpaceBetween" alignItems="Center">
+				<Title
+					id="idDetailTitle"
+					text="Activities for {PersonnelName} {PersonnelSurname} in {MonthName} {Year}"
+					level="H2" />
+				<Image id="idChristmasImage" src="images/christmas-tree.png" width="35px" height="35px" />
+			</HBox>
 		</semantic:titleHeading>
 		<semantic:content></semantic:content>
 		<VBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent">
 			<Panel
-					headerText="{ActivityMonth} {i18n>ActivityDetails} "
-					width="100%"
-					expandable="false">
+				headerText="{i18n>ActivityDetails} "
+				width="100%"
+				expandable="false">
 				<headerToolbar>
 					<Toolbar>
-						<Title text="{ActivityMonth} {i18n>ActivityDetails}"/>
-						<ToolbarSpacer/>
-						<Button id="saveActButton" text="{i18n>SaveActivities}" visible= "{= ${editModel>/editMode} }" press="onSaveActivities" icon="sap-icon://save" type="Emphasized"/>
-						<Button id="addActButton" text="{i18n>AddActLines}" visible= "{= ${editModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
-						<Button id="deleteActButton" text="{i18n>DeleteActLines}"  visible= "{= ${editModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
-						<Button id="editButton2" text= "{= ${editModel>/editMode} === false ? 'Edit' : 'Display'  }" press="onEdit" icon="{= ${editModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }"/>
-						<Button id="exportButton" text="{i18n>ExportExcel}" press="onExportToExcel" icon="sap-icon://excel-attachment"/>
+						<Title id="idDetailTableTitle" text="{i18n>ActivityDetails} of {MonthName} " />
+						<ToolbarSpacer />
+						<Button id="saveActButton" text="{i18n>SaveActivities}"
+							visible="{= ${editModel>/editMode} }" press="onSaveActivities"
+							icon="sap-icon://save" type="Emphasized" />
+						<Button id="addActButton" text="{i18n>AddActLines}"
+							visible="{= ${editModel>/editMode} }" press="onAddLine"
+							icon="sap-icon://add" />
+						<Button id="deleteActButton" text="{i18n>DeleteActLines}"
+							visible="{= ${editModel>/editMode} }" press="onDeleteLine"
+							icon="sap-icon://delete" />
+						<Button id="editButton2"
+							text="{= ${editModel>/editMode} === false ? 'Edit' : 'Display'  }"
+							press="onEdit"
+							icon="{= ${editModel>/editMode} === false ? 'sap-icon://edit' : 'sap-icon://display'  }" />
+						<Button id="exportButton" text="{i18n>ExportExcel}" press="onExportToExcel"
+							icon="sap-icon://excel-attachment" />
 					</Toolbar>
 				</headerToolbar>
 
 				<ScrollContainer horizontal="true" vertical="true" height="550px">
 					<VBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent">
-						<Table 	items="{
+						<Table
+							items="{
 						path: 'ActivityDetails',
 						sorter: {
 							path: 'ActivityDate',
@@ -48,56 +63,75 @@
 						},
 						groupHeaderFactory: '.createGroupHeader'
 					}"
-					id="lineItemsList"  >
+							id="lineItemsList">
 							<columns>
 								<Column width="5%">
-									<Text text=""/>
+									<Text text="" />
 								</Column>
 								<Column demandPopin="true" minScreenWidth="Tablet" width="10%">
-									<Text text="{i18n>PersonnelName}"/>
+									<Text text="{i18n>PersonnelName}" />
 								</Column>
 								<Column demandPopin="true" minScreenWidth="Tablet" width="14%">
-									<Text text="{i18n>ActivityDate}"/>
+									<Text text="{i18n>ActivityDate}" />
 								</Column>
 								<Column demandPopin="true" minScreenWidth="Tablet" width="9%">
-									<Text text="{i18n>ProjectCode}"/>
+									<Text text="{i18n>ProjectCode}" />
 								</Column>
 								<Column demandPopin="true" minScreenWidth="Tablet" width="15%">
-									<Text text="{i18n>ProjectName}"/>
+									<Text text="{i18n>ProjectName}" />
 								</Column>
 								<Column demandPopin="true" minScreenWidth="Tablet" width="8%">
-									<Text text="{i18n>ActivityHour}"/>
-								</Column >
+									<Text text="{i18n>ActivityHour}" />
+								</Column>
 								<Column demandPopin="true" minScreenWidth="Tablet" width="41%">
-									<Text text="{i18n>Description}"/>
+									<Text text="{i18n>Description}" />
 								</Column>
 							</columns>
 							<items>
 								<ColumnListItem
-						class="{= ${Weekend} ? 'myCustomBackground' : '' }">
+									class="{= ${Weekend} ? 'myCustomBackground' : '' }">
 									<cells>
-										<CheckBox id="detailCheckBox" selected="{Box}" select="onSelectBox" />
-										<Text text="{PersonnelName} {PersonnelSurname}"/>
-										<DatePicker id="inputActivityDate" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === X ? 'Warning' : 'None' }" editable="{editModel>/editMode}" value="{
+										<CheckBox id="detailCheckBox" selected="{Box}"
+											select="onSelectBox" />
+										<Text text="{PersonnelName} {PersonnelSurname}" />
+										<DatePicker id="inputActivityDate"
+											valueStateText="{i18n>WeekendWarning}"
+											valueState="{=${Weekend} === X ? 'Warning' : 'None' }"
+											editable="{editModel>/editMode}"
+											value="{
 									path: 'ActivityDate',
 									type: 'sap.ui.model.type.Date',
 									formatOptions: {
 									style: 'short'
 								}}"
-								
-								/>
-										<Input id="inputProjectCode" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === true ? 'Warning' : 'None' }" value="{ProjectCode}" editable="{editModel>/editMode}" showValueHelp="true" valueHelpRequest="handleInputProjectCodeValueHelp"/>
-										<Input id="inputProjectName" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === true ? 'Warning' : 'None' }" value="{ProjectName}" editable="false"/>
-										<Input value="{
+										/>
+										<Input id="inputProjectCode"
+											valueStateText="{i18n>WeekendWarning}"
+											valueState="{=${Weekend} === true ? 'Warning' : 'None' }"
+											value="{ProjectCode}" editable="{editModel>/editMode}"
+											showValueHelp="true"
+											valueHelpRequest="handleInputProjectCodeValueHelp" />
+										<Input id="inputProjectName"
+											valueStateText="{i18n>WeekendWarning}"
+											valueState="{=${Weekend} === true ? 'Warning' : 'None' }"
+											value="{ProjectName}" editable="false" />
+										<Input
+											value="{
 									path: 'ActivityDuration',
 									type: 'sap.ui.model.type.Float',
 									formatOptions: {
 										minFractionDigits: 2,  
 										maxFractionDigits: 2 
 									}
-								}" editable="{editModel>/editMode}" 
-								liveChange="onLiveChangeRestrictToNumbers" valueStateText="{i18n>WeekendWarning}" valueState="{=${Weekend} === true ? 'Warning' : 'None' }" />
-										<Input value="{Description}" valueStateText="{i18n>WeekendWarning}"  valueState="{=${Weekend} === true ? 'Warning' : 'None' }" editable="{editModel>/editMode}"/>
+								}"
+											editable="{editModel>/editMode}"
+											liveChange="onLiveChangeRestrictToNumbers"
+											valueStateText="{i18n>WeekendWarning}"
+											valueState="{=${Weekend} === true ? 'Warning' : 'None' }" />
+										<Input value="{Description}"
+											valueStateText="{i18n>WeekendWarning}"
+											valueState="{=${Weekend} === true ? 'Warning' : 'None' }"
+											editable="{editModel>/editMode}" />
 									</cells>
 								</ColumnListItem>
 							</items>
@@ -107,21 +141,25 @@
 			</Panel>
 			<VBox height="30px" class="customBox" />
 			<Panel
-		headerText="{i18n>CostDetails}"
-		width="100%"
-		expandable="false">
+				headerText="{i18n>CostDetails}"
+				width="100%"
+				expandable="false">
 				<headerToolbar>
 					<Toolbar>
-						<Title text="{ActivityMonth} {i18n>CostDetails}"/>
-						<ToolbarSpacer/>
-						<Button id="addCostButton" text="{i18n>AddActLines}" visible= "{= ${editModel>/editMode} }" press="onAddLine" icon="sap-icon://add"/>
-						<Button id="deleteCostButton" text="{i18n>DeleteActLines}"  visible= "{= ${editModel>/editMode} }" press="onDeleteLine" icon="sap-icon://delete"/>
+						<Title id="idCostTableTitle" text="{i18n>CostDetails} of {MonthName}" />
+						<ToolbarSpacer />
+						<Button id="addCostButton" text="{i18n>AddActLines}"
+							visible="{= ${editModel>/editMode} }" press="onAddLine"
+							icon="sap-icon://add" />
+						<Button id="deleteCostButton" text="{i18n>DeleteActLines}"
+							visible="{= ${editModel>/editMode} }" press="onDeleteLine"
+							icon="sap-icon://delete" />
 					</Toolbar>
 				</headerToolbar>
 				<ScrollContainer horizontal="true" vertical="true" height="160px">
 					<Table
-					id="idDetailCostModel"
-					items="{
+						id="idDetailCostModel"
+						items="{
 						path: 'ActivityDetails/CostDetails',
 						sorter: {
 							path: 'ActivityDate',
@@ -131,35 +169,31 @@
 					>
 						<columns>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>PersonnelName}"/>
+								<Text text="{i18n>PersonnelName}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>ActivityDate}"/>
+								<Text text="{i18n>ActivityDate}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>ProjectName}"/>
+								<Text text="{i18n>ProjectName}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>CostType}"/>
+								<Text text="{i18n>CostType}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>CostName}"/>
+								<Text text="{i18n>CostName}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
 								<Text text="{i18n>CostAmount}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>CostCurrency}"/>
+								<Text text="{i18n>CostCurrency}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>Description}"/>
+								<Text text="{i18n>Description}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
-								<Text text="{i18n>CostFile}"/>
-							</Column>
-
-							<Column demandPopin="true" minScreenWidth="Tablet" visible="false">
-								<Text text="TEST"/>
+								<Text text="{i18n>CostFile}" />
 							</Column>
 
 
@@ -167,67 +201,67 @@
 						<items>
 							<ColumnListItem>
 								<cells>
-									<Text text="{PersonnelName} {PersonnelSurname}"/>
-									<DatePicker 
-									id="inputActivityCostDate" 
-									editable="{editModel>/editMode}" 
-									value="{
+									<Text text="{PersonnelName} {PersonnelSurname}" />
+									<DatePicker
+										id="inputActivityCostDate"
+										editable="{editModel>/editMode}"
+										value="{
 										path: 'ActivityDate',
 										type: 'sap.ui.model.type.Date',
 										formatOptions: {
 											style: 'short'
 										}
 									}"
-								/>
-									<Text text="{ProjectName}"/>
-									<Input 
-									id="inputCostType" 
-									value="{CostType}" 
-									editable="{editModel>/editMode}" 
-									showValueHelp="true" 
-									valueHelpRequest="handleInputCostTypeValueHelp"
-								/>
-									<Text text="{CostName}"/>
-									<Input 
-									id="inputCostAmount" 
-									type="Number" 
-									value="{CostAmount}" 
-									editable="{editModel>/editMode}" 
-								/>
-									<Input 
-									id="inputCostCurrency" 
-									value="{CostCurrency}" 
-									editable="{editModel>/editMode}"  
-								/>
-									<Input 
-									value="{Description}" 
-									editable="{editModel>/editMode}" 
-								/>
+									/>
+									<Text text="{ProjectName}" />
+									<Input
+										id="inputCostType"
+										value="{CostType}"
+										editable="{editModel>/editMode}"
+										showValueHelp="true"
+										valueHelpRequest="handleInputCostTypeValueHelp"
+									/>
+									<Text text="{CostName}" />
+									<Input
+										id="inputCostAmount"
+										type="Number"
+										value="{CostAmount}"
+										editable="{editModel>/editMode}"
+									/>
+									<Input
+										id="inputCostCurrency"
+										value="{CostCurrency}"
+										editable="{editModel>/editMode}"
+									/>
+									<Input
+										value="{Description}"
+										editable="{editModel>/editMode}"
+									/>
 
-							<HBox>
+									<HBox>
 
-								<Button 
-								id="onEditFileButton"
-								text="{= ${HasFile} === true ? 'View File' : 'Add File'  }" 
-								visible ="{= ${HasFile} === true }" 
-								press="onViewFilePress" 
-								type="{= ${HasFile} === true ? 'Success' : 'Attention'  }"
-								width="100px"
-								/>
+										<Button
+											id="onEditFileButton"
+											text="{= ${HasFile} === true ? 'View File' : 'Add File'  }"
+											visible="{= ${HasFile} === true }"
+											press="onViewFilePress"
+											type="{= ${HasFile} === true ? 'Success' : 'Attention'  }"
+											width="100%"
+										/>
 
-								<u:FileUploader
-									id="fileUploaderCost"
-									name="file"
-									uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
-									sendXHR="true"
-									change="onFileChangeCost"
-									visible="{= ${HasFile} === false }"
-									width="100px"
-									buttonOnly="true"
-									enabled="{editModel>/editMode}"  
-								/>
-               				 </HBox>
- 
+										<u:FileUploader
+											id="fileUploaderCost"
+											name="file"
+											uploadUrl="/sap/opu/odata/srv/ActivityDetailsSet"
+											sendXHR="true"
+											change="onFileChangeCost"
+											visible="{= ${HasFile} === false }"
+											width="100%"
+											buttonOnly="true"
+											enabled="{editModel>/editMode}"
+										/>
+									</HBox>
+
 
 								</cells>
 							</ColumnListItem>
@@ -239,24 +273,24 @@
 		<semantic:sendEmailAction>
 			<semantic:SendEmailAction
 				id="shareEmail"
-				press=".onSendEmailPress"/>
+				press=".onSendEmailPress" />
 		</semantic:sendEmailAction>
 		<semantic:closeAction>
 			<semantic:CloseAction
-					id="closeColumn"
-					press=".onCloseDetailPress"/>
+				id="closeColumn"
+				press=".onCloseDetailPress" />
 		</semantic:closeAction>
 		<semantic:fullScreenAction>
 			<semantic:FullScreenAction
-					id="enterFullScreen"
-					visible="{= !${device>/system/phone} &amp;&amp; !${appView>/actionButtonsInfo/midColumn/fullScreen}}"
-					press=".toggleFullScreen"/>
+				id="enterFullScreen"
+				visible="{= !${device>/system/phone} &amp;&amp; !${appView>/actionButtonsInfo/midColumn/fullScreen}}"
+				press=".toggleFullScreen" />
 		</semantic:fullScreenAction>
 		<semantic:exitFullScreenAction>
 			<semantic:ExitFullScreenAction
-					id="exitFullScreen"
-					visible="{= !${device>/system/phone} &amp;&amp; ${appView>/actionButtonsInfo/midColumn/fullScreen}}"
-					press=".toggleFullScreen"/>
+				id="exitFullScreen"
+				visible="{= !${device>/system/phone} &amp;&amp; ${appView>/actionButtonsInfo/midColumn/fullScreen}}"
+				press=".toggleFullScreen" />
 		</semantic:exitFullScreenAction>
 	</semantic:SemanticPage>
 </mvc:View>

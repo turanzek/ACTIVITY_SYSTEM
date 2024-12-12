@@ -68,6 +68,95 @@ sap.ui.define(
 					.getRoute("master")
 					.attachPatternMatched(this._onMasterMatched, this);
 				this.getRouter().attachBypassed(this.onBypassed, this);
+
+				this.oEventBus = sap.ui.getCore().getEventBus();
+			},
+
+			onAfterRendering: function() {
+				this.addStyleClass();
+			},
+			
+			createChristmasEffect: function() {
+				var body = document.body;
+				
+				// Kar taneleri, yılbaşı ağacı, yıldızlar eklemek
+				this.createSnowflakes(body);
+				this.createStars(body);
+			},
+			createSnowflakes: function(container) {
+				for (var i = 0; i < 20; i++) { // 50 kar tanesi
+					var snowflake = document.createElement("span");
+					snowflake.classList.add("snowflake");
+					snowflake.style.left = Math.random() * 100 + "%";
+					snowflake.style.animationDuration = Math.random() * 2 + 3 + "s";
+					snowflake.textContent = "❄"; // Kar tanesi simgesi
+					container.appendChild(snowflake);
+				}
+			},
+			createStars: function(container) {
+				for (var i = 0; i < 20; i++) { 
+					var snowflake = document.createElement("span");
+					snowflake.classList.add("star");
+					snowflake.style.left = Math.random() * 100 + "%";
+					snowflake.style.animationDuration = Math.random() * 2 + 3 + "s";
+					snowflake.textContent = "★";
+					container.appendChild(snowflake);
+				}
+			},
+
+			removeChristmasEffect: function() {
+				var snowflakes = document.querySelectorAll('.snowflake');
+				var stars = document.querySelectorAll('.star');
+	
+				// Efektleri kaldırma
+				snowflakes.forEach(function(snowflake) {
+					snowflake.remove();
+				});
+				stars.forEach(function(star) {
+					star.remove();
+				});
+			},
+
+			onPressChristmasModeButton: function(oEvent) {
+				var oChristmasButton = this.byId("christmasModeButton");
+				var oChristmasModeModel = this.getOwnerComponent().getModel("christmasMode");
+				var bChristmasMode = oChristmasModeModel.getData().christmasMode;
+
+				this.oEventBus.publish("master", "masterToDetail", {
+					// Buraya pametre verebiliyoruz.
+					mode: !bChristmasMode
+				});
+
+				if (!bChristmasMode){
+					this.addStyleClass();
+					oChristmasButton.setIcon("sap-icon://home-share");
+					oChristmasButton.setText("Normal Mode");
+					
+				}
+				else {
+					this.removeStyleClass();
+					oChristmasButton.setIcon("sap-icon://favorite");
+					oChristmasButton.setText("Christmas Mode");
+					oChristmasButton.removeStyleClass("christmasPanelStyle");
+	
+				}
+				oChristmasModeModel.setProperty("/christmasMode", !bChristmasMode);
+			},
+
+			addStyleClass : function (){
+				this.createChristmasEffect();
+				this.byId("christmasModeButton").addStyleClass("christmasPanelStyle");
+				this.byId("createActivityButton").addStyleClass("christmasPanelStyle");
+				this.byId("createCostButton").addStyleClass("christmasPanelStyle");		
+				this.byId("masterPageTitle").addStyleClass("customTitle");		
+			},
+
+			removeStyleClass : function (){
+				this.removeChristmasEffect();		
+				this.byId("christmasModeButton").removeStyleClass("christmasPanelStyle");
+				this.byId("createActivityButton").removeStyleClass("christmasPanelStyle");
+				this.byId("createCostButton").removeStyleClass("christmasPanelStyle");
+				this.byId("masterPageTitle").removeStyleClass("customTitle");	
 			},
 
 			/* =========================================================== */
@@ -237,7 +326,7 @@ sap.ui.define(
 						.getBinding("items")
 						.getContexts()[0]
 						.getObject().Year;
-					sTitle = sYear + "  (" + iTotalItems + ")";
+					sTitle = "Activity Year: " + sYear + " | Months of Data Entry: " + iTotalItems;
 					this.getModel("masterView").setProperty("/title", sTitle);
 				}
 			},
@@ -420,6 +509,7 @@ sap.ui.define(
 					ui5Date.setHours(3, 0, 0);
 				}
 
+
 				var sDate = sActivityDate;
 				if (sDate.substring(1, 2) == ".") {
 					var sMonth = sDate.substring(2, 4);
@@ -428,7 +518,7 @@ sap.ui.define(
 				}
 
 
-				if (!this.fileData) {
+				if (this.fileData.FileName === "" && this.getView().byId("inputCostAmountCost").getValue() > 1000) {
 					MessageBox.error("Please upload a file.");
 					return false;
 				}
@@ -536,6 +626,7 @@ sap.ui.define(
 							MessageBox.show(Msg);
 							this.BusyDialog.close();
 							this.byId("entryCost").destroy();
+							this.fileData = {};
 						}.bind(this),
 						error: function (error) {
 							MessageBox.error("Hata!")

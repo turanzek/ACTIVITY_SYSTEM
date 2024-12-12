@@ -8,3 +8,90 @@
     /* border-radius: 4px; */
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+
+.customTitle  {
+    color: #068750; /* Metnin rengini değiştirir (örneğin yeşil) */
+    /* margin-left: 250px; */
+}
+
+.customTableTitle  {
+    color: #d61717; /* Metnin rengini değiştirir (örneğin yeşil) */
+    /* margin-left: 250px; */
+}
+
+/* Ekranı kaplayan yılbaşı efekti */
+body {
+    position: relative;
+    overflow: hidden; /* Efektlerin ekrandan taşmasını engeller */
+}
+
+/* Kar taneleri animasyonu */
+.snowflake {
+    position: absolute;
+    top: -50px;
+    color: red;
+    font-size: 18px;
+    animation: fall 2s infinite linear;
+    z-index: 10; /* Kar tanelerinin en alt katmanda olmasını sağla */
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-50px);
+    }
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+/* Yıldızlar animasyonu */
+.star {
+    position: absolute;
+    top: -50px;
+    color: #36ae81;
+    font-size: 18px;
+    animation: fall 2s infinite linear;
+    z-index: 10; /* Kar tanelerinin en alt katmanda olmasını sağla */
+}
+
+@keyframes twinkle {
+    0% {
+        transform: translateY(-50px);
+    }
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+/* Butonun genel stili */
+.christmasPanelStyle {
+    color: #1d5d42 !important;  /* Kırmızı metin rengi */
+    border-radius: 10px !important;  /* Kenarları yuvarlatma */
+    border: none !important; /* Kenarlık yok */
+    padding: 10px 10px !important; /* İç boşluklar */
+    cursor: pointer !important; /* Fare simgesini gösterme */
+    display: flex; /* Flexbox düzeni */
+    justify-content: center; /* Yatayda ortala */
+    align-items: center; /* Dikeyde ortala */
+    text-align: center; /* Metni yatayda ortala */
+}
+
+/* Butonun içindeki yazı rengini kırmızıya çevirme */
+.christmasPanelStyle .sapMBtnText {
+    color: #068750 !important;  /* Kırmızı metin rengi */
+}
+
+/* Butonun ikonunun rengini kırmızıya çevirme */
+.christmasPanelStyle .sapMBtnIcon {
+    color: #068750 !important; /* Kırmızı ikon rengi */
+}
+
+/* Hover durumunda yazının rengini kırmızı yapma */
+.christmasPanelStyle:hover .sapMBtnText {
+    color: #cf2d0c !important; /* Hover durumunda da kırmızı metin rengi */
+}
+
+/* Hover durumunda ikonun rengini kırmızı yapma */
+.christmasPanelStyle:hover .sapMBtnIcon {
+    color: #cf2d0c !important; /* Hover durumunda da kırmızı ikon rengi */
+}

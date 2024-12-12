@@ -75,7 +75,6 @@
 							id="createActivityButton"
 							press=".onPressEntryActivityButton"
 							icon="sap-icon://create"
-							type="Emphasized"
 							width="150px"/>
 							<ToolbarSpacer/>
 							<Button
@@ -83,7 +82,12 @@
 								id="createCostButton"
 								press=".onPressEntryCostButton"
 								icon="sap-icon://create"
-								type="Emphasized"
+								width="150px"/>
+							<Button
+								text="Normal Mode"
+								id="christmasModeButton"
+								press=".onPressChristmasModeButton"
+								icon="sap-icon://home-share"
 								width="150px"/>
 							</HBox>
 							</VBox>

@@ -56,11 +56,17 @@ sap.ui.define(
 				var oCostTypeModel = new sap.ui.model.json.JSONModel();
 				var oActivityDaysModel = new sap.ui.model.json.JSONModel();
 				var oProjectsValueHelpModel = new sap.ui.model.json.JSONModel();
+				var oChristmasModeModel = new sap.ui.model.json.JSONModel();
 				this.setModel(oMainModel, "mainModel");
 				this.setModel(oProjectCodeModel, "projectCodeModel");
 				this.setModel(oCostTypeModel, "costTypeModel");
 				this.setModel(oActivityDaysModel, "activityDaysModel");
 				this.setModel(oProjectsValueHelpModel, "projectValueHelp");
+				this.setModel(oChristmasModeModel, "christmasMode");
+
+				oChristmasModeModel.setData({
+					christmasMode: true,
+				});
 
 
 				// TODO: Move it to OData Model.
