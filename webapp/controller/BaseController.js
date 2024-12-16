@@ -3,6 +3,9 @@ sap.ui.define(
 	function (Controller, History, MessageToast,) {
 		"use strict";
 
+		var sAddLineCodeId;
+		var sAddLineNameId;
+
 		return Controller.extend("zint.activity.system.controller.BaseController", {
 			/**
 			 * Convenience method for accessing the router in every controller of the application.
@@ -106,8 +109,12 @@ sap.ui.define(
 				// var oValueHelpProjectCode = {};
 
 				// var oSelectProjectModel = this.getOwnerComponent().getModel("projectValueHelp");
+
+				sAddLineCodeId = oEvent.getSource().getId();
+				sAddLineNameId = sAddLineCodeId.replace("inputProjectCode", "inputProjectName");;
+				var bAddLineAct = sAddLineCodeId.includes("lineItemsList");
 		
-				if (this.byId("entryActivity")){
+				if (this.byId("entryActivity") || bAddLineAct){
 					var oProjectCodeModel = this.getOwnerComponent().getModel("projectCodeModel");
 					this.getView().setModel(oProjectCodeModel, "projectValueHelp");
 				}else{
@@ -160,6 +167,10 @@ sap.ui.define(
 					sValueCode = "inputProjectCodeAct";
 					sValueName = "inputProjectNameAct";
                 }
+				else{
+					sValueCode = sAddLineCodeId;
+					sValueName = sAddLineNameId;
+				}
 
 				var aSelectedItems = oEvent.getParameter("selectedContexts");
 				if (aSelectedItems && aSelectedItems.length > 0) {
