@@ -396,7 +396,7 @@ sap.ui.define(
 				} else {
 					oCostTable.unbindItems();
 				}
-				oModel.setProperty(oContext.getPath() + "/Box", !bCurrentSelected);
+				// oModel.setProperty(oContext.getPath() + "/Box", !bCurrentSelected);
 			},
 
 			onCloseDetailPress: function () {

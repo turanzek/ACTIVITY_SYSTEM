@@ -159,6 +159,9 @@ sap.ui.define(
 				var sValueCode,
 				 	sValueName;
 
+				//  var oModel = this.getView().getModel();
+				//  oModel.setDefaultBindingMode(sap.ui.model.BindingMode.TwoWay);
+
 				if (this.byId("entryCost")) {
                     sValueCode = "inputProjectCodeCost";
 					sValueName = "inputProjectNameCost";
@@ -187,24 +190,41 @@ sap.ui.define(
 						oDetailModel.setData(aDetails);
 					}
 
+				if (sValueCode.includes("lineItemsList")){
+					var oLine= this.byId(sAddLineCodeId);
+					var oContext = oLine.getBindingContext();
+					var sPath = oContext.getPath();
+					var oPreviousDatas = oContext.getModel().getProperty(sPath);
+					oContext.getModel().setProperty(sPath + "/ProjectCode", aSelectedItems[0].getObject().ProjectCode);
+					oContext.getModel().setProperty(sPath + "/ProjectName", aSelectedItems[0].getObject().ProjectName);
+					oContext.getModel().setProperty(sPath + "/ActivityDuration", oPreviousDatas.ActivityDuration);
+					oContext.getModel().setProperty(sPath + "/CostDetails", oPreviousDatas.CostDetails); 
+					oContext.getModel().setProperty(sPath + "/ActivityDate", oPreviousDatas.ActivityDate); 
+					oContext.getModel().setProperty(sPath + "/Weekend", oPreviousDatas.Weekend); 
+
+				
+				}
+
+				else{				
 				var oProjectCode = this.byId(sValueCode);
 				oProjectCode.setValue(aSelectedItems[0].getObject().ProjectCode);
 
 				var oProjectName = this.byId(sValueName);
 				oProjectName.setValue(aSelectedItems[0].getObject().ProjectName);
-
+			
 				// // Close the dialog
 				// if (this._oDialogProjectCode && this._oDialogProjectCode instanceof sap.m.TableSelectDialog) {
 				//     this._oDialogProjectCode.close();
 				// }
-				
+			}
 			
 				var oSelectedProject = { ProjectCode: aSelectedItems[0].getObject().ProjectCode ,
 										ProjectName: aSelectedItems[0].getObject().ProjectName };
 				this.getOwnerComponent().setSelectedProject(oSelectedProject);
 				
 				// this._oDialogProjectCode.close();
-				}
+			}
+				
 				
 			},
 			handleSearchSelectProject: function (oEvent) {
