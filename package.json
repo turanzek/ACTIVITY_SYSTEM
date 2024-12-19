@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "ui5 serve",
-    "start": "npm run serve --port 8081",
+    "start": "ui5 serve --port 8081",
     "deploy": "ui5 build --exclude-task escapeNonAsciiCharacters"
   },
   "keywords": [],
