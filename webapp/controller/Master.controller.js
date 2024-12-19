@@ -80,15 +80,15 @@ sap.ui.define(
 				var body = document.body;
 				
 				// Kar taneleri, yılbaşı ağacı, yıldızlar eklemek
-				this.createSnowflakes(body);
-				this.createStars(body);
+				// this.createSnowflakes(body);
+				// this.createStars(body);
 			},
 			createSnowflakes: function(container) {
 				for (var i = 0; i < 20; i++) { // 50 kar tanesi
 					var snowflake = document.createElement("span");
 					snowflake.classList.add("snowflake");
 					snowflake.style.left = Math.random() * 100 + "%";
-					snowflake.style.animationDuration = Math.random() * 2 + 3 + "s";
+					snowflake.style.animationDuration = Math.random() * 60 + 60 + "s";
 					snowflake.textContent = "❄"; // Kar tanesi simgesi
 					container.appendChild(snowflake);
 				}
@@ -98,7 +98,7 @@ sap.ui.define(
 					var snowflake = document.createElement("span");
 					snowflake.classList.add("star");
 					snowflake.style.left = Math.random() * 100 + "%";
-					snowflake.style.animationDuration = Math.random() * 2 + 3 + "s";
+					snowflake.style.animationDuration = Math.random() * 60 + 60 + "s";
 					snowflake.textContent = "★";
 					container.appendChild(snowflake);
 				}

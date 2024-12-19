@@ -438,24 +438,102 @@ sap.ui.define(
 			},
 
 			onAddLine: function () {
-				var oModel = this.getView().getModel();
 
-				// create an entry in the Products collection with the specified properties and values as initial data
+
+				var oModel = this.getView().getModel();
+				var oContexts = this.getView().getBindingContext().getObject();
+				var dDate = new Date();
+				var formattedDate = "datetime'" + dDate.toISOString() + "'"; // Tarih formatını düzeltme
+				
+				// Veriyi hazırlama
 				var oProperties = {
-					PersonnelName: "John Doe", // Bu kısmı kendi dinamik verinize göre düzenleyebilirsiniz
-					ActivityDate: new Date(),
-					ProjectCode: "",
+					Guid: "GUID_DEFAULT",
+					Pernr: oContexts.Pernr,
+					PersonnelName: oContexts.PersonnelName,
+					PersonnelSurname: oContexts.PersonnelSurname,
+					ActivityDate: formattedDate, // Düzgün tarih formatı
+					ActivityMonth: oContexts.Month,
+					ActivityYear: oContexts.Year,
+					ProjectCode: "DNM",
 					ProjectName: "",
 					ActivityDuration: 0,
 					Description: "",
-					Weekend: false, // Varsayılan olarak hafta sonu değil
-					Box: false, // Varsayılan olarak seçim kutusu işaretli değil
-				}
+					Weekend: false, //this._isWeekend(dDate),
+					Box: false,
+					CostDetails: oContexts.CostDetails || [] // Boş dizi kontrolü
+				};
+				
+				// OData'ya veri gönderme
+				oModel.create("/ActivityDetailsSet", oProperties, {
+					success: function (data) {
+						MessageToast.show("Activity entry is successfull.");
+					}.bind(this),
+					error: function (error) {
+						MessageBox.error("Hata!");
+					}.bind(this),
+				});
 
-				var oContext = oModel.createEntry("/ActivityDetailsSet", oProperties);
 
 
-				// TODO: Second method: 
+
+
+
+
+
+
+
+
+				// var oModel = this.getView().getModel();
+				// var oContexts = this.getView().getBindingContext().getObject();
+
+				// var dDate = new Date();
+
+				// // create an entry in the Products collection with the specified properties and values as initial data
+				// var oProperties = {
+				// 	Guid: "GUID_DEFAULT",
+				// 	Pernr: oContexts.Pernr,
+				// 	PersonnelName: oContexts.PersonnelName,
+				// 	PersonnelSurname: oContexts.PersonnelSurname,
+				// 	// ActivityDate: "datetime'2024-12-19T14:10:48'", 
+				// 	ActivityDate: "datetime'2024-12-19T14:10:48Z'",
+				// 	ActivityMonth: oContexts.Month,
+				// 	ActivityYear: oContexts.Year,
+				// 	ProjectCode: "DNM",
+				// 	ProjectName: "",
+				// 	ActivityDuration: 0,
+				// 	Description: "",
+				// 	Weekend: false, //this._isWeekend(dDate),
+				// 	Box: false,
+				// 	CostDetails: []
+				// };
+
+				// // var oModel = this.getOwnerComponent().getModel();
+				// oModel.create("/ActivityDetailsSet", oProperties, {
+				// 	success: function (data) {
+				// 		MessageToast.show("Activity entry is successfull.");
+				// 	}.bind(this),
+
+				// 	error: function (error) {
+				// 		MessageBox.error("Hata!");
+				// 	}.bind(this),
+				// });
+
+
+
+
+
+				// var oContext = oModel.createEntry("/ActivityDetailsSet", oProperties);
+
+				// oModel.submitChanges({
+				// 	success: function (oData) {
+				// 		console.log("Success response:", oData);
+				// 	},
+				// 	error: function (oError) {
+				// 		console.error("Error response:", oError);
+				// 	},
+				// });
+
+				// TODO: Second method:
 				//  // product id is a required property for the item => item remains inactive if it's not set
 				//  if (!oEvent.getParameter("context").getProperty("ProductID")) {
 				// 	oEvent.preventDefault();
@@ -469,67 +547,14 @@ sap.ui.define(
 				// oForm.setBindingContext(oContext);
 
 				// submit the changes: creates entity in the back end
-				var mySuccessHandler = function () {
-					console.log("x1");/* successful creation */
-				};
-				var myErrorHandler = function () {
-					console.log("x2");
-					/* deletion of the created entity before it is persisted */
-				}
-				oModel.submitChanges({ success: mySuccessHandler, error: myErrorHandler });
-				// handle successful creation or reset
-
-
-				// var oTable = this.byId("lineItemsList"); // Tabloyu alıyoruz
-				// var oBinding = oTable.getBinding("items"); // Tabloyu bağlayan bindingi alıyoruz
-
-				// // Tabloyu bağlayan modelin "ActivityDetails" path'ine veri eklemek için,
-				// // veri setini alıyoruz ve yeni satırı ekliyoruz
-				// var oModel = this.getView().getModel();
-				// var aData = oBinding.getCurrentContexts().map(function (context) {
-				// 	return context.getObject();
-				// });
-
-				// // Yeni satır verisini hazırlıyoruz
-				// var oNewLine = {
-				// 	PersonnelName: aData[0].PersonnelName,
-				// 	ActivityDate: aData[0].ActivityDate,
-				// 	ProjectCode: "",
-				// 	ProjectName: "",
-				// 	ActivityHour: 0,
-				// 	Description: "",
-				// 	Box: false, // Eğer checkbox varsa
-				// 	Weekend: false, // Weekend durumunu da dahil edebiliriz
+				// var mySuccessHandler = function () {
+				// 	console.log("x1");/* successful creation */
 				// };
-				// // Yeni satırı veriye ekliyoruz
-				// aData.push(oNewLine);
-
-				// // Veriyi backend'e eklemeden yalnızca frontend'de güncelledik
-				// oBinding.refresh(); // Tabloyu güncelliyoruz
-
-				// Tabloya bağlı olan modeli alın
-				// var oModel = this.getView().getModel("ActivityDetails");
-
-				// // Modelin mevcut verilerini alın
-				// var aData = oModel.getProperty("/");
-
-				// // Yeni bir satır için varsayılan veriler
-				// var oNewActivity = {
-				// 	PersonnelName: "John Doe", // Bu kısmı kendi dinamik verinize göre düzenleyebilirsiniz
-				// 	ActivityDate: new Date(),
-				// 	ProjectCode: "",
-				// 	ProjectName: "",
-				// 	ActivityDuration: 0,
-				// 	Description: "",
-				// 	Weekend: false, // Varsayılan olarak hafta sonu değil
-				// 	Box: false, // Varsayılan olarak seçim kutusu işaretli değil
-				// };
-
-				// // Yeni satırı mevcut verilere ekleyin
-				// aData.push(oNewActivity);
-
-				// // Güncellenmiş verileri modele geri yazın
-				// oModel.setProperty("/", aData);
+				// var myErrorHandler = function () {
+				// 	console.log("x2");
+				// 	/* deletion of the created entity before it is persisted */
+				// }
+				// oModel.submitChanges({ success: mySuccessHandler, error: myErrorHandler });
 			},
 
 			onSaveActivities: function (oEvent) {
@@ -845,14 +870,14 @@ sap.ui.define(
 							} else if (
 								sMimeType === "application/msword" ||
 								sMimeType ===
-								"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+									"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 							) {
 								oIcon.setSrc("images/word-icon.jpg"); // Word simgesi
 							} else if (
 								sMimeType === "application/vnd.ms-excel" ||
 								sMimeType === "text/csv" ||
 								sMimeType ===
-								"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+									"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 							) {
 								oIcon.setSrc("images/excel-icon.png"); // Excel simgesi
 							} else if (sMimeType === "text/plain") {
@@ -860,7 +885,7 @@ sap.ui.define(
 							} else if (
 								sMimeType === "application/vnd.ms-powerpoint" ||
 								sMimeType ===
-								"application/vnd.openxmlformats-officedocument.presentationml.presentation"
+									"application/vnd.openxmlformats-officedocument.presentationml.presentation"
 							) {
 								oIcon.setSrc("images/ppt-icon.png");
 							} else if (sMimeType.startsWith("image/")) {
