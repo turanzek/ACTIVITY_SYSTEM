@@ -443,16 +443,25 @@ sap.ui.define(
 				// create an entry in the Products collection with the specified properties and values as initial data
 				var oProperties = {
 					PersonnelName: "John Doe", // Bu kısmı kendi dinamik verinize göre düzenleyebilirsiniz
-					ActivityDate: new Date(),
-					ProjectCode: "",
-					ProjectName: "",
-					ActivityDuration: 0,
-					Description: "",
-					Weekend: false, // Varsayılan olarak hafta sonu değil
-					Box: false, // Varsayılan olarak seçim kutusu işaretli değil
+					// ActivityDate: new Date(),
+
 				}
 
-				var oContext = oModel.createEntry("/ActivityDetailsSet", oProperties);
+				var oContext = oModel.createEntry("/ActivityDetailsSet", {
+					groupId: "FirstGroup",
+					properties: oProperties
+				});
+
+				var mySuccessHandler = function () {
+					console.log("x1");/* successful creation */
+				};
+				var myErrorHandler = function () {
+					console.log("x2");
+					/* deletion of the created entity before it is persisted */
+				}
+				oModel.submitChanges({
+					groupId: "FirstGroup", success: mySuccessHandler, error: myErrorHandler
+				});
 
 
 				// TODO: Second method: 
@@ -469,14 +478,7 @@ sap.ui.define(
 				// oForm.setBindingContext(oContext);
 
 				// submit the changes: creates entity in the back end
-				var mySuccessHandler = function () {
-					console.log("x1");/* successful creation */
-				};
-				var myErrorHandler = function () {
-					console.log("x2");
-					/* deletion of the created entity before it is persisted */
-				}
-				oModel.submitChanges({ success: mySuccessHandler, error: myErrorHandler });
+
 				// handle successful creation or reset
 
 
