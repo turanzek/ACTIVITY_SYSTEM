@@ -34,6 +34,16 @@ sap.ui.define(
 		return BaseController.extend("zint.activity.system.controller.Detail", {
 			formatter: formatter,
 			oTemplateBox: {},
+
+			oSelectedLine: {
+				Date: "",
+				ProectCode: "",
+				ProjectName: "",
+				Hour: "",
+				Description: "",
+				Wekend: ""
+			},
+				
 			costFileData: {
 				Value: "", // Remove data URL prefix
 				FileName: "",
@@ -380,11 +390,23 @@ sap.ui.define(
 				// var oContext = oSelectedItem.getBindingContext();
 				var oContext = oEvent.getSource().getBindingContext();
 				var oModel = oContext.getModel();
-				var bCurrentSelected = oModel.getProperty(oContext.getPath() + "/Box");
+				var oLine = oModel.getProperty(oContext.getPath());
+				var bCurrentSelected = oLine.Box;
+
 				var sPath = oContext.getPath();
 				sPath = sPath + "/CostDetails";
 				var oCostTable = this.byId("idDetailCostModel");
 
+
+				this.oSelectedLine = {
+					Date: oLine.ActivityDate,
+					ProectCode: oLine.ProjectCode,
+					ProjectName: oLine.ProjectName,
+					Hour: oLine.ActivityDuration,
+					Description: oLine.Description,
+					Wekend: oLine.Weekend
+				}
+	
 				if (!bCurrentSelected) {
 					if (oCostTable.getBindingInfo("items")) {
 						this.oTemplateBox = oCostTable.getBindingInfo("items").template;
@@ -437,10 +459,16 @@ sap.ui.define(
 				}
 			},
 
-			onAddLine: function () {
+			onAddLine: function (oEvent) {
 				var oModel = this.getView().getModel();
 				var oContexts = this.getView().getBindingContext().getObject();
 				var dDate = new Date();
+
+				if (this.oSelectedLine) {
+					dDate = this.oSelectedLine.Date;
+
+				}
+							
 				
 				// Veriyi hazırlama
 				var oProperties = {
