@@ -41,9 +41,9 @@ sap.ui.define(
 				ProjectName: "",
 				Hour: "",
 				Description: "",
-				Wekend: ""
+				Wekend: "",
 			},
-				
+
 			costFileData: {
 				Value: "", // Remove data URL prefix
 				FileName: "",
@@ -114,29 +114,29 @@ sap.ui.define(
 			},
 
 			addDetailStyleClass: function () {
-				this.byId("addActButton").addStyleClass("christmasPanelStyle");
-				this.byId("deleteActButton").addStyleClass("christmasPanelStyle");
-				this.byId("editButton2").addStyleClass("christmasPanelStyle");
-				this.byId("exportButton").addStyleClass("christmasPanelStyle");
-				this.byId("addCostButton").addStyleClass("christmasPanelStyle");
-				this.byId("deleteCostButton").addStyleClass("christmasPanelStyle");
-				this.byId("idDetailTitle").addStyleClass("customTitle");
-				this.byId("idCostTableTitle").addStyleClass("customTableTitle");
-				this.byId("idDetailTableTitle").addStyleClass("customTableTitle");
-				this.byId("idChristmasImage").setVisible(true);
+				// this.byId("addActButton").addStyleClass("christmasPanelStyle");
+				// this.byId("deleteActButton").addStyleClass("christmasPanelStyle");
+				// this.byId("editButton2").addStyleClass("christmasPanelStyle");
+				// this.byId("exportButton").addStyleClass("christmasPanelStyle");
+				// this.byId("addCostButton").addStyleClass("christmasPanelStyle");
+				// this.byId("deleteCostButton").addStyleClass("christmasPanelStyle");
+				// this.byId("idDetailTitle").addStyleClass("customTitle");
+				// this.byId("idCostTableTitle").addStyleClass("customTableTitle");
+				// this.byId("idDetailTableTitle").addStyleClass("customTableTitle");
+				// this.byId("idChristmasImage").setVisible(true);
 			},
 
 			removeDetailStyleClass: function () {
-				this.byId("addActButton").removeStyleClass("christmasPanelStyle");
-				this.byId("deleteActButton").removeStyleClass("christmasPanelStyle");
-				this.byId("editButton2").removeStyleClass("christmasPanelStyle");
-				this.byId("exportButton").removeStyleClass("christmasPanelStyle");
-				this.byId("addCostButton").removeStyleClass("christmasPanelStyle");
-				this.byId("deleteCostButton").removeStyleClass("christmasPanelStyle");
-				this.byId("idDetailTitle").removeStyleClass("customTitle");
-				this.byId("idCostTableTitle").removeStyleClass("customTableTitle");
-				this.byId("idDetailTableTitle").removeStyleClass("customTableTitle");
-				this.byId("idChristmasImage").setVisible(false);
+				// this.byId("addActButton").removeStyleClass("christmasPanelStyle");
+				// this.byId("deleteActButton").removeStyleClass("christmasPanelStyle");
+				// this.byId("editButton2").removeStyleClass("christmasPanelStyle");
+				// this.byId("exportButton").removeStyleClass("christmasPanelStyle");
+				// this.byId("addCostButton").removeStyleClass("christmasPanelStyle");
+				// this.byId("deleteCostButton").removeStyleClass("christmasPanelStyle");
+				// this.byId("idDetailTitle").removeStyleClass("customTitle");
+				// this.byId("idCostTableTitle").removeStyleClass("customTableTitle");
+				// this.byId("idDetailTableTitle").removeStyleClass("customTableTitle");
+				// this.byId("idChristmasImage").setVisible(false);
 			},
 			onExit: function () {
 				if (this.oEventBus) {
@@ -385,6 +385,87 @@ sap.ui.define(
 				return day === 0 || day === 6;
 			},
 
+			// onSelectionChange: function (oEvent) {
+			// 	// Seçili satırları al
+			// 	var oTable = this.byId("lineItemsList");
+			// 	var aSelectedItems = oTable.getSelectedItems();
+
+			// 	// Seçilen öğelerin verilerini al
+			// 	var aSelectedData = aSelectedItems.map(function (oItem) {
+			// 		return oItem.getBindingContext().getObject(); // Her satırın modeldeki nesnesini al
+			// 	});
+
+			// 	// Cost Table'a filtre uygula
+			// 	if (aSelectedData.length > 0) {
+			// 		// Seçilen verilerden filtre oluştur (örnek: ActivityDate bazlı filtreleme)
+			// 		var aFilters = aSelectedData.map(function (oData) {
+			// 			return new sap.ui.model.Filter(
+			// 				"ActivityDate",
+			// 				sap.ui.model.FilterOperator.EQ,
+			// 				oData.ActivityDate
+			// 			);
+			// 		});
+
+			// 		// OR mantığıyla filtreleri birleştir
+			// 		var oCombinedFilter = new sap.ui.model.Filter({
+			// 			filters: aFilters,
+			// 			and: false,
+			// 		});
+
+			// 		// Cost tablosunu bağla
+			// 		var oCostTable = this.byId("idDetailCostModel");
+			// 		if (oCostTable.getBindingInfo("items")) {
+			// 			this.oTemplateBox = oCostTable.getBindingInfo("items").template;
+			// 		}
+
+			// 		oCostTable.bindItems({
+			// 			path: "/CostDetails",
+			// 			filters: [oCombinedFilter],
+			// 			template: this.oTemplateBox,
+			// 		});
+			// 	} else {
+			// 		// Eğer seçim yoksa, tabloyu temizle
+			// 		var oCostTable = this.byId("idDetailCostModel");
+			// 		oCostTable.unbindItems();
+			// 	}
+			// },
+
+
+			onSelectionChange: function (oEvent) {
+				var oTable = this.byId("lineItemsList");
+				var aSelectedItems = oTable.getSelectedItems();
+				
+				if (aSelectedItems.length > 0) {
+					var oCostTable = this.byId("idDetailCostModel");
+					var aFilters = [];
+			
+					// Her bir seçili satırın ActivityID'sine göre filtre oluştur
+					aSelectedItems.forEach(function (oItem) {
+						var oData = oItem.getBindingContext().getObject();
+						var oFilter = new sap.ui.model.Filter("ProjectCode", sap.ui.model.FilterOperator.EQ, oData.ProjectCode);
+						aFilters.push(oFilter);
+					});
+			
+					// Filtreleri birleştir
+					var oCombinedFilter = new sap.ui.model.Filter({
+						filters: aFilters,
+						and: false // OR ilişkisi
+					});
+			
+					// CostSet'e bağlan ve filtreleri uygula
+					if (oCostTable.getBindingInfo("items")) {
+						this.oTemplateBox = oCostTable.getBindingInfo("items").template;
+					}
+			
+					oCostTable.bindItems({
+						path: "/CostSet",
+						filters: [oCombinedFilter],
+						template: this.oTemplateBox,
+					});
+				} else {
+					this.byId("idDetailCostModel").unbindItems();
+				}
+			},
 			onSelectBox: function (oEvent) {
 				// var oSelectedItem = oEvent.getSource().getParent();
 				// var oContext = oSelectedItem.getBindingContext();
@@ -394,9 +475,8 @@ sap.ui.define(
 				var bCurrentSelected = oLine.Box;
 
 				var sPath = oContext.getPath();
-				sPath = sPath + "/CostDetails";
+				sPath = sPath + "/CostsSet";
 				var oCostTable = this.byId("idDetailCostModel");
-
 
 				this.oSelectedLine = {
 					Date: oLine.ActivityDate,
@@ -404,9 +484,9 @@ sap.ui.define(
 					ProjectName: oLine.ProjectName,
 					Hour: oLine.ActivityDuration,
 					Description: oLine.Description,
-					Wekend: oLine.Weekend
-				}
-	
+					Wekend: oLine.Weekend,
+				};
+
 				if (!bCurrentSelected) {
 					if (oCostTable.getBindingInfo("items")) {
 						this.oTemplateBox = oCostTable.getBindingInfo("items").template;
@@ -466,10 +546,8 @@ sap.ui.define(
 
 				if (this.oSelectedLine) {
 					dDate = this.oSelectedLine.Date;
-
 				}
-							
-				
+
 				// Veriyi hazırlama
 				var oProperties = {
 					Guid: "GUID_DEFAULT",
@@ -480,19 +558,18 @@ sap.ui.define(
 					ActivityMonth: oContexts.Month,
 					ActivityMonthName: oContexts.MonthName,
 					ActivityYear: oContexts.Year,
-					Weekend: this._isWeekend(dDate)
+					Weekend: this._isWeekend(dDate),
 				};
 
 				var oContext = oModel.createEntry("/ActivityDetailsSet", {
 					properties: oProperties,
-					success: function(oData) {
+					success: function (oData) {
 						console.log("Başarıyla oluşturuldu:", oData);
 					},
-					error: function(oError) {
+					error: function (oError) {
 						console.error("Hata oluştu:", oError);
-					}
+					},
 				});
-				
 			},
 
 			onSaveActivities: function (oEvent) {

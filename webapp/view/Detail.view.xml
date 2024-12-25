@@ -51,92 +51,77 @@
 							icon="sap-icon://excel-attachment" />
 					</Toolbar>
 				</headerToolbar>
-
 				<ScrollContainer horizontal="true" vertical="true" height="550px">
-					<VBox class="sapUiNoPadding sapUiTinyMargin" backgroundDesign="Transparent">
-						<Table
-							items="{
-						path: 'ActivityDetails',
-						sorter: {
-							path: 'ActivityDate',
-							descending: false
-						},
-						groupHeaderFactory: '.createGroupHeader'
-					}"
-							id="lineItemsList">
-							<columns>
-								<Column width="5%">
-									<Text text="" />
-								</Column>
-								<Column demandPopin="true" minScreenWidth="Tablet" width="10%">
-									<Text text="{i18n>PersonnelName}" />
-								</Column>
-								<Column demandPopin="true" minScreenWidth="Tablet" width="14%">
-									<Text text="{i18n>ActivityDate}" />
-								</Column>
-								<Column demandPopin="true" minScreenWidth="Tablet" width="9%">
-									<Text text="{i18n>ProjectCode}" />
-								</Column>
-								<Column demandPopin="true" minScreenWidth="Tablet" width="15%">
-									<Text text="{i18n>ProjectName}" />
-								</Column>
-								<Column demandPopin="true" minScreenWidth="Tablet" width="8%">
-									<Text text="{i18n>ActivityHour}" />
-								</Column>
-								<Column demandPopin="true" minScreenWidth="Tablet" width="41%">
-									<Text text="{i18n>Description}" />
-								</Column>
-							</columns>
-							<items>
-								<ColumnListItem
-									class="{= ${Weekend} ? 'myCustomBackground' : '' }">
-									<cells>
-										<CheckBox id="detailCheckBox" selected="{Box}"
-											select="onSelectBox" />
-										<Text text="{PersonnelName} {PersonnelSurname}" />
-										<DatePicker id="inputActivityDate"
-											valueStateText="{i18n>WeekendWarning}"
-											valueState="{=${Weekend} === X ? 'Warning' : 'None' }"
-											editable="{editModel>/editMode}"
-											value="{
-									path: 'ActivityDate',
-									type: 'sap.ui.model.type.Date',
-									formatOptions: {
-									style: 'short'
-								}}"
-										/>
-										<Input id="inputProjectCode"
-											valueStateText="{i18n>WeekendWarning}"
-											valueState="{=${Weekend} === true ? 'Warning' : 'None' }"
-											value="{ProjectCode}" editable="{editModel>/editMode}"
-											showValueHelp="true"
-											valueHelpRequest="handleInputProjectCodeValueHelp" />
-										<Input id="inputProjectName"
-											valueStateText="{i18n>WeekendWarning}"
-											valueState="{=${Weekend} === true ? 'Warning' : 'None' }"
-											value="{ProjectName}" editable="false" />
-										<Input
-											value="{
-									path: 'ActivityDuration',
-									type: 'sap.ui.model.type.Float',
-									formatOptions: {
-										minFractionDigits: 2,  
-										maxFractionDigits: 2 
-									}
-								}"
-											editable="{editModel>/editMode}"
-											liveChange="onLiveChangeRestrictToNumbers"
-											valueStateText="{i18n>WeekendWarning}"
-											valueState="{=${Weekend} === true ? 'Warning' : 'None' }" />
-										<Input value="{Description}"
-											valueStateText="{i18n>WeekendWarning}"
-											valueState="{=${Weekend} === true ? 'Warning' : 'None' }"
-											editable="{editModel>/editMode}" />
-									</cells>
-								</ColumnListItem>
-							</items>
-						</Table>
-					</VBox>
+					<Table
+        id="lineItemsList"
+        mode="MultiSelect"
+        growing="true"
+        growingScrollToLoad="true"
+        items="{
+            path: 'ActivityDetails',
+            sorter: {
+                path: 'ActivityDate',
+                descending: false
+            }
+        }"
+        selectionChange="onSelectionChange">
+						<columns>
+							<Column>
+								<Text text="{i18n>PersonnelName}" />
+							</Column>
+							<Column>
+								<Text text="{i18n>ActivityDate}" />
+							</Column>
+							<Column>
+								<Text text="{i18n>ProjectCode}" />
+							</Column>
+							<Column>
+								<Text text="{i18n>ProjectName}" />
+							</Column>
+							<Column>
+								<Text text="{i18n>ActivityHour}" />
+							</Column>
+							<Column>
+								<Text text="{i18n>Description}" />
+							</Column>
+						</columns>
+						<items>
+							<ColumnListItem type="Active">
+								<cells>
+									<Text text="{PersonnelName} {PersonnelSurname}" />
+									<DatePicker 
+                        id="inputActivityDate"
+                        value="{
+                            path: 'ActivityDate',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions: {style: 'short'}
+                        }"
+                        editable="{editModel>/editMode}" />
+									<Input 
+                        id="inputProjectCode"
+                        value="{ProjectCode}"
+                        editable="{editModel>/editMode}"
+                        showValueHelp="true"
+                        valueHelpRequest="handleInputProjectCodeValueHelp" />
+									<Input 
+                        id="inputProjectName"
+                        value="{ProjectName}" 
+                        editable="false" />
+									<Input 
+                        value="{
+                            path: 'ActivityDuration',
+                            type: 'sap.ui.model.type.Float',
+                            formatOptions: {minFractionDigits: 2, maxFractionDigits: 2}
+                        }"
+                        editable="{editModel>/editMode}"
+                        liveChange="onLiveChangeRestrictToNumbers" />
+									<Input 
+                        value="{Description}"
+                        editable="{editModel>/editMode}" />
+								</cells>
+							</ColumnListItem>
+						</items>
+					</Table>
 				</ScrollContainer>
 			</Panel>
 			<VBox height="30px" class="customBox" />
@@ -158,88 +143,75 @@
 				</headerToolbar>
 				<ScrollContainer horizontal="true" vertical="true" height="160px">
 					<Table
-						id="idDetailCostModel"
-						items="{
-						path: 'ActivityDetails/CostDetails',
-						sorter: {
-							path: 'ActivityDate',
-							descending: false
-						}
-					}"
-					>
+        id="idDetailCostModel"
+		mode="MultiSelect"
+        growing="true"
+        growingScrollToLoad="true"
+        items="{
+            path: 'CostSet',
+            sorter: {
+                path: 'ActivityDate',
+                descending: false
+            }
+        }">
 						<columns>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>PersonnelName}" />
 							</Column>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>ActivityDate}" />
 							</Column>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>ProjectName}" />
 							</Column>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>CostType}" />
 							</Column>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>CostName}" />
 							</Column>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>CostAmount}" />
 							</Column>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>CostCurrency}" />
 							</Column>
-							<Column demandPopin="true" minScreenWidth="Tablet">
+							<Column>
 								<Text text="{i18n>Description}" />
 							</Column>
 							<Column demandPopin="true" minScreenWidth="Tablet">
 								<Text text="{i18n>CostFile}" />
 							</Column>
-
-
 						</columns>
 						<items>
-							<ColumnListItem>
+							<ColumnListItem type="Active">
 								<cells>
 									<Text text="{PersonnelName} {PersonnelSurname}" />
-									<DatePicker
-										id="inputActivityCostDate"
-										editable="{editModel>/editMode}"
-										value="{
-										path: 'ActivityDate',
-										type: 'sap.ui.model.type.Date',
-										formatOptions: {
-											style: 'short'
-										}
-									}"
-									/>
+									<DatePicker 
+                        value="{
+                            path: 'ActivityDate',
+                            type: 'sap.ui.model.type.Date',
+                            formatOptions: {style: 'short'}
+                        }"
+                        editable="{editModel>/editMode}" />
 									<Text text="{ProjectName}" />
-									<Input
-										id="inputCostType"
-										value="{CostType}"
-										editable="{editModel>/editMode}"
-										showValueHelp="true"
-										valueHelpRequest="handleInputCostTypeValueHelp"
-									/>
+									<Input 
+                        value="{CostType}"
+                        editable="{editModel>/editMode}"
+                        showValueHelp="true"
+                        valueHelpRequest="handleInputCostTypeValueHelp" />
 									<Text text="{CostName}" />
-									<Input
-										id="inputCostAmount"
-										type="Number"
-										value="{CostAmount}"
-										editable="{editModel>/editMode}"
-									/>
-									<Input
-										id="inputCostCurrency"
-										value="{CostCurrency}"
-										editable="{editModel>/editMode}"
-									/>
-									<Input
-										value="{Description}"
-										editable="{editModel>/editMode}"
-									/>
-
+									<Input 
+                        type="Number"
+                        value="{CostAmount}"
+                        editable="{editModel>/editMode}" />
+									<Input 
+                        value="{CostCurrency}"
+                        editable="{editModel>/editMode}" />
+									<Input 
+                        value="{Description}"
+                        editable="{editModel>/editMode}" />
 									<HBox>
-
 										<Button
 											id="onEditFileButton"
 											text="{= ${HasFile} === true ? 'View File' : 'Add File'  }"
@@ -248,7 +220,6 @@
 											type="{= ${HasFile} === true ? 'Success' : 'Attention'  }"
 											width="100%"
 										/>
-
 										<u:FileUploader
 											id="fileUploaderCost"
 											name="file"
@@ -261,8 +232,6 @@
 											enabled="{editModel>/editMode}"
 										/>
 									</HBox>
-
-
 								</cells>
 							</ColumnListItem>
 						</items>
