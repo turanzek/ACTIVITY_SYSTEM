@@ -438,12 +438,9 @@ sap.ui.define(
 			},
 
 			onAddLine: function () {
-
-
 				var oModel = this.getView().getModel();
 				var oContexts = this.getView().getBindingContext().getObject();
 				var dDate = new Date();
-				var formattedDate = "datetime'" + dDate.toISOString() + "'"; // Tarih formatını düzeltme
 				
 				// Veriyi hazırlama
 				var oProperties = {
@@ -451,110 +448,23 @@ sap.ui.define(
 					Pernr: oContexts.Pernr,
 					PersonnelName: oContexts.PersonnelName,
 					PersonnelSurname: oContexts.PersonnelSurname,
-					ActivityDate: formattedDate, // Düzgün tarih formatı
+					ActivityDate: dDate, // Düzgün tarih formatı
 					ActivityMonth: oContexts.Month,
+					ActivityMonthName: oContexts.MonthName,
 					ActivityYear: oContexts.Year,
-					ProjectCode: "DNM",
-					ProjectName: "",
-					ActivityDuration: 0,
-					Description: "",
-					Weekend: false, //this._isWeekend(dDate),
-					Box: false,
-					CostDetails: oContexts.CostDetails || [] // Boş dizi kontrolü
+					Weekend: this._isWeekend(dDate)
 				};
-				
-				// OData'ya veri gönderme
-				oModel.create("/ActivityDetailsSet", oProperties, {
-					success: function (data) {
-						MessageToast.show("Activity entry is successfull.");
-					}.bind(this),
-					error: function (error) {
-						MessageBox.error("Hata!");
-					}.bind(this),
+
+				var oContext = oModel.createEntry("/ActivityDetailsSet", {
+					properties: oProperties,
+					success: function(oData) {
+						console.log("Başarıyla oluşturuldu:", oData);
+					},
+					error: function(oError) {
+						console.error("Hata oluştu:", oError);
+					}
 				});
-
-
-
-
-
-
-
-
-
-
-
-				// var oModel = this.getView().getModel();
-				// var oContexts = this.getView().getBindingContext().getObject();
-
-				// var dDate = new Date();
-
-				// // create an entry in the Products collection with the specified properties and values as initial data
-				// var oProperties = {
-				// 	Guid: "GUID_DEFAULT",
-				// 	Pernr: oContexts.Pernr,
-				// 	PersonnelName: oContexts.PersonnelName,
-				// 	PersonnelSurname: oContexts.PersonnelSurname,
-				// 	// ActivityDate: "datetime'2024-12-19T14:10:48'", 
-				// 	ActivityDate: "datetime'2024-12-19T14:10:48Z'",
-				// 	ActivityMonth: oContexts.Month,
-				// 	ActivityYear: oContexts.Year,
-				// 	ProjectCode: "DNM",
-				// 	ProjectName: "",
-				// 	ActivityDuration: 0,
-				// 	Description: "",
-				// 	Weekend: false, //this._isWeekend(dDate),
-				// 	Box: false,
-				// 	CostDetails: []
-				// };
-
-				// // var oModel = this.getOwnerComponent().getModel();
-				// oModel.create("/ActivityDetailsSet", oProperties, {
-				// 	success: function (data) {
-				// 		MessageToast.show("Activity entry is successfull.");
-				// 	}.bind(this),
-
-				// 	error: function (error) {
-				// 		MessageBox.error("Hata!");
-				// 	}.bind(this),
-				// });
-
-
-
-
-
-				// var oContext = oModel.createEntry("/ActivityDetailsSet", oProperties);
-
-				// oModel.submitChanges({
-				// 	success: function (oData) {
-				// 		console.log("Success response:", oData);
-				// 	},
-				// 	error: function (oError) {
-				// 		console.error("Error response:", oError);
-				// 	},
-				// });
-
-				// TODO: Second method:
-				//  // product id is a required property for the item => item remains inactive if it's not set
-				//  if (!oEvent.getParameter("context").getProperty("ProductID")) {
-				// 	oEvent.preventDefault();
-				// 	return;
-				//   }
-
-				// var oItemsBinding = this.getView().byId("ToLineItems").getBinding("rows");
-				// oItemsBinding.create({/* initial data*/}, /*bAtEnd*/ true, {inactive : true});
-
-				// // bind a form against the transient context for the newly created entity
-				// oForm.setBindingContext(oContext);
-
-				// submit the changes: creates entity in the back end
-				// var mySuccessHandler = function () {
-				// 	console.log("x1");/* successful creation */
-				// };
-				// var myErrorHandler = function () {
-				// 	console.log("x2");
-				// 	/* deletion of the created entity before it is persisted */
-				// }
-				// oModel.submitChanges({ success: mySuccessHandler, error: myErrorHandler });
+				
 			},
 
 			onSaveActivities: function (oEvent) {
